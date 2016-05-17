@@ -1,10 +1,8 @@
 #include "state.h"
 
-State *createState(int boardDim) {
+State *createState() {
 	State *state = malloc(sizeof(State));
-	state->boardDim = boardDim;
-	state->boardSize = boardDim*boardDim;
-	state->board = calloc(state->boardSize,sizeof(int));
+	//memset(state->board, 0, sizeof(state->board)); 
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
 
@@ -12,8 +10,6 @@ State *createState(int boardDim) {
 }
 
 int destroyState(State *state) {
-	free(state->board);
-	state->board = NULL;
 	free(state);
 	state = NULL;
 	return 0;
@@ -21,11 +17,11 @@ int destroyState(State *state) {
 
 void displayState(State *state) {
 	printf("-----------------------------------------------\n");
-	for (int i = state->boardDim-1; i >= 0; i--) {
+	for (int i = BOARD_DIM-1; i >= 0; i--) {
 		printf("\t|");
-		for (int j = 0; j < state->boardDim; j++) {
+		for (int j = 0; j < BOARD_DIM; j++) {
 			char item = 0;
-			switch (state->board[i*state->boardDim+j]) {
+			switch (state->board[i*BOARD_DIM+j]) {
 				case STATE_WHITE:
 					item = 'W';
 					break;
@@ -98,8 +94,8 @@ Neighbors getNeighborsOfType(State *state, int point, int type) {
 
 	int count = 0;
 
-	int col = point % state->boardDim;
-	int row = point / state->boardDim;  // Lol, might be better to do huge switch statement?
+	int col = point % BOARD_DIM;
+	int row = point / BOARD_DIM;  // Lol, might be better to do huge switch statement?
 
 	int allMatch = type == STATE_ALL;
 
@@ -109,20 +105,20 @@ Neighbors getNeighborsOfType(State *state, int point, int type) {
 			neighbors.array[count++] = position;			
 		}
 	} 
-	if (col != state->boardDim-1) {
+	if (col != BOARD_DIM-1) {
 		int position = point+1;
 		if (allMatch || state->board[position] == type) {
 			neighbors.array[count++] = position;			
 		}			
 	}
 	if (row != 0) {
-		int position = point-state->boardDim;
+		int position = point-BOARD_DIM;
 		if (allMatch || state->board[position] == type) {
 			neighbors.array[count++] = position;			
 		}
 	} 
-	if (row != state->boardDim-1) {
-		int position = point+state->boardDim;
+	if (row != BOARD_DIM-1) {
+		int position = point+BOARD_DIM;
 		if (allMatch || state->board[position] == type) {
 			neighbors.array[count++] = position;			
 		}			

@@ -6,6 +6,9 @@
 
 #include "dbg.h"
 
+#define BOARD_DIM 19
+#define BOARD_SIZE BOARD_DIM*BOARD_DIM  // Should I just say 361?
+
 #define NUM_NEIGHBORS 4
 
 #define STATE_WHITE 1
@@ -17,9 +20,7 @@
 
 // Encodes all necessary board state
 typedef struct {
-	int boardDim;
-	int boardSize;  // Should be boardDim^2
-	int *board;
+	int board[BOARD_SIZE];
 	int turn;  // 1 for white, -1 for black  (ugh, this is going to screw me, first turn is different than chess ^^^)
 	int koPoint;  // The place (if any, on the board that is the ko point.  -1 otherwise)
 } State;
@@ -30,7 +31,7 @@ typedef struct {
 } Neighbors;
 
 // Allocates a new state struct, initially empty, black to move
-State *createState(int boardDim);
+State *createState();
 
 // Destroys state
 int destroyState(State *state);

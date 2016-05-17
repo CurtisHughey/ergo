@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 	state->board[219] = STATE_WHITE;
 	state->board[198] = STATE_BLACK;
 	state->board[180] = STATE_BLACK;
-	//state->board[218] = STATE_BLACK;
+	state->board[218] = STATE_BLACK;
 	displayState(state);
 
 	printf("Result: %d\n", isLegalMove(state, 200));
