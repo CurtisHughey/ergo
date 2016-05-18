@@ -17,7 +17,7 @@
 
 #define clean_errno() (errno == 0 ? "None" : strerror(errno))
 
-#define ERROR_PRINT(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__) fflush(stderr)
+#define ERROR_PRINT(M, ...) fprintf(stderr, "[ERROR] (%s:%d: errno: %s) " M "\n", __FILE__, __LINE__, clean_errno(), ##__VA_ARGS__); fflush(stderr); exit(1)  // Might not want to exit
 
 #define UNUSED(x) (void)(x)
 

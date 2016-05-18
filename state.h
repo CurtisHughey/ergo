@@ -23,15 +23,28 @@ typedef struct {
 	int board[BOARD_SIZE];
 	int turn;  // 1 for white, -1 for black  (ugh, this is going to screw me, first turn is different than chess ^^^)
 	int koPoint;  // The place (if any, on the board that is the ko point.  -1 otherwise)
+	int whiteStonesCaptured;  // The number of white stones that have been captured (by black)
+	int blackStonesCaptured;  // Vice versa
 } State;
 
+// An array of specified neighbors to a point
 typedef struct {
 	int array[NUM_NEIGHBORS];
 	int count;
 } Neighbors;
 
+/*
+// Records what position a move took place, turn, ko point, and neighbors that got killed (everything else can be extrapolated)
+typedef struct {
+	int point;
+	int turn;
+	int koPoint;
+	Neighbors neighbors;
+} MoveRecord;
+*/
+
 // Allocates a new state struct, initially empty, black to move
-State *createState();
+State *createState(void);
 
 // Destroys state
 int destroyState(State *state);
@@ -47,14 +60,18 @@ int isLegalMove(State *state, int move);
 // Returns 0 if no stone at the point
 int hasLiberties(State *state, int point);
 
+// Recursively sets empty all the neighbors of the point matching the same type
+// Obviously, assumes hasLiberties was false
+// Returns number of points set to empty
+int setEmpty(State *state, int point);
+
 // Gets all the neighbors of point that are of type (-1, 0, 1, for black, empty, white respectively), actually, see defined variables above
-// If -2 is passed, then all match
+// If -2 is passed, then all match.
 Neighbors getNeighborsOfType(State *state, int point, int type);
 
-// Makes the move according to the given state.  Input state will be changed, and the state from the previous position is returned
+// Makes the move according to the given state.  Input state will be changed.
 // Assumes valid move
-State *makeMove(State *state, int move);
-
+void makeMove(State *state, int move);
 
 
 #endif

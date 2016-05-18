@@ -3,7 +3,7 @@
 int main(int argc, char **argv) {
 	printf("Hello World!\n");
 
-	State *state = createState(19);
+	State *state = createState();
 	//state->board[200] = STATE_BLACK;
 	state->board[201] = STATE_WHITE;
 	state->board[199] = STATE_WHITE;
@@ -15,5 +15,8 @@ int main(int argc, char **argv) {
 	displayState(state);
 
 	printf("Result: %d\n", isLegalMove(state, 200));
+
+	makeMove(state, 200);
+	displayState(state);
 	destroyState(state);
 }

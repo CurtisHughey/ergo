@@ -1,10 +1,12 @@
 #include "state.h"
 
-State *createState() {
+State *createState(void) {
 	State *state = malloc(sizeof(State));
 	//memset(state->board, 0, sizeof(state->board)); 
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
+	state->whiteStonesCaptured = 0;
+	state->blackStonesCaptured = 0;
 
 	return state;
 }
@@ -44,6 +46,8 @@ void displayState(State *state) {
 	}
 	printf("\t---------------------------------------\n");
 	printf("Turn: %s\n", state->turn == STATE_WHITE ? "White" : "Black");
+	printf("White stones captured: %d\n",state->whiteStonesCaptured);
+	printf("Black stones captured: %d\n",state->blackStonesCaptured);
 	printf("Ko point: %d\n", state->koPoint);
 	printf("-----------------------------------------------\n");
 	printf("\n\n");
@@ -153,6 +157,62 @@ int hasLiberties(State *state, int point) {
 	return 0;
 }
 
-/*State *makeMove(State *state, int move) {
-	State *state oldState
-}*/
+// Probably shouldn't make this and hasLiberties recursive ^^
+int setEmpty(State *state, int point) {
+	int stone = state->board[point];
+	if (stone == 0) {
+		ERROR_PRINT("Should not have called setEmpty on empty point: %d", point);
+		return -1;
+	}
+
+	state->board[point] = STATE_EMPTY;
+
+	int total = 1;
+
+	// Now recursively looks at matching neighbors
+	Neighbors neighbors = getNeighborsOfType(state, point, stone);
+	for (int i = 0; i < neighbors.count; i++) {
+		total += setEmpty(state, neighbors.array[i]);
+	}
+
+	return total;
+}
+
+void makeMove(State *state, int move) {
+	// State *prevState = createState();  // This honestly is a killer ^^ :(, wait, I think I can do this
+	// *prevState = *state;  // Saving
+
+	// Now make the move
+	state->board[move] = state->turn;
+
+	// Now maybe erase enemies
+	int otherTurn = -1*state->turn;
+
+	int totalCaptured = 0;
+	int capturePoint = -1;  // Used for ko
+
+	Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
+	for (int i = 0; i < neighbors.count; i++) {
+		if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
+			if (!hasLiberties(state, neighbors.array[i])) {
+				totalCaptured += setEmpty(state, neighbors.array[i]);
+				capturePoint = neighbors.array[i];
+			}
+		}
+	}
+
+	if (state->turn == STATE_WHITE) {
+		state->blackStonesCaptured += totalCaptured;
+	} else {
+		state->whiteStonesCaptured += totalCaptured;
+	}
+
+	// Now maybe sets ko
+	// This means we put down our stone, was surrounded, and one stone was removed (then ko comes into play)
+	if (totalCaptured == 1 && neighbors.count == NUM_NEIGHBORS) {
+		state->koPoint = capturePoint;  // removePoint was only set once
+	}
+
+	// Now sets turn
+	state->turn = otherTurn;
+}
