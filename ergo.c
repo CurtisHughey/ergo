@@ -18,5 +18,19 @@ int main(int argc, char **argv) {
 
 	makeMove(state, 200);
 	displayState(state);
+
+	Moves *moves = getMoves(state);
+	for (int i = 0; i < moves->count; i++) {
+		printf("%d, ", moves->array[i]);
+	}
+	printf("\n");
+
+	serializeState(state, "output/output.txt");
 	destroyState(state);
+
+	printf("READ STATE:\n");
+	State *readState = parseState("output/output.txt");
+	displayState(readState);
+
+	destroyState(readState);
 }

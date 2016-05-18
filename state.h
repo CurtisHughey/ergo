@@ -18,6 +18,8 @@
 
 #define STATE_ALL -2
 
+#define MOVE_PASS -1
+
 // Encodes all necessary board state
 typedef struct {
 	int board[BOARD_SIZE];
@@ -80,7 +82,8 @@ Neighbors getNeighborsOfType(State *state, int point, int type);
 void makeMove(State *state, int move);
 
 // Returns all valid moves (pretty trivial, actually)
-Moves getMoves(State *state);
+// Pass move is always stored last (as -1)
+Moves *getMoves(State *state);
 
 
 #endif

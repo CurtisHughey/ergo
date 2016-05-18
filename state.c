@@ -55,6 +55,10 @@ void displayState(State *state) {
 
 int isLegalMove(State *state, int move) {
 
+	if (move == MOVE_PASS) {
+		return 1;  // Always fine to pass, I guess ^^^
+	}
+
 	// Occupied board:
 	if (state->board[move] != STATE_EMPTY && state->board[move] != STATE_TRAVERSED) {  // Not sure when the second would come into play
 		return 0;
@@ -182,52 +186,59 @@ void makeMove(State *state, int move) {
 	// State *prevState = createState();  // This honestly is a killer ^^ :(, wait, I think I can do this
 	// *prevState = *state;  // Saving
 
-	// Now make the move
-	state->board[move] = state->turn;
+	if (move != MOVE_PASS) {  // Not passing (otherwise, don't do anything)
 
-	// Now maybe erase enemies
-	int otherTurn = -1*state->turn;
+		// Now make the move
+		state->board[move] = state->turn;
 
-	int totalCaptured = 0;
-	int capturePoint = -1;  // Used for ko
+		// Now maybe erase enemies
+		int otherTurn = -1*state->turn;
 
-	Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
-	for (int i = 0; i < neighbors.count; i++) {
-		if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
-			if (!hasLiberties(state, neighbors.array[i])) {
-				totalCaptured += setEmpty(state, neighbors.array[i]);
-				capturePoint = neighbors.array[i];
+		int totalCaptured = 0;
+		int capturePoint = -1;  // Used for ko
+
+		Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
+		for (int i = 0; i < neighbors.count; i++) {
+			if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
+				if (!hasLiberties(state, neighbors.array[i])) {
+					totalCaptured += setEmpty(state, neighbors.array[i]);
+					capturePoint = neighbors.array[i];
+				}
 			}
+		}
+
+		if (state->turn == STATE_WHITE) {
+			state->blackPrisoners += totalCaptured;
+		} else {
+			state->whitePrisoners += totalCaptured;
+		}
+
+		// Now maybe sets ko
+		// This means we put down our stone, was surrounded, and one stone was removed (then ko comes into play)
+		if (totalCaptured == 1 && neighbors.count == NUM_NEIGHBORS) {
+			state->koPoint = capturePoint;  // removePoint was only set once
+		} else {
+			state->koPoint = -1;  // Resetting
 		}
 	}
 
-	if (state->turn == STATE_WHITE) {
-		state->blackPrisoners += totalCaptured;
-	} else {
-		state->whitePrisoners += totalCaptured;
-	}
-
-	// Now maybe sets ko
-	// This means we put down our stone, was surrounded, and one stone was removed (then ko comes into play)
-	if (totalCaptured == 1 && neighbors.count == NUM_NEIGHBORS) {
-		state->koPoint = capturePoint;  // removePoint was only set once
-	}
-
-	// Now sets turn
-	state->turn = otherTurn;
+	// Now sets turn (also needs to happen for pass)
+	state->turn *= -1;
 }
 
-Moves getMoves(State *state) {
-	Moves moves;  // Heap or stack?
+Moves *getMoves(State *state) {
+	Moves *moves = calloc(BOARD_SIZE+1, sizeof(int));  // Heap or stack?
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		if (!state->board[i] && state->koPoint != i) {
-			moves.array[count++] = i;
+			moves->array[count++] = i;
 		}
 	}
 
-	moves.count = count;
+	moves->array[count++] = MOVE_PASS;  // Passing... 
+
+	moves->count = count;
 
 	return moves;
 }
