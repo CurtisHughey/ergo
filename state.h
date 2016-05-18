@@ -23,8 +23,8 @@ typedef struct {
 	int board[BOARD_SIZE];
 	int turn;  // 1 for white, -1 for black  (ugh, this is going to screw me, first turn is different than chess ^^^)
 	int koPoint;  // The place (if any, on the board that is the ko point.  -1 otherwise)
-	int whiteStonesCaptured;  // The number of white stones that have been captured (by black)
-	int blackStonesCaptured;  // Vice versa
+	int whitePrisoners;  // The number of white stones that have been captured (by black)
+	int blackPrisoners;  // Vice versa
 } State;
 
 // An array of specified neighbors to a point
@@ -32,6 +32,12 @@ typedef struct {
 	int array[NUM_NEIGHBORS];
 	int count;
 } Neighbors;
+
+// The array of valid moves
+typedef struct {
+	int array[BOARD_SIZE];
+	int count;
+} Moves;
 
 /*
 // Records what position a move took place, turn, ko point, and neighbors that got killed (everything else can be extrapolated)
@@ -72,6 +78,9 @@ Neighbors getNeighborsOfType(State *state, int point, int type);
 // Makes the move according to the given state.  Input state will be changed.
 // Assumes valid move
 void makeMove(State *state, int move);
+
+// Returns all valid moves (pretty trivial, actually)
+Moves getMoves(State *state);
 
 
 #endif

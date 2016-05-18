@@ -5,8 +5,8 @@ State *createState(void) {
 	//memset(state->board, 0, sizeof(state->board)); 
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
-	state->whiteStonesCaptured = 0;
-	state->blackStonesCaptured = 0;
+	state->whitePrisoners = 0;
+	state->blackPrisoners = 0;
 
 	return state;
 }
@@ -46,8 +46,8 @@ void displayState(State *state) {
 	}
 	printf("\t---------------------------------------\n");
 	printf("Turn: %s\n", state->turn == STATE_WHITE ? "White" : "Black");
-	printf("White stones captured: %d\n",state->whiteStonesCaptured);
-	printf("Black stones captured: %d\n",state->blackStonesCaptured);
+	printf("White stones captured: %d\n",state->whitePrisoners);
+	printf("Black stones captured: %d\n",state->blackPrisoners);
 	printf("Ko point: %d\n", state->koPoint);
 	printf("-----------------------------------------------\n");
 	printf("\n\n");
@@ -202,9 +202,9 @@ void makeMove(State *state, int move) {
 	}
 
 	if (state->turn == STATE_WHITE) {
-		state->blackStonesCaptured += totalCaptured;
+		state->blackPrisoners += totalCaptured;
 	} else {
-		state->whiteStonesCaptured += totalCaptured;
+		state->whitePrisoners += totalCaptured;
 	}
 
 	// Now maybe sets ko
@@ -215,4 +215,19 @@ void makeMove(State *state, int move) {
 
 	// Now sets turn
 	state->turn = otherTurn;
+}
+
+Moves getMoves(State *state) {
+	Moves moves;  // Heap or stack?
+	int count = 0;
+
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		if (!state->board[i] && state->koPoint != i) {
+			moves.array[count++] = i;
+		}
+	}
+
+	moves.count = count;
+
+	return moves;
 }
