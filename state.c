@@ -2,7 +2,7 @@
 
 State *createState(void) {
 	State *state = malloc(sizeof(State));
-	//memset(state->board, 0, sizeof(state->board)); 
+	memset(state->board, STATE_EMPTY, sizeof(state->board)); 
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
 	state->whitePrisoners = 0;
@@ -36,6 +36,12 @@ void displayState(State *state) {
 				case STATE_TRAVERSED:
 					item = '!';  // This is bad, probably
 					break;
+				case STATE_YES:
+					item = 'Y';
+					break;
+				case STATE_NO:
+					item = 'N';
+					break;
 				default:
 					item = '?';
 					break;
@@ -60,7 +66,7 @@ int isLegalMove(State *state, int move) {
 	}
 
 	// Occupied board:
-	if (state->board[move] != STATE_EMPTY && state->board[move] != STATE_TRAVERSED) {  // Not sure when the second would come into play
+	if (state->board[move] == STATE_WHITE || state->board[move] == STATE_BLACK) {  // Not sure when the second would come into play
 		return 0;
 	}
 
@@ -71,7 +77,7 @@ int isLegalMove(State *state, int move) {
 
 	// Not suicidal:
 	state->board[move] = state->turn;  // Makes the move
-	if (!hasLiberties(state, move)) {
+	if (!groupBordersType(state, move, STATE_EMPTY)) {
 		// Now needs to find if it kills any of the opponents stones (i.e. there exists a neighboring family that dies)
 		int otherTurn = -1*state->turn;
 
@@ -80,16 +86,17 @@ int isLegalMove(State *state, int move) {
 
 		int found = 0;
 		for (int i = 0; i < neighbors.count; i++) {
-			if (!hasLiberties(state, neighbors.array[i])) {
+			if (!groupBordersType(state, neighbors.array[i], STATE_EMPTY)) {
 				found = 1;
 				break;
 			}
 		}
-		if (!found) {
+		if (!found) {  // Then all the enemy stones are living, so it's illegal
 			state->board[move] = STATE_EMPTY;
 			return 0;
 		}
 	}
+
 	// If we're out, reset and return true
 	state->board[move] = STATE_EMPTY;
 
@@ -137,49 +144,63 @@ Neighbors getNeighborsOfType(State *state, int point, int type) {
 	return neighbors;
 }
 
-int hasLiberties(State *state, int point) {
-	int stone = state->board[point];
-	if (stone == 0) {
-		return 0;
-	}
+int groupBordersType(State *state, int point, int type) {
+	int stone = state->board[point];  // (Not necessarily a stone, could be empty)
 
-	Neighbors neighbors = getNeighborsOfType(state, point, -2);
+	Neighbors neighbors = getNeighborsOfType(state, point, STATE_ALL);
+
+	state->board[point] = STATE_TRAVERSED;
 
 	for (int i = 0; i < neighbors.count; i++) {
-		if (state->board[neighbors.array[i]] == STATE_EMPTY) {  // Found a liberty
+		if (state->board[neighbors.array[i]] == type) {
+			state->board[point] = stone;
 			return 1;
 		}
-		if (neighbors.array[i] == stone) {  // Then keep going  on this one
-			state->board[neighbors.array[i]] = STATE_TRAVERSED;  // This represents stones that have already been looked at, ugh
-			if (hasLiberties(state, neighbors.array[i])) {
+		if (state->board[neighbors.array[i]] == stone) {  // Then keep going on this one
+			if (groupBordersType(state, neighbors.array[i], type)) {
+				state->board[point] = stone;
 				return 1;
 			}
-			state->board[neighbors.array[i]] = stone;  // Resets
-		}
+		}		
 	}
-
+	state->board[point] = stone;
 	return 0;
 }
 
-// Probably shouldn't make this and hasLiberties recursive ^^
-int setEmpty(State *state, int point) {
+// Probably shouldn't make this and groupBordersType recursive ^^
+// Maybe use this in groupBordersType^^
+int fillWith(State *state, int point, int type) {
 	int stone = state->board[point];
-	if (stone == 0) {
-		ERROR_PRINT("Should not have called setEmpty on empty point: %d", point);
-		return -1;
-	}
 
-	state->board[point] = STATE_EMPTY;
+	state->board[point] = type;
 
 	int total = 1;
 
 	// Now recursively looks at matching neighbors
 	Neighbors neighbors = getNeighborsOfType(state, point, stone);
 	for (int i = 0; i < neighbors.count; i++) {
-		total += setEmpty(state, neighbors.array[i]);
+		if (state->board[neighbors.array[i]] == stone) {  // It could've been changed within the recursion of another iteration
+			total += fillWith(state, neighbors.array[i], type);
+		}
 	}
 
 	return total;
+}
+
+int setTerritory(State *state, int point, int color) {
+	if (state->board[point] != STATE_EMPTY) {
+		return -1;  // Shouldnt've have been called
+	}
+
+	int otherType = -1*color;   // Maybe this should be a macro ^^^
+
+	if (!groupBordersType(state, point, otherType)) {
+		fillWith(state, point, STATE_YES);
+		return 1;  // Maybe want to return how many filled?
+	} else {
+		fillWith(state, point, STATE_NO);
+		return 0;
+	}
 }
 
 void makeMove(State *state, int move) {
@@ -200,8 +221,8 @@ void makeMove(State *state, int move) {
 		Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
 		for (int i = 0; i < neighbors.count; i++) {
 			if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
-				if (!hasLiberties(state, neighbors.array[i])) {
-					totalCaptured += setEmpty(state, neighbors.array[i]);
+				if (!groupBordersType(state, neighbors.array[i], STATE_EMPTY)) {
+					totalCaptured += fillWith(state, neighbors.array[i], STATE_EMPTY);
 					capturePoint = neighbors.array[i];
 				}
 			}
@@ -241,4 +262,42 @@ Moves *getMoves(State *state) {
 	moves->count = count;
 
 	return moves;
+}
+
+int calcScore(State *state, int type) {
+	int numStones = 0;
+
+	// First counts score
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		if (state->board[i] == type) {
+			numStones += 1;
+		}
+	}
+
+	int numEyes = 0;
+	// Now finds eyes
+	for (int i = 0; i < BOARD_SIZE; i++) { // ^^^^
+		switch (state->board[i]) {
+			case STATE_EMPTY:
+				if (setTerritory(state, i, type)) {  // Bit wonky
+					//printf("YEPPPPP!\n");
+					numEyes += 1;
+				}	
+				break;
+			// case STATE_TRAVERSED: // ??? ^^^
+			// 	numEyes += 1;
+			// 	break;
+			case STATE_YES:
+				numEyes += 1;
+				break;
+			default:
+				break;			
+		}
+		//printf("%d\n", i);
+		//displayState(state);
+	}
+
+	int totalScore = numStones + numEyes;
+
+	return totalScore;
 }

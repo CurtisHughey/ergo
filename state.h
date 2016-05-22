@@ -11,14 +11,17 @@
 
 #define NUM_NEIGHBORS 4
 
+// Maybe change these to EMPTY_*.  Realllly should change this to enum
 #define STATE_WHITE 1
-#define STATE_BLACK -1
+#define STATE_BLACK (-1)
 #define STATE_EMPTY 0
-#define STATE_TRAVERSED -3
+#define STATE_TRAVERSED (-3)
+#define STATE_YES (-4)
+#define STATE_NO (-5)
 
-#define STATE_ALL -2
+#define STATE_ALL (-2)
 
-#define MOVE_PASS -1
+#define MOVE_PASS (-1)
 
 // Encodes all necessary board state
 typedef struct {
@@ -64,14 +67,16 @@ void displayState(State *state);
 // Checks three things: unoccupied, ko kosher, and not suicidal
 int isLegalMove(State *state, int move);
 
-// Sees whether the family of stones that the point is connected to has a liberty
-// Returns 0 if no stone at the point
-int hasLiberties(State *state, int point);
+// Sees whether the family of stones that the point is connected to the type provided
+// If type==STATE_EMPTY, then this sees if there are liberties
+int groupBordersType(State *state, int point, int type);
 
-// Recursively sets empty all the neighbors of the point matching the same type
-// Obviously, assumes hasLiberties was false
-// Returns number of points set to empty
-int setEmpty(State *state, int point);
+// Recursively sets to type all the neighbors of the point matching the same type
+// Returns number of points set
+int fillWith(State *state, int point, int type);
+
+// Sets all empty connected to STATE_YES if it is territory for color, otherwise STATE_NO 
+int setTerritory(State *state, int point, int color);
 
 // Gets all the neighbors of point that are of type (-1, 0, 1, for black, empty, white respectively), actually, see defined variables above
 // If -2 is passed, then all match.
@@ -85,5 +90,9 @@ void makeMove(State *state, int move);
 // Pass move is always stored last (as -1)
 Moves *getMoves(State *state);
 
+// Calculates the score for the given type according to Chinese rules:
+// Living stones + territory
+// Note only one score is returned (other is easily extrapolated)
+int calcScore(State *state, int type);
 
 #endif

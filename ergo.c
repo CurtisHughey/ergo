@@ -14,23 +14,29 @@ int main(int argc, char **argv) {
 	state->board[218] = STATE_BLACK;
 	displayState(state);
 
-	printf("Result: %d\n", isLegalMove(state, 200));
+	printf("Is legal: %d\n", isLegalMove(state, 200));
 
 	makeMove(state, 200);
 	displayState(state);
 
-	Moves *moves = getMoves(state);
-	for (int i = 0; i < moves->count; i++) {
-		printf("%d, ", moves->array[i]);
-	}
-	printf("\n");
+	printf("Finding score\n");
 
-	serializeState(state, "output/output.txt");
+	// Moves *moves = getMoves(state);
+	// for (int i = 0; i < moves->count; i++) {
+	// 	printf("%d, ", moves->array[i]);
+	// }
+	// printf("\n");
+
+	// serializeState(state, "output/output.txt");
+	// destroyState(state);
+
+	// printf("READ STATE:\n");
+	// State *readState = parseState("output/output.txt");
+	// displayState(readState);
+
+	printf("SCORE: %d\n", calcScore(state, STATE_BLACK));
+	displayState(state);
+
+
 	destroyState(state);
-
-	printf("READ STATE:\n");
-	State *readState = parseState("output/output.txt");
-	displayState(readState);
-
-	destroyState(readState);
 }
