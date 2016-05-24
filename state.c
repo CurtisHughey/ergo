@@ -66,7 +66,7 @@ int isLegalMove(State *state, int move) {
 	}
 
 	// Occupied board:
-	if (state->board[move] == STATE_WHITE || state->board[move] == STATE_BLACK) {  // Not sure when the second would come into play
+	if (state->board[move] == STATE_WHITE || state->board[move] == STATE_BLACK) {
 		return 0;
 	}
 
@@ -79,7 +79,7 @@ int isLegalMove(State *state, int move) {
 	state->board[move] = state->turn;  // Makes the move
 	if (!groupBordersType(state, move, STATE_EMPTY)) {
 		// Now needs to find if it kills any of the opponents stones (i.e. there exists a neighboring family that dies)
-		int otherTurn = -1*state->turn;
+		int otherTurn = OTHER_COLOR(state->turn);
 
 		// Tests each neighbor, resets if done
 		Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
@@ -103,14 +103,13 @@ int isLegalMove(State *state, int move) {
 	return 1;
 }
 
-// Can still optimize a bit ^^
 Neighbors getNeighborsOfType(State *state, int point, int type) {
 	Neighbors neighbors;
 
 	int count = 0;
 
 	int col = point % BOARD_DIM;
-	int row = point / BOARD_DIM;  // Lol, might be better to do huge switch statement?
+	int row = point / BOARD_DIM; 
 
 	int allMatch = type == STATE_ALL;
 
@@ -168,7 +167,6 @@ int groupBordersType(State *state, int point, int type) {
 }
 
 // Probably shouldn't make this and groupBordersType recursive ^^
-// Maybe use this in groupBordersType^^
 int fillWith(State *state, int point, int type) {
 	int stone = state->board[point];
 
@@ -192,7 +190,7 @@ int setTerritory(State *state, int point, int color) {
 		return -1;  // Shouldnt've have been called
 	}
 
-	int otherType = -1*color;   // Maybe this should be a macro ^^^
+	int otherType = OTHER_COLOR(color);
 
 	if (!groupBordersType(state, point, otherType)) {
 		fillWith(state, point, STATE_YES);
@@ -204,16 +202,13 @@ int setTerritory(State *state, int point, int color) {
 }
 
 void makeMove(State *state, int move) {
-	// State *prevState = createState();  // This honestly is a killer ^^ :(, wait, I think I can do this
-	// *prevState = *state;  // Saving
-
 	if (move != MOVE_PASS) {  // Not passing (otherwise, don't do anything)
 
 		// Now make the move
 		state->board[move] = state->turn;
 
 		// Now maybe erase enemies
-		int otherTurn = -1*state->turn;
+		int otherTurn = OTHER_COLOR(state->turn);
 
 		int totalCaptured = 0;
 		int capturePoint = -1;  // Used for ko
@@ -248,7 +243,7 @@ void makeMove(State *state, int move) {
 }
 
 Moves *getMoves(State *state) {
-	Moves *moves = calloc(BOARD_SIZE+1, sizeof(int));  // Heap or stack?
+	Moves *moves = calloc(BOARD_SIZE+1, sizeof(int));
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
@@ -279,8 +274,7 @@ int calcScore(State *state, int type) {
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		switch (state->board[i]) {
 			case STATE_EMPTY:
-				if (setTerritory(state, i, type)) {  // Bit wonky
-					//printf("YEPPPPP!\n");
+				if (setTerritory(state, i, type)) {
 					numEyes += 1;
 				}	
 				break;
@@ -290,8 +284,6 @@ int calcScore(State *state, int type) {
 			default:
 				break;			
 		}
-		//printf("%d\n", i);
-		//displayState(state);
 	}
 
 	// Now reset the board

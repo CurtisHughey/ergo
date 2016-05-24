@@ -23,6 +23,8 @@
 
 #define MOVE_PASS (-1)
 
+#define OTHER_COLOR(x) ((-1)*x)
+
 // Encodes all necessary board state
 typedef struct {
 	int board[BOARD_SIZE];
@@ -43,16 +45,6 @@ typedef struct {
 	int array[BOARD_SIZE];
 	int count;
 } Moves;
-
-/*
-// Records what position a move took place, turn, ko point, and neighbors that got killed (everything else can be extrapolated)
-typedef struct {
-	int point;
-	int turn;
-	int koPoint;
-	Neighbors neighbors;
-} MoveRecord;
-*/
 
 // Allocates a new state struct, initially empty, black to move
 State *createState(void);

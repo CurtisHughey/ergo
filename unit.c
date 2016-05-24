@@ -15,9 +15,6 @@ int runStateTests(void) {
 	if (d) {
 		while ((dir = readdir(d)) != NULL) {
 			if (dir->d_name[0] == 'i') {  
-				//char expectedFile[] = dir->d_name;
-				//expectedFile[0] = 'e';  // Making it expected
-
 				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
 				strncpy(initialFile, filePath, strlen(filePath));
 				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
