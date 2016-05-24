@@ -7,6 +7,7 @@
 #include "state.h"
 #include "dbg.h"
 #include "parser.h"
+#include "unit.h"
 
 int main(int argc, char **argv);
 

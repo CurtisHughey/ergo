@@ -301,3 +301,29 @@ int calcScore(State *state, int type) {
 
 	return totalScore;
 }
+
+int statesAreEqual(State *state1, State *state2) {
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		if (state1->board[i] != state2->board[i]) {
+			return 0;
+		}
+	}
+
+	if (state1->turn != state2->turn) {
+		return 0;
+	}
+
+	if (state1->koPoint != state2->koPoint) {
+		return 0;
+	}
+
+	if (state1->whitePrisoners != state2->whitePrisoners) {
+		return 0;
+	}
+
+	if (state1->blackPrisoners != state2->blackPrisoners) {
+		return 0;
+	}
+
+	return 1;
+}

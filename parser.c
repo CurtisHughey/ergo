@@ -116,3 +116,44 @@ void serializeState(State *state, char *fileName) {
 
 	fclose(fp);
 }
+
+int parseMove(char *fileName) {
+	FILE *fp = fopen(fileName, "r");
+
+	if (fp == NULL) {
+		ERROR_PRINT("Couldn't find file: %s", fileName);
+		exit(1);
+	}
+
+	char line[MAX_MOVE_LEN];
+
+	if (fscanf(fp, "%s", line) == EOF) {
+		ERROR_PRINT("Move is missing");
+		return -2;
+	}	
+
+	if (line[0] != 'B' && line[1] != 'W') {
+		ERROR_PRINT("Failed to specify player to move");
+		return -2;
+	}
+
+	if (line[1] != '[') {
+		ERROR_PRINT("Move formatting error");
+		return -2;
+	}
+
+	if (line[2] == ']') {
+		return MOVE_PASS;  // Pass
+	}
+
+	char colChar = line[2];
+	char rowChar = line[3];
+
+	if (rowChar == 't' && colChar == 't') {
+		return MOVE_PASS;  // Also pass
+	}
+
+	int point = BOARD_DIM*(rowChar-'a') + colChar-'a';
+
+	return point;
+}

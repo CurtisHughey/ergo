@@ -95,4 +95,7 @@ Moves *getMoves(State *state);
 // Note only one score is returned (other is easily extrapolated)
 int calcScore(State *state, int type);
 
+// Returns 1 if the states are equal, 0 otherwise
+int statesAreEqual(State *state1, State *state2);
+
 #endif
