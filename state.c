@@ -276,7 +276,7 @@ int calcScore(State *state, int type) {
 
 	int numEyes = 0;
 	// Now finds eyes
-	for (int i = 0; i < BOARD_SIZE; i++) { // ^^^^
+	for (int i = 0; i < BOARD_SIZE; i++) {
 		switch (state->board[i]) {
 			case STATE_EMPTY:
 				if (setTerritory(state, i, type)) {  // Bit wonky
@@ -284,9 +284,6 @@ int calcScore(State *state, int type) {
 					numEyes += 1;
 				}	
 				break;
-			// case STATE_TRAVERSED: // ??? ^^^
-			// 	numEyes += 1;
-			// 	break;
 			case STATE_YES:
 				numEyes += 1;
 				break;
@@ -295,6 +292,13 @@ int calcScore(State *state, int type) {
 		}
 		//printf("%d\n", i);
 		//displayState(state);
+	}
+
+	// Now reset the board
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		if (state->board[i] == STATE_YES || state->board[i] == STATE_NO) {
+			state->board[i] = STATE_EMPTY;
+		}
 	}
 
 	int totalScore = numStones + numEyes;
