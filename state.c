@@ -82,7 +82,8 @@ int isLegalMove(State *state, int move) {
 		int otherTurn = OTHER_COLOR(state->turn);
 
 		// Tests each neighbor, resets if done
-		Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
+		Neighbors neighbors;
+		getNeighborsOfType(state, move, otherTurn, &neighbors);
 
 		int found = 0;
 		for (int i = 0; i < neighbors.count; i++) {
@@ -103,9 +104,7 @@ int isLegalMove(State *state, int move) {
 	return 1;
 }
 
-Neighbors getNeighborsOfType(State *state, int point, int type) {
-	Neighbors neighbors;
-
+void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors) {
 	int count = 0;
 
 	int col = point % BOARD_DIM;
@@ -116,37 +115,38 @@ Neighbors getNeighborsOfType(State *state, int point, int type) {
 	if (col != 0) {
 		int position = point-1;
 		if (allMatch || state->board[position] == type) {
-			neighbors.array[count++] = position;			
+			neighbors->array[count++] = position;			
 		}
 	} 
 	if (col != BOARD_DIM-1) {
 		int position = point+1;
 		if (allMatch || state->board[position] == type) {
-			neighbors.array[count++] = position;			
+			neighbors->array[count++] = position;			
 		}			
 	}
 	if (row != 0) {
 		int position = point-BOARD_DIM;
 		if (allMatch || state->board[position] == type) {
-			neighbors.array[count++] = position;			
+			neighbors->array[count++] = position;			
 		}
 	} 
 	if (row != BOARD_DIM-1) {
 		int position = point+BOARD_DIM;
 		if (allMatch || state->board[position] == type) {
-			neighbors.array[count++] = position;			
+			neighbors->array[count++] = position;			
 		}			
 	}	
 
-	neighbors.count = count;
+	neighbors->count = count;
 
-	return neighbors;
+	return;
 }
 
 int groupBordersType(State *state, int point, int type) {
 	int stone = state->board[point];  // (Not necessarily a stone, could be empty)
 
-	Neighbors neighbors = getNeighborsOfType(state, point, STATE_ALL);
+	Neighbors neighbors;
+	getNeighborsOfType(state, point, STATE_ALL, &neighbors);
 
 	state->board[point] = STATE_TRAVERSED;
 
@@ -175,7 +175,8 @@ int fillWith(State *state, int point, int type) {
 	int total = 1;
 
 	// Now recursively looks at matching neighbors
-	Neighbors neighbors = getNeighborsOfType(state, point, stone);
+	Neighbors neighbors;
+	getNeighborsOfType(state, point, stone, &neighbors);
 	for (int i = 0; i < neighbors.count; i++) {
 		if (state->board[neighbors.array[i]] == stone) {  // It could've been changed within the recursion of another iteration
 			total += fillWith(state, neighbors.array[i], type);
@@ -213,7 +214,8 @@ void makeMove(State *state, int move) {
 		int totalCaptured = 0;
 		int capturePoint = -1;  // Used for ko
 
-		Neighbors neighbors = getNeighborsOfType(state, move, otherTurn);
+		Neighbors neighbors;
+		getNeighborsOfType(state, move, otherTurn, &neighbors);
 		for (int i = 0; i < neighbors.count; i++) {
 			if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
 				if (!groupBordersType(state, neighbors.array[i], STATE_EMPTY)) {

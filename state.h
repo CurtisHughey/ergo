@@ -34,7 +34,7 @@ typedef struct {
 	int blackPrisoners;  // Vice versa
 } State;
 
-// An array of specified neighbors to a point
+// An array of specified neighbors (left, right, up, down) to a point
 typedef struct {
 	int array[NUM_NEIGHBORS];
 	int count;
@@ -45,6 +45,12 @@ typedef struct {
 	int array[BOARD_SIZE];
 	int count;
 } Moves;
+
+typedef struct {
+	int point;  // Previous location (-1 if pass)
+	Neighbors needToFill;  // The neighbors that need to get filled with the opposite color
+	int koPoint;  // Previous ko point
+} UnmakeMoveInfo;
 
 // Allocates a new state struct, initially empty, black to move
 State *createState(void);
@@ -72,11 +78,14 @@ int setTerritory(State *state, int point, int color);
 
 // Gets all the neighbors of point that are of type (-1, 0, 1, for black, empty, white respectively), actually, see defined variables above
 // If -2 is passed, then all match.
-Neighbors getNeighborsOfType(State *state, int point, int type);
+void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors);
 
 // Makes the move according to the given state.  Input state will be changed.
 // Assumes valid move
 void makeMove(State *state, int move);
+
+// // Makes move according to the given state, returns info needed to undo move
+// Move *
 
 // Returns all valid moves (pretty trivial, actually)
 // Pass move is always stored last (as -1)
