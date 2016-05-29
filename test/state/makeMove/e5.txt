@@ -21,3 +21,4 @@ W
 0
 0
 -1
+# No capture, W has eye

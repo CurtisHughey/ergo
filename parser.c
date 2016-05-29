@@ -69,6 +69,8 @@ State *parseState(char *fileName) {
 	}
 	state->koPoint = atoi(line);
 
+	// Anything afterwards is a comment, and should be ignored
+
 	fclose(fp);	
 
 	return state;

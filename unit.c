@@ -7,6 +7,14 @@ int runAllUnitTests(void) {
 int runStateTests(void) {
 
 	// makeMove
+	runStateMakeMoveTests();
+
+	//////////////
+
+	return 1;
+}
+
+int runStateMakeMoveTests(void) {
 	char filePath[] = "./test/state/makeMove/"; 
 
 	DIR *d;
@@ -47,8 +55,6 @@ int runStateTests(void) {
 		}
 	}
 
-	//////////////
-
-	return 0;
+	return 1;
 }
 

@@ -13,4 +13,6 @@ int runAllUnitTests(void);
 
 int runStateTests(void);
 
+int runStateMakeMoveTests(void);
+
 #endif
