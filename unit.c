@@ -12,7 +12,7 @@ int runStateTests(void) {
 	// makeMove/unmakeMove
 	runStateMakeUnmakeTests();  //^^^  not working
 
-	runStateGroupBordersType();
+	runStateGroupBordersTypeAndReset();
 
 	//////////////
 

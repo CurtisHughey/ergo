@@ -14,7 +14,7 @@ int runAllUnitTests(void);
 
 int runStateTests(void);
 
-int runStateGroupBordersType(void);
+int runStateGroupBordersTypeAndReset(void);
 
 int runStateMakeMoveTests(void);
 
