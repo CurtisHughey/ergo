@@ -157,5 +157,7 @@ int parseMove(char *fileName) {
 
 	int point = BOARD_DIM*(rowChar-'a') + colChar-'a';
 
+	fclose(fp);
+
 	return point;
 }

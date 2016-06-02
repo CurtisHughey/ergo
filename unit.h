@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <dirent.h>
+#include <time.h>
 
 #include "dbg.h"
 #include "state.h"
@@ -13,6 +14,11 @@ int runAllUnitTests(void);
 
 int runStateTests(void);
 
+int runStateGroupBordersType(void);
+
 int runStateMakeMoveTests(void);
+
+// This makes a bunch of random moves and then unmakes them, checks to make sure that the states are equal
+int runStateMakeUnmakeTests(void);
 
 #endif

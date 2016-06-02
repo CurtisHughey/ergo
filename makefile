@@ -2,7 +2,7 @@
 
 CC = gcc-4.9
 LFLAGS = -std=gnu99
-CFLAGS = -Wall -Werror -Wno-array-bounds -O3     
+CFLAGS = -Wall -Werror -Wno-array-bounds -O3 -g  
 # -pthread
 SRC = $(wildcard *.c)
 OBJECTS = $(SRC:.c=.o)

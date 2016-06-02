@@ -47,7 +47,7 @@ typedef struct {
 } Moves;
 
 typedef struct {
-	int point;  // Previous location (-1 if pass)
+	int move;  // Previous location (-1 if pass)
 	Neighbors needToFill;  // The neighbors that need to get filled with the opposite color
 	int koPoint;  // Previous ko point
 } UnmakeMoveInfo;
@@ -58,6 +58,9 @@ State *createState(void);
 // Destroys state
 int destroyState(State *state);
 
+// Copies state
+State *copyState(State *original);
+
 // Displays state in ASCII text
 void displayState(State *state);
 
@@ -67,7 +70,11 @@ int isLegalMove(State *state, int move);
 
 // Sees whether the family of stones that the point is connected to the type provided
 // If type==STATE_EMPTY, then this sees if there are liberties
+// This function now marks STATE_TRAVERSED (so you'd need to reset, ugh)
 int groupBordersType(State *state, int point, int type);
+
+// Wrapper function, calls groupBordersType and then resets STATE_TRAVERSED
+int groupBordersTypeAndReset(State *state, int point, int type);
 
 // Recursively sets to type all the neighbors of the point matching the same type
 // Returns number of points set
@@ -84,8 +91,11 @@ void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors)
 // Assumes valid move
 void makeMove(State *state, int move);
 
-// // Makes move according to the given state, returns info needed to undo move
-// Move *
+// Makes the move and saves the previous info
+void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo);
+
+// Makes move according to the given state, returns info needed to undo move
+void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo);
 
 // Returns all valid moves (pretty trivial, actually)
 // Pass move is always stored last (as -1)

@@ -17,6 +17,17 @@ int destroyState(State *state) {
 	return 0;
 }
 
+State *copyState(State *original) {
+	State *copy = malloc(sizeof(State));
+	memcpy(copy->board, original->board, sizeof(original->board));
+	copy->turn = original->turn;
+	copy->koPoint = original->koPoint;
+	copy->whitePrisoners = original->whitePrisoners;
+	copy->blackPrisoners = original->blackPrisoners;
+
+	return copy;
+}
+
 void displayState(State *state) {
 	printf("-----------------------------------------------\n");
 	for (int i = BOARD_DIM-1; i >= 0; i--) {
@@ -77,7 +88,7 @@ int isLegalMove(State *state, int move) {
 
 	// Not suicidal:
 	state->board[move] = state->turn;  // Makes the move
-	if (!groupBordersType(state, move, STATE_EMPTY)) {
+	if (!groupBordersTypeAndReset(state, move, STATE_EMPTY)) {
 		// Now needs to find if it kills any of the opponents stones (i.e. there exists a neighboring family that dies)
 		int otherTurn = OTHER_COLOR(state->turn);
 
@@ -87,7 +98,7 @@ int isLegalMove(State *state, int move) {
 
 		int found = 0;
 		for (int i = 0; i < neighbors.count; i++) {
-			if (!groupBordersType(state, neighbors.array[i], STATE_EMPTY)) {
+			if (!groupBordersTypeAndReset(state, neighbors.array[i], STATE_EMPTY)) {
 				found = 1;
 				break;
 			}
@@ -107,35 +118,37 @@ int isLegalMove(State *state, int move) {
 void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors) {
 	int count = 0;
 
-	int col = point % BOARD_DIM;
-	int row = point / BOARD_DIM; 
+	if (point != MOVE_PASS) {
+		int col = point % BOARD_DIM;
+		int row = point / BOARD_DIM; 
 
-	int allMatch = type == STATE_ALL;
+		int allMatch = type == STATE_ALL;
 
-	if (col != 0) {
-		int position = point-1;
-		if (allMatch || state->board[position] == type) {
-			neighbors->array[count++] = position;			
+		if (col != 0) {
+			int position = point-1;
+			if (allMatch || state->board[position] == type) {
+				neighbors->array[count++] = position;			
+			}
+		} 
+		if (col != BOARD_DIM-1) {
+			int position = point+1;
+			if (allMatch || state->board[position] == type) {
+				neighbors->array[count++] = position;			
+			}			
 		}
-	} 
-	if (col != BOARD_DIM-1) {
-		int position = point+1;
-		if (allMatch || state->board[position] == type) {
-			neighbors->array[count++] = position;			
-		}			
+		if (row != 0) {
+			int position = point-BOARD_DIM;
+			if (allMatch || state->board[position] == type) {
+				neighbors->array[count++] = position;			
+			}
+		} 
+		if (row != BOARD_DIM-1) {
+			int position = point+BOARD_DIM;
+			if (allMatch || state->board[position] == type) {
+				neighbors->array[count++] = position;			
+			}			
+		}	
 	}
-	if (row != 0) {
-		int position = point-BOARD_DIM;
-		if (allMatch || state->board[position] == type) {
-			neighbors->array[count++] = position;			
-		}
-	} 
-	if (row != BOARD_DIM-1) {
-		int position = point+BOARD_DIM;
-		if (allMatch || state->board[position] == type) {
-			neighbors->array[count++] = position;			
-		}			
-	}	
 
 	neighbors->count = count;
 
@@ -152,18 +165,25 @@ int groupBordersType(State *state, int point, int type) {
 
 	for (int i = 0; i < neighbors.count; i++) {
 		if (state->board[neighbors.array[i]] == type) {
-			state->board[point] = stone;
+			//state->board[point] = stone;
 			return 1;
 		}
 		if (state->board[neighbors.array[i]] == stone) {  // Then keep going on this one
 			if (groupBordersType(state, neighbors.array[i], type)) {
-				state->board[point] = stone;
+				//state->board[point] = stone;
 				return 1;
 			}
 		}		
 	}
-	state->board[point] = stone;
+	//state->board[point] = stone;
 	return 0;
+}
+
+int groupBordersTypeAndReset(State *state, int point, int type) {
+	int savedType = state->board[point];
+	int result = groupBordersType(state, point, type);
+	fillWith(state, point, savedType);
+	return result;
 }
 
 // Probably shouldn't make this and groupBordersType recursive ^^
@@ -193,7 +213,7 @@ int setTerritory(State *state, int point, int color) {
 
 	int otherType = OTHER_COLOR(color);
 
-	if (!groupBordersType(state, point, otherType)) {
+	if (!groupBordersTypeAndReset(state, point, otherType)) {
 		fillWith(state, point, STATE_YES);
 		return 1;  // Maybe want to return how many filled?
 	} else {
@@ -214,11 +234,11 @@ void makeMove(State *state, int move) {
 		int totalCaptured = 0;
 		int capturePoint = -1;  // Used for ko
 
-		Neighbors neighbors;
+		Neighbors neighbors;  // This should be named better ^^^ (e.g. enemyNeighbors)
 		getNeighborsOfType(state, move, otherTurn, &neighbors);
 		for (int i = 0; i < neighbors.count; i++) {
 			if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
-				if (!groupBordersType(state, neighbors.array[i], STATE_EMPTY)) {
+				if (!groupBordersTypeAndReset(state, neighbors.array[i], STATE_EMPTY)) {
 					totalCaptured += fillWith(state, neighbors.array[i], STATE_EMPTY);
 					capturePoint = neighbors.array[i];
 				}
@@ -227,7 +247,7 @@ void makeMove(State *state, int move) {
 
 		if (state->turn == STATE_WHITE) {
 			state->blackPrisoners += totalCaptured;
-		} else {
+		} else {  /* state->turn == STATE_BLACK */
 			state->whitePrisoners += totalCaptured;
 		}
 
@@ -241,15 +261,60 @@ void makeMove(State *state, int move) {
 	}
 
 	// Now sets turn (also needs to happen for pass)
-	state->turn *= -1;
+	state->turn = OTHER_COLOR(state->turn);
+
+	return;
+}
+
+void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
+	unmakeMoveInfo->move = move;
+	unmakeMoveInfo->koPoint = state->koPoint;
+
+	int otherTurn = OTHER_COLOR(state->turn);	
+	Neighbors neighbors;
+	getNeighborsOfType(state, move, otherTurn, &neighbors);
+
+	makeMove(state, move);
+
+	int count = 0;
+	for (int i = 0; i < neighbors.count; i++) {
+		if (state->board[neighbors.array[i]] == STATE_EMPTY) {  // Then it was just captured
+			unmakeMoveInfo->needToFill.array[count++] = neighbors.array[i];
+		}
+	}
+	unmakeMoveInfo->needToFill.count = count;
+
+	return;
+}
+
+void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
+	if (unmakeMoveInfo->move != MOVE_PASS) {
+		// First fills in captured stones
+		int total = 0;
+		for (int i = 0; i < unmakeMoveInfo->needToFill.count; i++) {
+			if (state->board[unmakeMoveInfo->needToFill.array[i]] != state->turn) {  // Might have already been filled in in a previous iteration
+				total += fillWith(state, unmakeMoveInfo->needToFill.array[i], state->turn);
+			}
+		}
+		if (state->turn == STATE_BLACK) {
+			state->blackPrisoners -= total;
+		} else { /* state->type == STATE_WHITE */
+			state->whitePrisoners -= total;
+		}
+		state->board[unmakeMoveInfo->move] = STATE_EMPTY;  // Removes the move
+	}
+
+	state->turn = OTHER_COLOR(state->turn);
+
+	return;
 }
 
 Moves *getMoves(State *state) {
-	Moves *moves = calloc(BOARD_SIZE+1, sizeof(int));
+	Moves *moves = malloc(sizeof(Moves));
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
-		if (!state->board[i] && state->koPoint != i) {
+		if (!state->board[i] && (state->koPoint != i)) {
 			moves->array[count++] = i;
 		}
 	}
