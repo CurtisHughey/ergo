@@ -19,8 +19,8 @@ int runStateTests(void) {
 	return 1;
 }
 
-int runStateGroupBordersType(void) {
-	char filePath[] = "./test/state/groupBordersType/"; 
+int runStateGroupBordersTypeAndReset(void) {
+	char filePath[] = "./test/state/groupBordersTypeAndReset/"; 
 
 	DIR *d;
 	struct dirent *dir;
@@ -72,7 +72,7 @@ int runStateGroupBordersType(void) {
 			}
 		}
 	} else {
-		ERROR_PRINT("Couldn't find directory for groupBordersType");;
+		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
 		return 0;
 	}
 	free(d);
