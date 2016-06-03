@@ -73,7 +73,7 @@ void displayState(State *state) {
 int isLegalMove(State *state, int move) {
 
 	if (move == MOVE_PASS) {
-		return 1;  // Always fine to pass, I guess ^^^
+		return 1;
 	}
 
 	// Occupied board:
@@ -158,18 +158,18 @@ void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors)
 int groupBordersType(State *state, int point, int type) {
 	int stone = state->board[point];  // (Not necessarily a stone, could be empty)
 
-	Neighbors neighbors;
-	getNeighborsOfType(state, point, STATE_ALL, &neighbors);
+	Neighbors allNeighbors;
+	getNeighborsOfType(state, point, STATE_ALL, &allNeighbors);
 
 	state->board[point] = STATE_TRAVERSED;
 
-	for (int i = 0; i < neighbors.count; i++) {
-		if (state->board[neighbors.array[i]] == type) {
+	for (int i = 0; i < allNeighbors.count; i++) {
+		if (state->board[allNeighbors.array[i]] == type) {
 			//state->board[point] = stone;
 			return 1;
 		}
-		if (state->board[neighbors.array[i]] == stone) {  // Then keep going on this one
-			if (groupBordersType(state, neighbors.array[i], type)) {
+		if (state->board[allNeighbors.array[i]] == stone) {  // Then keep going on this one
+			if (groupBordersType(state, allNeighbors.array[i], type)) {
 				//state->board[point] = stone;
 				return 1;
 			}
@@ -198,11 +198,11 @@ int fillWith(State *state, int point, int type) {
 	int total = 1;
 
 	// Now recursively looks at matching neighbors
-	Neighbors neighbors;
-	getNeighborsOfType(state, point, stone, &neighbors);
-	for (int i = 0; i < neighbors.count; i++) {
-		if (state->board[neighbors.array[i]] == stone) {  // It could've been changed within the recursion of another iteration
-			total += fillWith(state, neighbors.array[i], type);
+	Neighbors matchingNeighbors;
+	getNeighborsOfType(state, point, stone, &matchingNeighbors);
+	for (int i = 0; i < matchingNeighbors.count; i++) {
+		if (state->board[matchingNeighbors.array[i]] == stone) {  // It could've been changed within the recursion of another iteration
+			total += fillWith(state, matchingNeighbors.array[i], type);
 		}
 	}
 
@@ -237,13 +237,13 @@ void makeMove(State *state, int move) {
 		int totalCaptured = 0;
 		int capturePoint = -1;  // Used for ko
 
-		Neighbors neighbors;  // This should be named better ^^^ (e.g. enemyNeighbors)
-		getNeighborsOfType(state, move, otherTurn, &neighbors);
-		for (int i = 0; i < neighbors.count; i++) {
-			if (state->board[neighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
-				if (!groupBordersTypeAndReset(state, neighbors.array[i], STATE_EMPTY)) {
-					totalCaptured += fillWith(state, neighbors.array[i], STATE_EMPTY);
-					capturePoint = neighbors.array[i];
+		Neighbors enemyNeighbors; 
+		getNeighborsOfType(state, move, otherTurn, &enemyNeighbors);
+		for (int i = 0; i < enemyNeighbors.count; i++) {
+			if (state->board[enemyNeighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
+				if (!groupBordersTypeAndReset(state, enemyNeighbors.array[i], STATE_EMPTY)) {
+					totalCaptured += fillWith(state, enemyNeighbors.array[i], STATE_EMPTY);
+					capturePoint = enemyNeighbors.array[i];
 				}
 			}
 		}
@@ -256,7 +256,7 @@ void makeMove(State *state, int move) {
 
 		// Now maybe sets ko
 		// This means we put down our stone, was surrounded, and one stone was removed (then ko comes into play)
-		if (totalCaptured == 1 && neighbors.count == NUM_NEIGHBORS) {
+		if (totalCaptured == 1 && enemyNeighbors.count == NUM_NEIGHBORS) {
 			state->koPoint = capturePoint;  // removePoint was only set once
 		} else {
 			state->koPoint = -1;  // Resetting
@@ -274,15 +274,15 @@ void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
 	unmakeMoveInfo->koPoint = state->koPoint;
 
 	int otherTurn = OTHER_COLOR(state->turn);	
-	Neighbors neighbors;
-	getNeighborsOfType(state, move, otherTurn, &neighbors);
+	Neighbors enemyNeighbors;
+	getNeighborsOfType(state, move, otherTurn, &enemyNeighbors);
 
 	makeMove(state, move);
 
 	int count = 0;
-	for (int i = 0; i < neighbors.count; i++) {
-		if (state->board[neighbors.array[i]] == STATE_EMPTY) {  // Then it was just captured
-			unmakeMoveInfo->needToFill.array[count++] = neighbors.array[i];
+	for (int i = 0; i < enemyNeighbors.count; i++) {
+		if (state->board[enemyNeighbors.array[i]] == STATE_EMPTY) {  // Then it was just captured
+			unmakeMoveInfo->needToFill.array[count++] = enemyNeighbors.array[i];
 		}
 	}
 	unmakeMoveInfo->needToFill.count = count;
