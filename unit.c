@@ -1,5 +1,7 @@
 #include "unit.h"
 
+// Eventually, abstract a lot of the test harness stuff out
+
 int runAllUnitTests(void) {
 	printf("------------------------------\n");
 	printf("All Tests: \n");
@@ -8,7 +10,6 @@ int runAllUnitTests(void) {
 
 	result &= runStateTests();
 
-	printf("%d/%d\n", totalPasses, totalTests);
 	if (result) {
 		printf("ALL PASSED :)\n");
 	} else {
@@ -20,29 +21,54 @@ int runAllUnitTests(void) {
 	return 1;
 }
 
+// Maybe this should just be called runStateTests, TBH
 int runStateTests(void) {
 	printf("\t--------------------\n");
 	printf("\tstate Tests: \n");
 
-	int (*stateTests[4])(void) = { 
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	TestResult (*stateTests[4])(void) = { 
 									&runStateMakeMoveTests,
 									&runStateMakeUnmakeTests,
 									&runStateGroupBordersTypeAndResetTests,
 									&runFillWithTests,
 								};
-	
-	int result = 1;
 
 	for (int i = 0; i < 4; i++) {
-		result &= stateTests[i]();
+		printf("\t\t----------\n");
+
+		TestResult result = stateTests[i]();
+
+		if (result.errorCode) {
+			printf("\t\tError >:(");
+			continue;  // Any tests that actually happened are ignored
+		}
+
+		printf("\t\t%d/%d\n", result.totalPasses, result.totalTests);
+		if (result.totalPasses == result.totalTests) {
+			printf("\t\tPassed :)\n");
+		} else {
+			printf("\t\tFailed :(\n");
+		}
+
+		totalPasses += result.totalPasses;
+		totalTests += result.totalTests;	
+
+		printf("\t\t----------\n");
 	}
 
 	//////////////
 
-	if (result) {
+	int result = 0;
+	printf("\t%d/%d\n", totalPasses, totalTests);
+	if (totalPasses == totalTests) {
 		printf("\tPassed :)\n");
+		result = 1;
 	} else {
 		printf("\tFailed :(\n");
+		result = 0;
 	}
 
 	printf("\t--------------------\n");
@@ -50,12 +76,11 @@ int runStateTests(void) {
 	return result;
 }
 
-int runFillWithTests(void) {
-	printf("\t\t----------\n");
+TestResult runFillWithTests(void) {
 	printf("\t\tfillWith Tests: \n");
 
-	int totalSubPasses = 0;
-	int totalSubTests = 0;
+	int totalPasses = 0;
+	int totalTests = 0;
 
 	char filePath[] = "./test/state/fillWith/"; 
 
@@ -88,7 +113,7 @@ int runFillWithTests(void) {
 				FILE *fp = fopen(modFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", modFile);
-					return 0;
+					return (TestResult){1,0,0};
 				}
 
 				char line[10];  // Way extra space than we need
@@ -105,9 +130,9 @@ int runFillWithTests(void) {
 				if (!statesAreEqual(initialState, expectedState)) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
 				} else {
-					totalSubPasses += 1;
+					totalPasses += 1;
 				}
-				totalSubTests += 1;
+				totalTests += 1;
 
 				free(initialFile);
 				free(expectedFile);
@@ -116,34 +141,18 @@ int runFillWithTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
-		return 0;
+		return (TestResult){1,0,0};
 	}
 	free(d);
 
-	int result = 0;
-	printf("\t\t%d/%d\n", totalSubPasses, totalSubTests);
-	if (totalSubPasses == totalSubTests) {
-		printf("\t\tPassed :)\n");
-		result = 1;
-	} else {
-		printf("\t\tFailed :(\n");
-		result = 0;
-	}
-
-	totalPasses += totalSubPasses;
-	totalTests += totalSubTests;	
-
-	printf("\t\t----------\n");
-
-	return result;
+	return (TestResult){0, totalPasses, totalTests};
 }	
 
-int runStateGroupBordersTypeAndResetTests(void) {
-	printf("\t\t----------\n");
+TestResult runStateGroupBordersTypeAndResetTests(void) {
 	printf("\t\tgroupBordersTypeAndReset Tests: \n");
 
-	int totalSubPasses = 0;
-	int totalSubTests = 0;
+	int totalPasses = 0;
+	int totalTests = 0;
 
 	char filePath[] = "./test/state/groupBordersTypeAndReset/"; 
 
@@ -173,7 +182,7 @@ int runStateGroupBordersTypeAndResetTests(void) {
 				FILE *fp = fopen(modFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", modFile);
-					exit(1);
+					return (TestResult){1,0,0};
 				}
 
 				char line[10];  // Way extra space than we need
@@ -188,9 +197,9 @@ int runStateGroupBordersTypeAndResetTests(void) {
 				if (groupBordersType(initialState, point, type) != expected) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
 				} else {
-					totalSubPasses += 1;
+					totalPasses += 1;
 				}
-				totalSubTests += 1;
+				totalTests += 1;
 
 				free(initialFile);
 				free(modFile);
@@ -199,34 +208,18 @@ int runStateGroupBordersTypeAndResetTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
-		return 0;
+		return (TestResult){1,0,0};
 	}
 	free(d);
 
-	int result = 0;
-	printf("\t\t%d/%d\n", totalSubPasses, totalSubTests);
-	if (totalSubPasses == totalSubTests) {
-		printf("\t\tPassed :)\n");
-		result = 1;
-	} else {
-		printf("\t\tFailed :(\n");
-		result = 0;
-	}
-
-	totalPasses += totalSubPasses;
-	totalTests += totalSubTests;	
-
-	printf("\t\t----------\n");
-
-	return result;
+	return (TestResult){0, totalPasses, totalTests};
 }
 
-int runStateMakeMoveTests(void) {
-	printf("\t\t----------\n");
+TestResult runStateMakeMoveTests(void) {
 	printf("\t\tmakeMove Tests: \n");
 
-	int totalSubPasses = 0;
-	int totalSubTests = 0;
+	int totalPasses = 0;
+	int totalTests = 0;
 
 	char filePath[] = "./test/state/makeMove/"; 
 
@@ -260,10 +253,10 @@ int runStateMakeMoveTests(void) {
 				if (!statesAreEqual(initialState, expectedState)) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
 				} else {
-					totalSubPasses += 1;
+					totalPasses += 1;
 				}
 
-				totalSubTests += 1;
+				totalTests += 1;
 				free(initialFile);
 				free(moveFile);
 				free(expectedFile);
@@ -273,34 +266,18 @@ int runStateMakeMoveTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for makeMove");;
-		return 0;
+		return (TestResult){1,0,0};
 	}
 	free(d);
 
-	int result = 0;
-	printf("\t\t%d/%d\n", totalSubPasses, totalSubTests);
-	if (totalSubPasses == totalSubTests) {
-		printf("\t\tPassed :)\n");
-		result = 1;
-	} else {
-		printf("\t\tFailed :(\n");
-		result = 0;
-	}
-
-	totalPasses += totalSubPasses;
-	totalTests += totalSubTests;	
-
-	printf("\t\t----------\n");
-
-	return result;
+	return (TestResult){0, totalPasses, totalTests};
 }
 
-int runStateMakeUnmakeTests(void) {
-	printf("\t\t----------\n");
+TestResult runStateMakeUnmakeTests(void) {
 	printf("\t\tmakeUnmake Tests: \n");
 
-	int totalSubPasses = 0;
-	int totalSubTests = 0;
+	int totalPasses = 0;
+	int totalTests = 0;
 
 	const int iterations = 1000;  // The number of iterations we run through
 	const int depth = 250;  // The depth of each iteration (about average for a game)
@@ -340,27 +317,12 @@ int runStateMakeUnmakeTests(void) {
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
 		} else {
-			totalSubPasses += 1;
+			totalPasses += 1;
 		}
-		totalSubTests += 1;
+		totalTests += 1;
 
 		destroyState(state);
 	}
 
-	int result = 0;
-	printf("\t\t%d/%d\n", totalSubPasses, totalSubTests);
-	if (totalSubPasses == totalSubTests) {
-		printf("\t\tPassed :)\n");
-		result = 1;
-	} else {
-		printf("\t\tFailed :(\n");
-		result = 0;
-	}
-
-	totalPasses += totalSubPasses;
-	totalTests += totalSubTests;	
-
-	printf("\t\t----------\n");
-
-	return result;
+	return (TestResult){0, totalPasses, totalTests};
 }

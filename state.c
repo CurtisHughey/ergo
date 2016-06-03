@@ -307,6 +307,7 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 		state->board[unmakeMoveInfo->move] = STATE_EMPTY;  // Removes the move
 	}
 
+	state->koPoint = unmakeMoveInfo->koPoint;
 	state->turn = OTHER_COLOR(state->turn);
 
 	return;

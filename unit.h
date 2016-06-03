@@ -9,21 +9,24 @@
 #include "state.h"
 #include "parser.h"
 
-int totalPasses;
-int totalTests;
+typedef struct {
+	int errorCode;  // 1 if error, 0 if not
+	int totalPasses;
+	int totalTests;
+} TestResult;
 
 // Entry point to run all unit functions.  Return 1 if full success
 int runAllUnitTests(void);
 
 int runStateTests(void);
 
-int runFillWithTests(void);
+TestResult runFillWithTests(void);
 
-int runStateGroupBordersTypeAndResetTests(void);
+TestResult runStateGroupBordersTypeAndResetTests(void);
 
-int runStateMakeMoveTests(void);
+TestResult runStateMakeMoveTests(void);
 
 // This makes a bunch of random moves and then unmakes them, checks to make sure that the states are equal
-int runStateMakeUnmakeTests(void);
+TestResult runStateMakeUnmakeTests(void);
 
 #endif
