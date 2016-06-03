@@ -189,6 +189,9 @@ int groupBordersTypeAndReset(State *state, int point, int type) {
 // Probably shouldn't make this and groupBordersType recursive ^^
 int fillWith(State *state, int point, int type) {
 	int stone = state->board[point];
+	if (stone == type) {  // Then initial call was wrong
+		return 0;
+	}
 
 	state->board[point] = type;
 

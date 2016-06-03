@@ -9,12 +9,17 @@
 #include "state.h"
 #include "parser.h"
 
+int totalPasses;
+int totalTests;
+
 // Entry point to run all unit functions.  Return 1 if full success
 int runAllUnitTests(void);
 
 int runStateTests(void);
 
-int runStateGroupBordersTypeAndReset(void);
+int runFillWithTests(void);
+
+int runStateGroupBordersTypeAndResetTests(void);
 
 int runStateMakeMoveTests(void);
 
