@@ -303,7 +303,7 @@ int runStateMakeUnmakeTests(void) {
 	int totalSubTests = 0;
 
 	const int iterations = 1000;  // The number of iterations we run through
-	const int depth = 2;  // The depth of each iteration
+	const int depth = 250;  // The depth of each iteration (about average for a game)
 
 	srand(time(NULL));
 
@@ -316,11 +316,6 @@ int runStateMakeUnmakeTests(void) {
 			Moves *moves = getMoves(copy);
 			int randIndex = rand() % moves->count;
 			UnmakeMoveInfo unmakeMoveInfo;
-			if (moves->array[randIndex] > 360) { // ^^^
-				printf(">>>>>%d\n",randIndex);
-				printf("count : %d\n", moves->count);
-				//exit(1);
-			}
 			makeMoveAndSave(copy, moves->array[randIndex], &unmakeMoveInfo);
 			unmakeMove(copy, &unmakeMoveInfo);
 
