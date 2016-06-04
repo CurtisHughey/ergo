@@ -29,15 +29,17 @@ int runStateTests(void) {
 	int totalPasses = 0;
 	int totalTests = 0;
 
-	TestResult (*stateTests[5])(void) = { 
+	// Add new tests here, also update header file
+	TestResult (*stateTests[NUM_TESTS])(void) = { 
 									&runStateMakeMoveTests,
 									&runStateMakeUnmakeTests,
 									&runStateGroupBordersTypeAndResetTests,
 									&runFillWithTests,
 									&runGetMovesTests,
+									&runIsLegalMoveTests,
 								};
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < NUM_TESTS; i++) {
 		printf("\t\t----------\n");
 
 		TestResult result = stateTests[i]();
@@ -136,8 +138,10 @@ TestResult runFillWithTests(void) {
 				totalTests += 1;
 
 				free(initialFile);
+				free(modFile);
 				free(expectedFile);
 				destroyState(initialState);
+				destroyState(expectedState);
 			}
 		}
 	} else {
@@ -351,7 +355,6 @@ TestResult runGetMovesTests(void) {
 				strncpy(movesFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
 				movesFile[strlen(filePath)] = 'm';  // Makes it the move one
 
-
 				State* initialState = parseState(initialFile);
 
 				FILE *fp = fopen(movesFile, "r");
@@ -363,6 +366,7 @@ TestResult runGetMovesTests(void) {
 				char line[10];  // Way extra space than we need
 				fscanf(fp, "%s", line);
 				int numMoves = atoi(line);
+				fclose(fp);
 
 				Moves *moves = getMoves(initialState);
 
@@ -395,6 +399,69 @@ TestResult runGetMovesTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for getMoves");;
+		return (TestResult){1,0,0};
+	}
+	free(d);
+
+	return (TestResult){0, totalPasses, totalTests};
+}
+
+TestResult runIsLegalMoveTests(void) {
+	printf("\t\tisLegalMoveTests Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	char filePath[] = "./test/state/isLegalMove/"; 
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(filePath);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			if (dir->d_name[0] == 'i') {  
+				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(initialFile, filePath, strlen(filePath));
+				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+
+				char *moveFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(moveFile, filePath, strlen(filePath));
+				strncpy(moveFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+				moveFile[strlen(filePath)] = 'm';  // Makes it the expected one
+
+				State* initialState = parseState(initialFile);
+
+				// Now parses the group details
+				// line 1: point
+				// line 2: yes/no
+
+				FILE *fp = fopen(moveFile, "r");
+				if (fp == NULL) {
+					ERROR_PRINT("Couldn't find file: %s", moveFile);
+					return (TestResult){1,0,0};
+				}
+
+				char line[10];  // Way extra space than we need
+				fscanf(fp, "%s", line);
+				int move = atoi(line);			
+				fscanf(fp, "%s", line);
+				int expected = atoi(line);	
+				fclose(fp);
+
+				if (isLegalMove(initialState, move) != expected) {
+					printf("\t\tFailure for test: %s\n", dir->d_name);
+				} else {
+					totalPasses += 1;
+				}
+				totalTests += 1;
+
+				free(initialFile);
+				free(moveFile);
+				destroyState(initialState);
+			}
+		}
+	} else {
+		ERROR_PRINT("Couldn't find directory for isLegalMoveTests");;
 		return (TestResult){1,0,0};
 	}
 	free(d);

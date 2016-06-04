@@ -9,6 +9,8 @@
 #include "state.h"
 #include "parser.h"
 
+#define NUM_TESTS 6
+
 typedef struct {
 	int errorCode;  // 1 if error, 0 if not
 	int totalPasses;
@@ -31,5 +33,7 @@ TestResult runStateMakeUnmakeTests(void);
 
 // Also tests isLegalMoves
 TestResult runGetMovesTests(void);
+
+TestResult runIsLegalMoveTests(void);
 
 #endif
