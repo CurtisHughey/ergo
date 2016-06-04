@@ -37,6 +37,7 @@ int runStateTests(void) {
 									&runFillWithTests,
 									&runGetMovesTests,
 									&runIsLegalMoveTests,
+									&runCalcScoresTests,
 								};
 
 	for (int i = 0; i < NUM_TESTS; i++) {
@@ -284,7 +285,7 @@ TestResult runStateMakeUnmakeTests(void) {
 	int totalPasses = 0;
 	int totalTests = 0;
 
-	const int iterations = 1000;  // The number of iterations we run through
+	const int iterations = 5;  // The number of iterations we run through
 	const int depth = 250;  // The depth of each iteration (about average for a game)
 
 	srand(time(NULL));
@@ -461,7 +462,72 @@ TestResult runIsLegalMoveTests(void) {
 			}
 		}
 	} else {
-		ERROR_PRINT("Couldn't find directory for isLegalMoveTests");;
+		ERROR_PRINT("Couldn't find directory for isLegalMove");;
+		return (TestResult){1,0,0};
+	}
+	free(d);
+
+	return (TestResult){0, totalPasses, totalTests};
+}
+
+TestResult runCalcScoresTests(void) {
+	printf("\t\tcalcScores Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	char filePath[] = "./test/state/calcScores/"; 
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(filePath);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			if (dir->d_name[0] == 'i') {  
+				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(initialFile, filePath, strlen(filePath));
+				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+
+				char *scoreFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(scoreFile, filePath, strlen(filePath));
+				strncpy(scoreFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+				scoreFile[strlen(filePath)] = 'm';  // Makes it the expected one
+
+				State* initialState = parseState(initialFile);
+
+				// Now parses the group details
+				// line 1: score for white
+				// line 2: score for black
+
+				FILE *fp = fopen(scoreFile, "r");
+				if (fp == NULL) {
+					ERROR_PRINT("Couldn't find file: %s", scoreFile);
+					return (TestResult){1,0,0};
+				}
+
+				char line[10];  // Way extra space than we need
+				fscanf(fp, "%s", line);
+				int whiteScore = atoi(line);
+				fscanf(fp, "%s", line);
+				int blackScore = atoi(line);		
+				fclose(fp);
+
+				Score score = calcScores(initialState);
+
+				if (score.whiteScore != whiteScore || score.blackScore != blackScore) {
+					printf("\t\tFailure for test: %s, got scores (%d, %d)\n", dir->d_name, score.whiteScore, score.blackScore);
+				} else {
+					totalPasses += 1;
+				}
+				totalTests += 1;
+
+				free(initialFile);
+				free(scoreFile);
+				destroyState(initialState);
+			}
+		}
+	} else {
+		ERROR_PRINT("Couldn't find directory for calcScores");;
 		return (TestResult){1,0,0};
 	}
 	free(d);

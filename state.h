@@ -46,11 +46,18 @@ typedef struct {
 	int count;
 } Moves;
 
+// THe info needed to undo a move
 typedef struct {
 	int move;  // Previous location (-1 if pass)
 	Neighbors needToFill;  // The neighbors that need to get filled with the opposite color
 	int koPoint;  // Previous ko point
 } UnmakeMoveInfo;
+
+// The score for both players
+typedef struct {
+	int whiteScore;
+	int blackScore;
+} Score;
 
 // Allocates a new state struct, initially empty, black to move
 State *createState(void);
@@ -103,8 +110,11 @@ Moves *getMoves(State *state);
 
 // Calculates the score for the given type according to Chinese rules:
 // Living stones + territory
-// Note only one score is returned (other is easily extrapolated)
+// Note only one score is returned (see below)
 int calcScore(State *state, int type);
+
+// Returns both scores
+Score calcScores(State *state);
 
 // Returns 1 if the states are equal, 0 otherwise
 int statesAreEqual(State *state1, State *state2);

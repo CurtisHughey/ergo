@@ -331,6 +331,19 @@ Moves *getMoves(State *state) {
 }
 
 int calcScore(State *state, int type) {
+	// First have to do a slightly annoying check to see if the entire board is empty
+	// Maybe combine with for loop below ^^^
+	int empty = 1;
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		if (state->board[i] != STATE_EMPTY) {
+			empty = 0;
+			break;
+		}
+	}
+	if (empty) {  // Then the entire board is empty, no one owns anything
+		return 0;
+	}
+
 	int numStones = 0;
 
 	// First counts score
@@ -367,6 +380,13 @@ int calcScore(State *state, int type) {
 	int totalScore = numStones + numEyes;
 
 	return totalScore;
+}
+
+Score calcScores(State *state) {
+	int whiteScore = calcScore(state, STATE_WHITE);
+	int blackScore = calcScore(state, STATE_BLACK);
+
+	return (Score){whiteScore, blackScore};
 }
 
 int statesAreEqual(State *state1, State *state2) {
