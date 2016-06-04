@@ -29,4 +29,7 @@ TestResult runStateMakeMoveTests(void);
 // This makes a bunch of random moves and then unmakes them, checks to make sure that the states are equal
 TestResult runStateMakeUnmakeTests(void);
 
+// Also tests isLegalMoves
+TestResult runGetMovesTests(void);
+
 #endif

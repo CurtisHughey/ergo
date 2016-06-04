@@ -29,14 +29,15 @@ int runStateTests(void) {
 	int totalPasses = 0;
 	int totalTests = 0;
 
-	TestResult (*stateTests[4])(void) = { 
+	TestResult (*stateTests[5])(void) = { 
 									&runStateMakeMoveTests,
 									&runStateMakeUnmakeTests,
 									&runStateGroupBordersTypeAndResetTests,
 									&runFillWithTests,
+									&runGetMovesTests,
 								};
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		printf("\t\t----------\n");
 
 		TestResult result = stateTests[i]();
@@ -323,6 +324,80 @@ TestResult runStateMakeUnmakeTests(void) {
 
 		destroyState(state);
 	}
+
+	return (TestResult){0, totalPasses, totalTests};
+}
+
+TestResult runGetMovesTests(void) {
+	printf("\t\tgetMoves Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	char filePath[] = "./test/state/getMoves/"; 
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(filePath);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			if (dir->d_name[0] == 'i') {  
+				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(initialFile, filePath, strlen(filePath));
+				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+
+				char *movesFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(movesFile, filePath, strlen(filePath));
+				strncpy(movesFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+				movesFile[strlen(filePath)] = 'm';  // Makes it the move one
+
+
+				State* initialState = parseState(initialFile);
+
+				FILE *fp = fopen(movesFile, "r");
+				if (fp == NULL) {
+					ERROR_PRINT("Couldn't find file: %s", movesFile);
+					return (TestResult){1,0,0};
+				}
+
+				char line[10];  // Way extra space than we need
+				fscanf(fp, "%s", line);
+				int numMoves = atoi(line);
+
+				Moves *moves = getMoves(initialState);
+
+				int passes = 1;
+				if (moves->count != numMoves) {
+					printf("\t\tFailure for test: %s\n", dir->d_name);
+					// printf("%d\n", numMoves);
+					// printf("%d\n", moves->count);
+					passes = 0;
+				}
+
+				for (int i = 0; i < moves->count; i++) {
+					if (!isLegalMove(initialState, moves->array[i])) {
+						printf("\t\tFailure for individual move %d, test: %s\n", moves->array[i], dir->d_name);
+						passes = 0;
+						break;
+					}				
+				}
+
+				if (passes) {
+					totalPasses += 1;
+				}
+
+				totalTests += 1;
+				free(moves);
+				free(initialFile);
+				free(movesFile);
+				destroyState(initialState);
+			}
+		}
+	} else {
+		ERROR_PRINT("Couldn't find directory for getMoves");;
+		return (TestResult){1,0,0};
+	}
+	free(d);
 
 	return (TestResult){0, totalPasses, totalTests};
 }

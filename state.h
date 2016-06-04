@@ -42,7 +42,7 @@ typedef struct {
 
 // The array of valid moves
 typedef struct {
-	int array[BOARD_SIZE];
+	int array[BOARD_SIZE+1];  // +1 for MOVE_PASS
 	int count;
 } Moves;
 

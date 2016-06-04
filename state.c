@@ -71,7 +71,6 @@ void displayState(State *state) {
 }
 
 int isLegalMove(State *state, int move) {
-
 	if (move == MOVE_PASS) {
 		return 1;
 	}
@@ -118,7 +117,7 @@ int isLegalMove(State *state, int move) {
 void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors) {
 	int count = 0;
 
-	if (point != MOVE_PASS) {
+	if (point != MOVE_PASS) {  // ??? ^^^
 		int col = point % BOARD_DIM;
 		int row = point / BOARD_DIM; 
 
@@ -313,12 +312,13 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 	return;
 }
 
+// Should optimize ^^^, calling isLegalMove every time could be rough
 Moves *getMoves(State *state) {
 	Moves *moves = malloc(sizeof(Moves));
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
-		if (!state->board[i] && (state->koPoint != i)) {
+		if (isLegalMove(state, i)) {
 			moves->array[count++] = i;
 		}
 	}
