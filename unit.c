@@ -38,6 +38,7 @@ int runStateTests(void) {
 									&runGetMovesTests,
 									&runIsLegalMoveTests,
 									&runCalcScoresTests,
+									&runSetTerritoryTests,
 								};
 
 	for (int i = 0; i < NUM_TESTS; i++) {
@@ -108,7 +109,6 @@ TestResult runFillWithTests(void) {
 				strncpy(expectedFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
 				expectedFile[strlen(filePath)] = 'e';  // Makes it the expected one
 
-
 				State* initialState = parseState(initialFile);
 
 				// Now parses the fillWith details
@@ -176,7 +176,6 @@ TestResult runStateGroupBordersTypeAndResetTests(void) {
 				strncpy(modFile, filePath, strlen(filePath));
 				strncpy(modFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
 				modFile[strlen(filePath)] = 'm';  // Makes it the expected one
-
 
 				State* initialState = parseState(initialFile);
 
@@ -249,7 +248,6 @@ TestResult runStateMakeMoveTests(void) {
 				strncpy(expectedFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
 				expectedFile[strlen(filePath)] = 'e';  // Makes it the expected one
 
-
 				State* initialState = parseState(initialFile);
 				int move = parseMove(moveFile);
 				State* expectedState = parseState(expectedFile);
@@ -285,7 +283,7 @@ TestResult runStateMakeUnmakeTests(void) {
 	int totalPasses = 0;
 	int totalTests = 0;
 
-	const int iterations = 5;  // The number of iterations we run through
+	const int iterations = 1000;  // The number of iterations we run through
 	const int depth = 250;  // The depth of each iteration (about average for a game)
 
 	srand(time(NULL));
@@ -533,4 +531,9 @@ TestResult runCalcScoresTests(void) {
 	free(d);
 
 	return (TestResult){0, totalPasses, totalTests};
+}
+
+TestResult runSetTerritoryTests(void) {
+	printf("\t\tTODO setTerritory Tests\n");  // Trying to guilt myself
+	return (TestResult){0, 0, 0};
 }

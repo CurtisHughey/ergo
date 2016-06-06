@@ -312,13 +312,13 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 	return;
 }
 
-// Should optimize ^^^, calling isLegalMove every time could be rough
+// Should optimize ^^^, right now it's O(n^2) calling isLegalMove every time could be rough
 Moves *getMoves(State *state) {
 	Moves *moves = malloc(sizeof(Moves));
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
-		if (isLegalMove(state, i)) {
+		if (isLegalMove(state, i)) {  // This is another linear op
 			moves->array[count++] = i;
 		}
 	}
@@ -346,7 +346,7 @@ int calcScore(State *state, int type) {
 
 	int numStones = 0;
 
-	// First counts score
+	// First counts score, can't move this into switch :(
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		if (state->board[i] == type) {
 			numStones += 1;
@@ -360,7 +360,7 @@ int calcScore(State *state, int type) {
 			case STATE_EMPTY:
 				if (setTerritory(state, i, type)) {
 					numEyes += 1;
-				}	
+				}
 				break;
 			case STATE_YES:
 				numEyes += 1;

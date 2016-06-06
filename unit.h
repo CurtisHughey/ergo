@@ -9,7 +9,7 @@
 #include "state.h"
 #include "parser.h"
 
-#define NUM_TESTS 7
+#define NUM_TESTS 8
 
 typedef struct {
 	int errorCode;  // 1 if error, 0 if not
@@ -37,5 +37,7 @@ TestResult runGetMovesTests(void);
 TestResult runIsLegalMoveTests(void);
 
 TestResult runCalcScoresTests(void);
+
+TestResult runSetTerritoryTests(void);
 
 #endif
