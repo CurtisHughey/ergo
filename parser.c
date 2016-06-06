@@ -69,6 +69,13 @@ State *parseState(char *fileName) {
 	}
 	state->koPoint = atoi(line);
 
+	// Whether black has passed or not (used to help determine end of game)
+	if (fscanf(fp, "%s", line) == EOF) {
+		ERROR_PRINT("Missing black passed");
+		return NULL;  // Incorrect formatting		
+	}
+	state->blackPassed = atoi(line);	
+
 	// Anything afterwards is a comment, and should be ignored
 
 	fclose(fp);	
@@ -114,7 +121,7 @@ void serializeState(State *state, char *fileName) {
 	fprintf(fp, "%d\n", state->whitePrisoners);
 	fprintf(fp, "%d\n", state->blackPrisoners);
 	fprintf(fp, "%d\n", state->koPoint);
-
+	fprintf(fp, "%d\n", state->blackPassed);
 
 	fclose(fp);
 }
@@ -134,7 +141,7 @@ int parseMove(char *fileName) {
 		return -2;
 	}	
 
-	if (line[0] != 'B' && line[1] != 'W') {
+	if (line[0] != 'B' && line[0] != 'W') {
 		ERROR_PRINT("Failed to specify player to move");
 		return -2;
 	}

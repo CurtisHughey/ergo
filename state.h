@@ -32,6 +32,7 @@ typedef struct {
 	int koPoint;  // The place (if any, on the board that is the ko point.  -1 otherwise)
 	int whitePrisoners;  // The number of white stones that have been captured (by black)
 	int blackPrisoners;  // Vice versa
+	int blackPassed;
 } State;
 
 // An array of specified neighbors (left, right, up, down) to a point

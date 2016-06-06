@@ -22,3 +22,4 @@ W
 0
 -1
 # Capture on side
+0

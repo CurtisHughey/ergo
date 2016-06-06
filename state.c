@@ -7,6 +7,7 @@ State *createState(void) {
 	state->koPoint = -1;  // Nowhere to begin with
 	state->whitePrisoners = 0;
 	state->blackPrisoners = 0;
+	state->blackPassed = 0;
 
 	return state;
 }
@@ -24,6 +25,7 @@ State *copyState(State *original) {
 	copy->koPoint = original->koPoint;
 	copy->whitePrisoners = original->whitePrisoners;
 	copy->blackPrisoners = original->blackPrisoners;
+	copy->blackPassed = original->blackPassed;
 
 	return copy;
 }
@@ -66,6 +68,7 @@ void displayState(State *state) {
 	printf("White stones captured: %d\n",state->whitePrisoners);
 	printf("Black stones captured: %d\n",state->blackPrisoners);
 	printf("Ko point: %d\n", state->koPoint);
+	printf("Black passed: %d\n", state->blackPassed);
 	printf("-----------------------------------------------\n");
 	printf("\n\n");
 }
@@ -260,6 +263,8 @@ void makeMove(State *state, int move) {
 		} else {
 			state->koPoint = -1;  // Resetting
 		}
+	} else if (state->turn == STATE_BLACK) {  // This is to help record the end of the game
+		state->blackPassed = 1;
 	}
 
 	// Now sets turn (also needs to happen for pass)
