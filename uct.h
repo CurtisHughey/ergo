@@ -7,20 +7,39 @@
 
 #define UCT_CONSTANT 2  // This is the 2C_P\sqrt{2} term
 
-typedef struct {
-	int action;
+typedef struct UctNode {
+	int action;  // The move
 	double reward;  // Maybe just float...
 	int visitCount;
+	struct UctNode **children;
+	int childrenCount;
 } UctNode;
 
-void uctSearch(State *state);
+// Creates new UctNode
+UctNode *createUctNode(State *state, int move);
 
-UctNode treePolicy(UctNode v);
+// Recursively destroys UctNodes
+void destroyUctNode(UctNode *v);
 
-UctNode expand(UctNode v);
+// Returns the best move
+int uctSearch(State *state);
 
-UctNode bestChild(UctNode v);
+// Finds non-terminal node
+UctNode *treePolicy(UctNode *v);
 
-// One more
+// Creates new child node
+UctNode *expand(UctNode *v);
+
+// Returns the best child by the UCB1 algorithm
+UctNode *bestChild(UctNode *v);
+
+// Simulates rest of game, for lengthOfGame moves
+double defaultPolicy(State *state, int lengthOfGame);
+
+// Propagates new score back to root
+void backupNegamax(UctNode *v, double reward);
+
+// Used for the second argument of defaultPolicy.  Just returning constant right now 
+int chooseLengthOfGame(int lengthSoFar);
 
 #endif

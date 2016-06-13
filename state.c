@@ -329,7 +329,7 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 
 // Should optimize ^^^, right now it's O(n^2) calling isLegalMove every time could be rough
 Moves *getMoves(State *state) {
-	Moves *moves = malloc(sizeof(Moves));
+	Moves *moves = malloc(sizeof(Moves));  // Heap vs just returning struct?^^^
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
