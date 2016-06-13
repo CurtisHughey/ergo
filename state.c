@@ -73,6 +73,7 @@ void displayState(State *state) {
 	printf("\n\n");
 }
 
+// I honestly should typedef int move ^^^
 int isLegalMove(State *state, int move) {
 	if (move == MOVE_PASS) {
 		return 1;
@@ -263,8 +264,12 @@ void makeMove(State *state, int move) {
 		} else {
 			state->koPoint = -1;  // Resetting
 		}
+
+		state->blackPassed = 0;
 	} else if (state->turn == STATE_BLACK) {  // This is to help record the end of the game
 		state->blackPassed = 1;
+	} else {
+		state->blackPassed = 0;
 	}
 
 	// Now sets turn (also needs to happen for pass)
@@ -273,6 +278,7 @@ void makeMove(State *state, int move) {
 	return;
 }
 
+// I'm pretty sure I need to be recording state->blackPassed
 void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
 	unmakeMoveInfo->move = move;
 	unmakeMoveInfo->koPoint = state->koPoint;
@@ -280,6 +286,8 @@ void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
 	int otherTurn = OTHER_COLOR(state->turn);	
 	Neighbors enemyNeighbors;
 	getNeighborsOfType(state, move, otherTurn, &enemyNeighbors);
+
+	unmakeMoveInfo->blackPassed = state->blackPassed;
 
 	makeMove(state, move);
 
@@ -313,6 +321,7 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 
 	state->koPoint = unmakeMoveInfo->koPoint;
 	state->turn = OTHER_COLOR(state->turn);
+	state->blackPassed = unmakeMoveInfo->blackPassed;
 
 	return;
 }
@@ -414,6 +423,10 @@ int statesAreEqual(State *state1, State *state2) {
 	}
 
 	if (state1->blackPrisoners != state2->blackPrisoners) {
+		return 0;
+	}
+
+	if (state1->blackPassed != state2->blackPassed) {
 		return 0;
 	}
 

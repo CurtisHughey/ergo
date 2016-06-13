@@ -52,6 +52,7 @@ typedef struct {
 	int move;  // Previous location (-1 if pass)
 	Neighbors needToFill;  // The neighbors that need to get filled with the opposite color
 	int koPoint;  // Previous ko point
+	int blackPassed;  // Whether black had passed before the prior state
 } UnmakeMoveInfo;
 
 // The score for both players
