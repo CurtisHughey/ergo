@@ -3,6 +3,9 @@
 #ifndef _UCT_H
 #define _UCT_H
 
+#include <time.h>
+#include <stdlib.h>
+
 #include "state.h"
 
 #define UCT_CONSTANT 2  // This is the 2C_P\sqrt{2} term

@@ -38,8 +38,16 @@ void destroyUctNode(UctNode *v) {
 	v = NULL;
 }
 
-// // Returns the best move
-// int uctSearch(State *state);
+// Returns the best move
+// Random right now for testing
+int uctSearch(State *state) {
+	Moves *moves = getMoves(state);
+	srand(time(NULL));
+	int randIndex = rand() % moves->count;
+	int move = moves->array[randIndex];
+	free(moves);
+	return move;
+}
 
 // // Finds non-terminal node
 // UctNode *treePolicy(UctNode *v);
