@@ -249,7 +249,7 @@ TestResult runStateMakeMoveTests(void) {
 				expectedFile[strlen(filePath)] = 'e';  // Makes it the expected one
 
 				State* initialState = parseState(initialFile);
-				int move = parseMove(moveFile);
+				int move = parseMoveFromFile(moveFile);
 				State* expectedState = parseState(expectedFile);
 
 				makeMove(initialState, move);

@@ -75,6 +75,10 @@ void displayState(State *state) {
 
 // I honestly should typedef int move ^^^
 int isLegalMove(State *state, int move) {
+	if (move < MOVE_PASS || move >= BOARD_SIZE) {  // Could be < -1 if parsed as INVALID_MOVE
+		return 0;  // Duh
+	}
+
 	if (move == MOVE_PASS) {
 		return 1;
 	}
@@ -168,17 +172,14 @@ int groupBordersType(State *state, int point, int type) {
 
 	for (int i = 0; i < allNeighbors.count; i++) {
 		if (state->board[allNeighbors.array[i]] == type) {
-			//state->board[point] = stone;
 			return 1;
 		}
 		if (state->board[allNeighbors.array[i]] == stone) {  // Then keep going on this one
 			if (groupBordersType(state, allNeighbors.array[i], type)) {
-				//state->board[point] = stone;
 				return 1;
 			}
 		}		
 	}
-	//state->board[point] = stone;
 	return 0;
 }
 

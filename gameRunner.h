@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "state.h"
+#include "parser.h"
 
 void runHumanVsHuman(void);
 

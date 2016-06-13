@@ -126,7 +126,7 @@ void serializeState(State *state, char *fileName) {
 	fclose(fp);
 }
 
-int parseMove(char *fileName) {
+int parseMoveFromFile(char *fileName) {
 	FILE *fp = fopen(fileName, "r");
 
 	if (fp == NULL) {
@@ -136,19 +136,33 @@ int parseMove(char *fileName) {
 
 	char line[MAX_MOVE_LEN];
 
-	if (fscanf(fp, "%s", line) == EOF) {
+	if (fscanf(fp, "%s", line) == EOF) {  // change to fgets? ^^^
 		ERROR_PRINT("Move is missing");
-		return -2;
-	}	
+		return INVALID_MOVE;
+	}
 
+	fclose(fp);
+
+	return parseMove(line);
+}
+
+int parseMoveFromTerminal(void) {
+	char line[MAX_MOVE_LEN];
+	fgets(line, MAX_MOVE_LEN, stdin);
+
+	return parseMove(line);
+}
+
+// Should provide some unit testing to make sure it errors out correctly ^^^
+int parseMove(char *line) {
 	if (line[0] != 'B' && line[0] != 'W') {
 		ERROR_PRINT("Failed to specify player to move");
-		return -2;
+		return INVALID_MOVE;
 	}
 
 	if (line[1] != '[') {
-		ERROR_PRINT("Move formatting error");
-		return -2;
+		ERROR_PRINT("Missing opening square bracket");
+		return INVALID_MOVE;
 	}
 
 	if (line[2] == ']') {
@@ -158,13 +172,26 @@ int parseMove(char *fileName) {
 	char colChar = line[2];
 	char rowChar = line[3];
 
+	if (line[4] != ']') {
+		ERROR_PRINT("Missing closing square bracket");
+		return INVALID_MOVE;
+	}
+
 	if (rowChar == 't' && colChar == 't') {
 		return MOVE_PASS;  // Also pass
 	}
 
-	int point = BOARD_DIM*(rowChar-'a') + colChar-'a';
+	if (rowChar < 'a' || rowChar >= 'a'+BOARD_DIM) {
+		ERROR_PRINT("Invalid row entry");
+		return INVALID_MOVE;
+	}
 
-	fclose(fp);
+	if (colChar < 'a' || colChar >= 'a'+BOARD_DIM) {
+		ERROR_PRINT("Invalid column entry");
+		return INVALID_MOVE;
+	}
+
+	int point = BOARD_DIM*(rowChar-'a') + colChar-'a';
 
 	return point;
 }
