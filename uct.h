@@ -3,10 +3,14 @@
 #ifndef _UCT_H
 #define _UCT_H
 
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
+#include <limits.h>
+#include <math.h>
 
 #include "state.h"
+
+#define ROOT_MOVE -2  // The move that the rootmove has
 
 #define UCT_CONSTANT 2  // This is the 2C_P\sqrt{2} term
 
@@ -16,6 +20,7 @@ typedef struct UctNode {
 	int visitCount;
 	struct UctNode **children;
 	int childrenCount;
+	int childrenVisited;
 } UctNode;
 
 // Creates new UctNode
