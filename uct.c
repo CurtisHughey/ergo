@@ -1,7 +1,7 @@
 #include "uct.h"
 
 // Creates new UctNode
-UctNode *createUctNode(State *state, int move) {
+UctNode *createUctNode(State *state, UctNode *parent, int move) {
 	UctNode *v = malloc(sizeof(UctNode));
 	
 	v->action = move;
@@ -29,6 +29,7 @@ UctNode *createUctNode(State *state, int move) {
 	v->children = children;
 	v->childrenCount = moves->count;
 	v->childrenVisited = 0;
+	v->parent = NULL;
 
 	free(moves);
 
@@ -54,7 +55,7 @@ int uctSearch(State *state) {
 	// free(moves);
 	// return move;
 
-	UctNode *root = createUctNode(state, -2);
+	UctNode *root = createUctNode(state, NULL, -2);
 	UNUSED(root);
 
 	return 0;
@@ -125,8 +126,24 @@ double defaultPolicy(State *state, int lengthOfGame) {
 	return reward;
 }
 
-// // Propagates new score back to root
-// void backupNegamax(UctNode *v, double reward);
+// Propagates new score back to root
+void backupNegamax(UctNode *v, double reward) {
+	while (v != NULL) {
+		v->visitCount += 1;
+		v->reward += reward;
+		reward *= -1;
+		v = v->parent;
+	}
+}
 
-// // Used for the second argument of defaultPolicy.  Just returning constant right now 
-// int chooseLengthOfGame(int lengthSoFar);
+// Used for the second argument of defaultPolicy.  Just returning constant right now 
+int chooseLengthOfGame(int lengthSoFar) {
+	// Lol, IDK
+	if (lengthSoFar < 100) {
+		return 200;
+	} else if (lengthSoFar < 200) {
+		return 100;
+	} else {
+		return 50;
+	}
+}

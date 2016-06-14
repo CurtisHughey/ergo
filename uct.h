@@ -21,10 +21,11 @@ typedef struct UctNode {
 	struct UctNode **children;
 	int childrenCount;
 	int childrenVisited;
+	struct UctNode *parent;
 } UctNode;
 
 // Creates new UctNode
-UctNode *createUctNode(State *state, int move);
+UctNode *createUctNode(State *state, UctNode *parent, int move);
 
 // Recursively destroys UctNodes
 void destroyUctNode(UctNode *v);
