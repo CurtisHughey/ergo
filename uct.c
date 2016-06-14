@@ -1,39 +1,49 @@
 #include "uct.h"
 
-// Creates new UctNode
-UctNode *createUctNode(State *state, UctNode *parent, int move) {
-	UctNode *v = malloc(sizeof(UctNode));
-	
-	v->action = move;
-	v->reward = 0;  // I guess?
-	v->visitCount = 0;
-	
-	UnmakeMoveInfo unmakeMoveInfo;
-	if (move != ROOT_MOVE) {
-		makeMoveAndSave(state, move, &unmakeMoveInfo);
-	}
-	Moves *moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
-	
-	if (move != ROOT_MOVE) {
-		unmakeMove(state, &unmakeMoveInfo);
-	}
 
+// Creates new root UctNode
+UctNode *createRootUctNode(State *state) {
+	UctNode *root = malloc(sizeof(UctNode));
+	
+	root->action = ROOT_MOVE;
+	root->reward = 0;  // I guess?
+	root->visitCount = 0;
+	root->parent = NULL;  // No parent
+	
+	Moves *moves = getMoves(state);
+	setChildren(root, moves);
+	free(moves);
+
+	return root;
+}
+
+// Adds children to UctNode
+void expandUctNode(State *state, UctNode *parent) {
+	UnmakeMoveInfo unmakeMoveInfo;
+	makeMoveAndSave(state, parent->action, &unmakeMoveInfo);
+	Moves *moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
+	unmakeMove(state, &unmakeMoveInfo);
+
+	setChildren(parent, moves);
+	free(moves);
+}
+
+void setChildren(UctNode *parent, Moves *moves) {
 	UctNode **children = calloc(moves->count, sizeof(UctNode *));
 	for (int i = 0; i < moves->count; i++) {
+		children[i] = malloc(sizeof(UctNode));
+
 		children[i]->action = moves->array[i];
 		children[i]->reward = 0;
 		children[i]->visitCount = 0;
 		children[i]->children = NULL;
 		children[i]->childrenCount = 0;
+		children[i]->childrenVisited = 0;
+		children[i]->parent = parent;
 	}
-	v->children = children;
-	v->childrenCount = moves->count;
-	v->childrenVisited = 0;
-	v->parent = NULL;
-
-	free(moves);
-
-	return v;
+	parent->children = children;
+	parent->childrenCount = moves->count;
+	parent->childrenVisited = 0;
 }
 
 // Recursively destroys UctNodes
@@ -41,31 +51,78 @@ void destroyUctNode(UctNode *v) {
 	for (int i = 0; i < v->childrenCount; i++) {
 		destroyUctNode(v->children[i]);
 	}
+	free(v->children);
+	v->children = NULL;
 	free(v);
 	v = NULL;
 }
 
 // Returns the best move
-// TODO
-int uctSearch(State *state) {
+int uctSearch(State *state, int iterations) {
 	// Moves *moves = getMoves(state);
 	// srand(time(NULL));
 	// int randIndex = rand() % moves->count;
 	// int move = moves->array[randIndex];
 	// free(moves);
 	// return move;
+	const int lengthOfGame = 250;  // IRDK ^^^
 
-	UctNode *root = createUctNode(state, NULL, -2);
-	UNUSED(root);
+	UctNode *root = createRootUctNode(state);
+	
+	UctNode *v = NULL;
+	for (int i = 0; i < iterations; i++) {
+		v = treePolicy(state, root, lengthOfGame);
+		double reward = defaultPolicy(state, lengthOfGame);
+		backupNegamax(v, reward);
+	}
 
-	return 0;
+	UctNode *bestNode = bestChild(root);
+	int move = bestNode->action;
+
+	destroyUctNode(root);
+
+	return move;
 }
 
-// // Finds non-terminal node
-// UctNode *treePolicy(UctNode *v);
+// Finds non-terminal node
+UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
+	for (int i = 0; i < lengthOfGame; i++) {
+		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
+			return expand(state, v);
+		} else {
+			v = bestChild(v);
+		}
+	}
+	return v;
+}
 
-// // Creates new child node
-// UctNode *expand(UctNode *v);
+// Chooses a random unexplored child (v')
+UctNode *expand(State *state, UctNode *v) {
+	srand(time(NULL));  // I should stop doing this all over the place, just initialize in beginning ^^^
+
+	int numUnvisited = v->childrenCount-v->childrenVisited;
+	int untriedIndex = rand() % numUnvisited;
+
+	UctNode *child = NULL;
+	int searchIndex = 0;
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		if (v->children[i]->visitCount == 0) {
+			if (searchIndex == untriedIndex) {
+				child = v->children[i];
+				break;
+			} else {
+				searchIndex += 1;
+			}
+		}
+	}
+
+	assert(child);  // This is a good assert to have ^^^
+
+	expandUctNode(state, child);
+	v->childrenVisited += 1;  // We just visited a new child
+
+	return child;
+}
 
 // Returns the best child by the UCB1 algorithm
 UctNode *bestChild(UctNode *v) {
@@ -75,7 +132,7 @@ UctNode *bestChild(UctNode *v) {
 		UctNode *child = v->children[i];
 		int reward = 0;
 		if (child->visitCount > 0) {  // I.e. if visited
-			reward = child->reward/child->visitCount 
+			reward = child->reward / child->visitCount 
 					+ UCT_CONSTANT*sqrt(log((double)v->visitCount)/child->visitCount);
 		} else {
 			// This is bad because it will favor later children ^^^
@@ -138,7 +195,7 @@ void backupNegamax(UctNode *v, double reward) {
 
 // Used for the second argument of defaultPolicy.  Just returning constant right now 
 int chooseLengthOfGame(int lengthSoFar) {
-	// Lol, IDK
+	// Lol, IDK ^^^
 	if (lengthSoFar < 100) {
 		return 200;
 	} else if (lengthSoFar < 200) {

@@ -5,6 +5,9 @@ int promptHuman(State *state, char *color) {
 	do {
 		printf("%s to move: ", color);
 		int move = parseMoveFromTerminal();
+		if (move == QUIT) {
+			return QUIT;
+		}
 		if (isLegalMove(state, move)) {
 			gameFinishes = state->blackPassed && move == MOVE_PASS; // i.e. both sides are passing, game finishes
 			makeMove(state, move);  // eventually makeMoveAndSave
@@ -41,11 +44,11 @@ void runHumanVsHuman(void) {
 
 	char *colors[2] = { "Black", "White" };
 
-	int gameFinishes = 0;
-	while (!gameFinishes) {
+	int status = 0;
+	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
-			gameFinishes = promptHuman(state, colors[i]);
+			status = promptHuman(state, colors[i]);
 		}
 	}
 
@@ -62,17 +65,20 @@ void runHumanVsComputer(void) {
 
 	char *colors[2] = { "Black", "White" };
 
-	int gameFinishes = 0;
-	while (!gameFinishes) {
+	int status = 0;
+	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
-				int move = uctSearch(state);
+				int move = uctSearch(state, 1000);  // Lol, IDK about 1000 (it's so wrong ^^^)
 				printf("%s chooses move: %d\n", colors[i], move);  // Shoud translate to string move ^^^
-				gameFinishes = state->blackPassed && move == MOVE_PASS;
+				status = state->blackPassed && move == MOVE_PASS;
 				makeMove(state, move);
 			} else {
-				gameFinishes = promptHuman(state, colors[i]);
+				status = promptHuman(state, colors[i]);
+				if (status == QUIT) {
+					break;
+				}
 			}
 		}
 	}

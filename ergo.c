@@ -4,12 +4,12 @@ int main(int argc, char **argv) {
 	printf("Hello World!\n");
 
 	if (argc <= 1) {
-		ERROR_PRINT("Must provide command line arguments (-H for help)");
+		ERROR_PRINT("Must provide command line arguments (-h for help)");
 		exit(1);
 	}
 
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "upc")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "upch")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'u':
 				runAllUnitTests();
@@ -20,12 +20,16 @@ int main(int argc, char **argv) {
 			case 'c':
 				runHumanVsComputer();
 				break;
-			case 'H':
+			case 'h':
 				printf("Options\n");
 				printf("\t-u\n");
 				printf("\t\tRun unit tests\n\n");
 				printf("\t-p\n");
-				printf("\t\tRun player vs player\n\n");			
+				printf("\t\tRun player vs player\n\n");		
+				printf("\t-c\n");
+				printf("\t\tRun player vs computer\n\n");
+				printf("\t-h\n");
+				printf("\t\tThis\n\n");		
 			case '?':
 			default:
 				ERROR_PRINT("Unknown option, use -H for help");

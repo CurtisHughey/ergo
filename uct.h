@@ -7,6 +7,7 @@
 #include <time.h>
 #include <limits.h>
 #include <math.h>
+#include <assert.h>
 
 #include "state.h"
 
@@ -24,20 +25,25 @@ typedef struct UctNode {
 	struct UctNode *parent;
 } UctNode;
 
-// Creates new UctNode
-UctNode *createUctNode(State *state, UctNode *parent, int move);
+UctNode *createRootUctNode(State *state);
+
+// Adds children to UctNode
+void expandUctNode(State *state, UctNode *parent);
+
+// Explicitly sets children
+void setChildren(UctNode *parent, Moves *moves);
 
 // Recursively destroys UctNodes
 void destroyUctNode(UctNode *v);
 
 // Returns the best move
-int uctSearch(State *state);
+int uctSearch(State *state, int iterations);
 
 // Finds non-terminal node
-UctNode *treePolicy(UctNode *v);
+UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame);
 
 // Creates new child node
-UctNode *expand(UctNode *v);
+UctNode *expand(State *state, UctNode *v);
 
 // Returns the best child by the UCB1 algorithm
 UctNode *bestChild(UctNode *v);

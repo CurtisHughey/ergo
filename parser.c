@@ -155,6 +155,10 @@ int parseMoveFromTerminal(void) {
 
 // Should provide some unit testing to make sure it errors out correctly ^^^
 int parseMove(char *line) {
+	if (line[0] == 'q') {  // Special quit command
+		return QUIT;
+	}
+
 	if (line[0] != 'B' && line[0] != 'W') {
 		ERROR_PRINT("Failed to specify player to move");
 		return INVALID_MOVE;
