@@ -20,4 +20,6 @@ void runHumanVsComputer(void);
 
 void runComputerVsComputer(void);
 
+// Used for testing
+void runComputerVsRandom(void);
 #endif

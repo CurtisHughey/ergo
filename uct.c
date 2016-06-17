@@ -59,12 +59,6 @@ void destroyUctNode(UctNode *v) {
 
 // Returns the best move
 int uctSearch(State *state, int iterations) {
-	// Moves *moves = getMoves(state);
-	// srand(time(NULL));
-	// int randIndex = rand() % moves->count;
-	// int move = moves->array[randIndex];
-	// free(moves);
-	// return move;
 	const int lengthOfGame = 250;  // IRDK ^^^
 
 	UctNode *root = createRootUctNode(state);
@@ -100,12 +94,12 @@ UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
 UctNode *expand(State *state, UctNode *v) {
 	srand(time(NULL));  // I should stop doing this all over the place, just initialize in beginning ^^^
 
-	int numUnvisited = v->childrenCount-v->childrenVisited;
+	int numUnvisited = v->childrenCount - v->childrenVisited;
 	int untriedIndex = rand() % numUnvisited;
 
 	UctNode *child = NULL;
 	int searchIndex = 0;
-	for (int i = 0; i < BOARD_SIZE; i++) {
+	for (int i = 0; i < v->childrenCount; i++) {
 		if (v->children[i]->visitCount == 0) {
 			if (searchIndex == untriedIndex) {
 				child = v->children[i];
@@ -116,7 +110,7 @@ UctNode *expand(State *state, UctNode *v) {
 		}
 	}
 
-	assert(child);  // This is a good assert to have ^^^
+	assert(child);
 
 	expandUctNode(state, child);
 	v->childrenVisited += 1;  // We just visited a new child
@@ -126,7 +120,7 @@ UctNode *expand(State *state, UctNode *v) {
 
 // Returns the best child by the UCB1 algorithm
 UctNode *bestChild(UctNode *v) {
-	int bestReward = 0;  // INT_MIN?
+	int bestReward = -1;  // INT_MIN?
 	int bestChildIndex = -1;  // There is always at least 1 child, so this will be filled
 	for (int i = 0; i < v->childrenCount; i++) {
 		UctNode *child = v->children[i];
@@ -143,6 +137,8 @@ UctNode *bestChild(UctNode *v) {
 			bestChildIndex = i;
 		}
 	}
+	assert(bestChildIndex != -1);
+
 	return v->children[bestChildIndex];
 }
 

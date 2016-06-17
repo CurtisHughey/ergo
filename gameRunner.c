@@ -49,6 +49,9 @@ void runHumanVsHuman(void) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			status = promptHuman(state, colors[i]);
+			if (status == QUIT) {
+				break;
+			}
 		}
 	}
 
@@ -60,10 +63,10 @@ void runHumanVsHuman(void) {
 void runHumanVsComputer(void) {
 	State *state = createState();
 
+	char *colors[2] = { "Black", "White" };
+
 	srand(time(NULL));
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
-
-	char *colors[2] = { "Black", "White" };
 
 	int status = 0;
 	while (!status) {
@@ -86,4 +89,29 @@ void runHumanVsComputer(void) {
 	showResults(state);
 
 	destroyState(state);
+}
+
+void runComputerVsComputer(void) {	
+	State *state = createState();
+
+	char *colors[2] = { "Black", "White" };
+
+	int status = 0;
+	while (!status) {
+		for (int i = 0; i < 2; i++) {
+			displayState(state);
+			int move = uctSearch(state, 500); 
+			printf("%s chooses move: %d\n", colors[i], move);
+			status = state->blackPassed && move == MOVE_PASS;
+			makeMove(state, move);
+		}
+	}
+
+	showResults(state);
+
+	destroyState(state);	
+}
+
+void runComputerVsRandom(void) {
+	
 }

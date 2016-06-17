@@ -33,7 +33,7 @@ State *copyState(State *original) {
 void displayState(State *state) {
 	printf("-----------------------------------------------\n");
 	for (int i = BOARD_DIM-1; i >= 0; i--) {
-		printf("\t|");
+		printf("\t%c |", 'a'+i);
 		for (int j = 0; j < BOARD_DIM; j++) {
 			char item = 0;
 			switch (state->board[i*BOARD_DIM+j]) {
@@ -63,6 +63,11 @@ void displayState(State *state) {
 		}
 		printf("\n");
 	}
+	printf("\t   ");
+	for (int i = 0; i < BOARD_DIM; i++) {
+		printf("%c ", 'a'+i);
+	}
+	printf("\n");
 	printf("\t---------------------------------------\n");
 	printf("Turn: %s\n", state->turn == STATE_WHITE ? "White" : "Black");
 	printf("White stones captured: %d\n",state->whitePrisoners);
@@ -125,7 +130,7 @@ int isLegalMove(State *state, int move) {
 void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors) {
 	int count = 0;
 
-	if (point != MOVE_PASS) {  // ??? ^^^
+	if (point != MOVE_PASS) {  // ??? ^^^  i guess it's good to be defensive here?
 		int col = point % BOARD_DIM;
 		int row = point / BOARD_DIM; 
 
@@ -241,14 +246,16 @@ void makeMove(State *state, int move) {
 		int totalCaptured = 0;
 		int capturePoint = -1;  // Used for ko
 
-		Neighbors enemyNeighbors; 
-		getNeighborsOfType(state, move, otherTurn, &enemyNeighbors);
-		for (int i = 0; i < enemyNeighbors.count; i++) {
-			if (state->board[enemyNeighbors.array[i]] != STATE_EMPTY) {  // Could've been set to empty by previous iterations
-				if (!groupBordersTypeAndReset(state, enemyNeighbors.array[i], STATE_EMPTY)) {
-					totalCaptured += fillWith(state, enemyNeighbors.array[i], STATE_EMPTY);
-					capturePoint = enemyNeighbors.array[i];
+		Neighbors allNeighbors; 
+		getNeighborsOfType(state, move, STATE_ALL, &allNeighbors);
+		int enemyCount = 0;
+		for (int i = 0; i < allNeighbors.count; i++) {
+			if (state->board[allNeighbors.array[i]] == otherTurn) {  // Could've been set to empty by previous iterations
+				if (!groupBordersTypeAndReset(state, allNeighbors.array[i], STATE_EMPTY)) {
+					totalCaptured += fillWith(state, allNeighbors.array[i], STATE_EMPTY);
+					capturePoint = allNeighbors.array[i];
 				}
+				enemyCount += 1;
 			}
 		}
 
@@ -260,7 +267,7 @@ void makeMove(State *state, int move) {
 
 		// Now maybe sets ko
 		// This means we put down our stone, was surrounded, and one stone was removed (then ko comes into play)
-		if (totalCaptured == 1 && enemyNeighbors.count == NUM_NEIGHBORS) {
+		if (totalCaptured == 1 && allNeighbors.count == enemyCount) {
 			state->koPoint = capturePoint;  // removePoint was only set once
 		} else {
 			state->koPoint = -1;  // Resetting
@@ -279,7 +286,6 @@ void makeMove(State *state, int move) {
 	return;
 }
 
-// I'm pretty sure I need to be recording state->blackPassed
 void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
 	unmakeMoveInfo->move = move;
 	unmakeMoveInfo->koPoint = state->koPoint;
@@ -320,7 +326,7 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 		state->board[unmakeMoveInfo->move] = STATE_EMPTY;  // Removes the move
 	}
 
-	state->koPoint = unmakeMoveInfo->koPoint;
+	state->koPoint = unmakeMoveInfo->koPoint;  // I'm not convinced this is working ^^^, check ko point detection
 	state->turn = OTHER_COLOR(state->turn);
 	state->blackPassed = unmakeMoveInfo->blackPassed;
 
@@ -338,7 +344,7 @@ Moves *getMoves(State *state) {
 		}
 	}
 
-	moves->array[count++] = MOVE_PASS;  // Passing... 
+	moves->array[count++] = MOVE_PASS;  // Passing, always legal
 
 	moves->count = count;
 
