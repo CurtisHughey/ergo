@@ -20,6 +20,8 @@ void runHumanVsComputer(void);
 
 void runComputerVsComputer(void);
 
-// Used for testing
-void runComputerVsRandom(void);
+// Used for testing.  Returns 1 if the computer won, 0 if draw, -1 if lost
+int runComputerVsRandom(void);
+
+void testComputer(int iterations);
 #endif
