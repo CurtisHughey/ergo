@@ -2,11 +2,11 @@
 #define _GAMERUNNER_H
 
 #include <stdio.h>
-#include <time.h>
 
 #include "state.h"
 #include "parser.h"
 #include "uct.h"
+#include "timer.h"
 
 // Prints the results of a game
 void showResults(State *state);
@@ -16,12 +16,17 @@ int promptHuman(State *state, char *color);
 
 void runHumanVsHuman(void);
 
-void runHumanVsComputer(void);
+// For the moment, numSimulations is a hard count, but later time will be factored in ^^^
+void runHumanVsComputer(int numSimulations);
 
-void runComputerVsComputer(void);
+void runComputerVsComputer(int numSimulations);
 
 // Used for testing.  Returns 1 if the computer won, 0 if draw, -1 if lost
-int runComputerVsRandom(void);
+int runComputerVsRandom(int numSimulations);
 
-void testComputer(int iterations);
+void testComputer(int iterations, int numSimulations);
+
+void runTrial(int numSimulations);
+
+void timeTrials(int trials, int numSimulations);
 #endif

@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 	}
 
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "upchxy")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "upchxyt")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'u':
 				runAllUnitTests();
@@ -18,13 +18,16 @@ int main(int argc, char **argv) {
 				runHumanVsHuman();
 				break;
 			case 'c':
-				runHumanVsComputer();
+				runHumanVsComputer(500);
 				break;
 			case 'x':
-				runComputerVsComputer();
+				runComputerVsComputer(100);
 				break;
 			case 'y':
-				testComputer(50);
+				testComputer(10, 100);
+				break;
+			case 't':
+				timeTrials(5, 1);
 				break;
 			case 'h':
 				printf("Options\n");
@@ -39,6 +42,8 @@ int main(int argc, char **argv) {
 				printf("\t-y\n");
 				printf("\t\tRun computer vs other tests\n\n");
 				printf("\t-h\n");
+				printf("\t\tRun time trials\n\n");
+				printf("\t-t\n");
 				printf("\t\tThis\n\n");		
 			case '?':
 			default:

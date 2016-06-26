@@ -60,7 +60,7 @@ void runHumanVsHuman(void) {
 	destroyState(state);
 }
 
-void runHumanVsComputer(void) {
+void runHumanVsComputer(int numSimulations) {
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };
@@ -73,7 +73,7 @@ void runHumanVsComputer(void) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
-				int move = uctSearch(state, 1000);  // Lol, IDK about 1000 (it's so wrong ^^^)
+				int move = uctSearch(state, numSimulations);  // Lol, IDK about 1000 (it's so wrong ^^^)
 				printf("%s chooses move: %d\n", colors[i], move);  // Shoud translate to string move ^^^
 				status = state->blackPassed && move == MOVE_PASS;
 				makeMove(state, move);
@@ -91,7 +91,7 @@ void runHumanVsComputer(void) {
 	destroyState(state);
 }
 
-void runComputerVsComputer(void) {	
+void runComputerVsComputer(int numSimulations) {	
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };
@@ -100,7 +100,7 @@ void runComputerVsComputer(void) {
 	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
-			int move = uctSearch(state, 500); 
+			int move = uctSearch(state, numSimulations); 
 			printf("%s chooses move: %d\n", colors[i], move);
 			status = state->blackPassed && move == MOVE_PASS;
 			makeMove(state, move);
@@ -112,7 +112,7 @@ void runComputerVsComputer(void) {
 	destroyState(state);	
 }
 
-int runComputerVsRandom(void) {
+int runComputerVsRandom(int numSimulations) {
 	State *state = createState();
 
 	srand(time(NULL));
@@ -123,7 +123,7 @@ int runComputerVsRandom(void) {
 		for (int i = 0; i < 2; i++) {
 			int move;
 			if (i == compTurn) {  // AI move
-				move = uctSearch(state, 100); 
+				move = uctSearch(state, numSimulations); 
 			} else {  // Random move
 				Moves *moves = getMoves(state);
 				move = moves->array[rand() % moves->count];
@@ -154,14 +154,14 @@ int runComputerVsRandom(void) {
 	}
 }
 
-void testComputer(int iterations) {
+void testComputer(int iterations, int numSimulations) {
 	int compWon = 0;
 	int otherWon = 0;
 	int draws = 0;
 
-	const int interval = 5;
+	const int interval = 1;
 	for (int i = 0; i < iterations; i++) {
-		int result = runComputerVsRandom();
+		int result = runComputerVsRandom(numSimulations);
 		switch (result) {
 			case 1:
 				compWon += 1;
@@ -179,6 +179,7 @@ void testComputer(int iterations) {
 
 		if (i % interval == 0) {
 			printf(".");
+			fflush(stdout);
 		}
 	}
 	printf("\n");
@@ -188,4 +189,38 @@ void testComputer(int iterations) {
 	printf("Computer won: %d\n", compWon);
 	printf("Other won:    %d\n", otherWon);
 	printf("Draws:        %d\n", draws);
+}
+
+// Like computer vs computer
+void runTrial(int numSimulations) {	
+	State *state = createState();
+
+	int status = 0;
+	while (!status) {
+		for (int i = 0; i < 2; i++) {
+			int move = uctSearch(state, numSimulations); 
+			status = state->blackPassed && move == MOVE_PASS;
+			makeMove(state, move);
+		}
+	}
+
+	destroyState(state);	
+}
+
+void timeTrials(int trials, int numSimulations) {
+	double totalTime = 0;
+
+	Timer timer;
+	for (int i = 0; i < trials; i++) {
+		startTimer(&timer);
+		runTrial(numSimulations);
+		stopTimer(&timer);
+
+		totalTime += timeElapsed(&timer);
+		printf(".");
+		fflush(stdout);
+	}
+	printf("\n");
+
+	printf("Average runtime: %lf millis\n", totalTime/trials);
 }
