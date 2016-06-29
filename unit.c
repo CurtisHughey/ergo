@@ -39,6 +39,7 @@ int runStateTests(void) {
 									&runIsLegalMoveTests,
 									&runCalcScoresTests,
 									&runSetTerritoryTests,
+									&runStateRandomMakeUnmakeTests,
 								};
 
 	for (int i = 0; i < NUM_TESTS; i++) {
@@ -280,7 +281,62 @@ TestResult runStateMakeMoveTests(void) {
 }
 
 TestResult runStateMakeUnmakeTests(void) {
-	printf("\t\tmakeUnmake Tests: \n");
+	printf("\t\tmakeUnmakeMove Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	char filePath[] = "./test/state/makeUnmakeMove/"; 
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(filePath);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			if (dir->d_name[0] == 'i') {  
+				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(initialFile, filePath, strlen(filePath));
+				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+
+				char *moveFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(moveFile, filePath, strlen(filePath));
+				strncpy(moveFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+				moveFile[strlen(filePath)] = 'm';  // Makes it the move one
+
+				State* initialState = parseState(initialFile);
+				int move = parseMoveFromFile(moveFile);
+
+				State *copy = copyState(initialState);
+				UnmakeMoveInfo unmakeMoveInfo;
+				makeMoveAndSave(initialState, move, &unmakeMoveInfo);
+				unmakeMove(initialState, &unmakeMoveInfo);
+
+				if (!statesAreEqual(initialState, copy)) {
+					printf("\t\tFailure for test: %s\n", dir->d_name);
+					printf("Got:\n");
+					displayState(initialState);
+				} else {
+					totalPasses += 1;
+				}
+
+				totalTests += 1;
+				free(initialFile);
+				free(moveFile);
+				destroyState(initialState);
+				destroyState(copy);
+			}
+		}
+	} else {
+		ERROR_PRINT("Couldn't find directory for makeUnmakeMove");;
+		return (TestResult){1,0,0};
+	}
+	free(d);
+
+	return (TestResult){0, totalPasses, totalTests};
+}
+
+TestResult runStateRandomMakeUnmakeTests(void) {
+	printf("\t\trandomMakeUnmake Tests: \n");
 
 	int totalPasses = 0;
 	int totalTests = 0;
@@ -300,6 +356,7 @@ TestResult runStateMakeUnmakeTests(void) {
 			int randIndex = rand() % moves->count;
 			UnmakeMoveInfo unmakeMoveInfo;
 			makeMoveAndSave(copy, moves->array[randIndex], &unmakeMoveInfo);
+			getMoves(copy);
 			unmakeMove(copy, &unmakeMoveInfo);
 
 			// Maybe should write this to a file if there's an error, rather than print to terminal ^^^

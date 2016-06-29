@@ -9,7 +9,7 @@
 #include "state.h"
 #include "parser.h"
 
-#define NUM_TESTS 8
+#define NUM_TESTS 9
 
 typedef struct {
 	int errorCode;  // 1 if error, 0 if not
@@ -28,7 +28,6 @@ TestResult runStateGroupBordersTypeAndResetTests(void);
 
 TestResult runStateMakeMoveTests(void);
 
-// This makes a bunch of random moves and then unmakes them, checks to make sure that the states are equal
 TestResult runStateMakeUnmakeTests(void);
 
 // Also tests isLegalMoves
@@ -39,5 +38,8 @@ TestResult runIsLegalMoveTests(void);
 TestResult runCalcScoresTests(void);
 
 TestResult runSetTerritoryTests(void);
+
+// This makes a bunch of random moves and then unmakes them, checks to make sure that the states are equal
+TestResult runStateRandomMakeUnmakeTests(void);
 
 #endif

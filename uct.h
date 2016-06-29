@@ -9,7 +9,9 @@
 #include <math.h>
 #include <assert.h>
 
+#include "dbg.h"
 #include "state.h"
+#include "parser.h"
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 

@@ -28,7 +28,11 @@ void expandUctNode(State *state, UctNode *parent) {
 	Moves *moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
 	unmakeMove(state, &unmakeMoveInfo);
 
-	assert(statesAreEqual(copy, state));
+	if (!statesAreEqual(copy, state)) {
+		serializeState(state, "output.txt");
+		ERROR_PRINT("ERROR\n");
+		exit(1);
+	}
 
 	setChildren(parent, moves);
 	free(moves);
