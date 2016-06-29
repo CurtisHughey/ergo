@@ -6,7 +6,7 @@
 
 #include "dbg.h"
 
-#define BOARD_DIM 19
+#define BOARD_DIM 3
 #define BOARD_SIZE BOARD_DIM*BOARD_DIM  // Should I just say 361?
 
 #define NUM_NEIGHBORS 4

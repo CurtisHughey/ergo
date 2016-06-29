@@ -21,9 +21,14 @@ UctNode *createRootUctNode(State *state) {
 // Adds children to UctNode
 void expandUctNode(State *state, UctNode *parent) {
 	UnmakeMoveInfo unmakeMoveInfo;
+
+	State *copy = copyState(state);
+
 	makeMoveAndSave(state, parent->action, &unmakeMoveInfo);
 	Moves *moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
 	unmakeMove(state, &unmakeMoveInfo);
+
+	assert(statesAreEqual(copy, state));
 
 	setChildren(parent, moves);
 	free(moves);
@@ -159,7 +164,7 @@ double defaultPolicy(State *state, int lengthOfGame) {
 		// int randomIndex = -2;
 		// do {
 		// 	randomIndex = rand() % (BOARD_SIZE+1);
-		// } while (!isLegalMove(state, randomIndex));
+		// } while (!isLegalMove(playoutCopy, randomIndex));
 
 		makeMove(playoutCopy, moves->array[randomIndex]);
 		free(moves);
