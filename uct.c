@@ -1,5 +1,6 @@
 #include "uct.h"
 
+// I want to use AMAF/RAVE^^^
 
 // Creates new root UctNode
 UctNode *createRootUctNode(State *state) {
@@ -153,6 +154,13 @@ double defaultPolicy(State *state, int lengthOfGame) {
 	for (int i = 0; i < lengthOfGame; i++) {
 		Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
 		int randomIndex = rand() % moves->count;
+
+		// Use commented policy for beginning of game
+		// int randomIndex = -2;
+		// do {
+		// 	randomIndex = rand() % (BOARD_SIZE+1);
+		// } while (!isLegalMove(state, randomIndex));
+
 		makeMove(playoutCopy, moves->array[randomIndex]);
 		free(moves);
 		moves = NULL;

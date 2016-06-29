@@ -256,6 +256,8 @@ TestResult runStateMakeMoveTests(void) {
 
 				if (!statesAreEqual(initialState, expectedState)) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
+					printf("Got:\n");
+					displayState(initialState);
 				} else {
 					totalPasses += 1;
 				}
@@ -372,8 +374,7 @@ TestResult runGetMovesTests(void) {
 				int passes = 1;
 				if (moves->count != numMoves) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
-					// printf("%d\n", numMoves);
-					// printf("%d\n", moves->count);
+					printf("Got: %d\n", moves->count);
 					passes = 0;
 				}
 
@@ -513,7 +514,8 @@ TestResult runCalcScoresTests(void) {
 				Score score = calcScores(initialState);
 
 				if (score.whiteScore != whiteScore || score.blackScore != blackScore) {
-					printf("\t\tFailure for test: %s, got scores (%d, %d)\n", dir->d_name, score.whiteScore, score.blackScore);
+					printf("\t\tFailure for test: %s\n", dir->d_name);
+					printf("Got scores (%d, %d)\n", score.whiteScore, score.blackScore);
 				} else {
 					totalPasses += 1;
 				}

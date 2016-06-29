@@ -85,7 +85,7 @@ int isLegalMove(State *state, int move) {
 	}
 
 	if (move == MOVE_PASS) {
-		return 1;
+		return 1;  // Always legal
 	}
 
 	// Occupied board:
@@ -334,8 +334,9 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 }
 
 // Should optimize ^^^, right now it's O(n^2) calling isLegalMove every time could be rough
+// Should keep track of how many liberties each stone is directly and indirectly connected to ^^^ (hmm, maybe)
 Moves *getMoves(State *state) {
-	Moves *moves = malloc(sizeof(Moves));  // Heap vs just returning struct?^^^
+	Moves *moves = malloc(sizeof(Moves));
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {

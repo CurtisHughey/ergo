@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 				runHumanVsComputer(500);
 				break;
 			case 'x':
-				runComputerVsComputer(100);
+				runComputerVsComputer(10);
 				break;
 			case 'y':
 				testComputer(10, 100);
@@ -41,13 +41,14 @@ int main(int argc, char **argv) {
 				printf("\t\tRun computer vs computer\n\n");
 				printf("\t-y\n");
 				printf("\t\tRun computer vs other tests\n\n");
-				printf("\t-h\n");
-				printf("\t\tRun time trials\n\n");
 				printf("\t-t\n");
-				printf("\t\tThis\n\n");		
+				printf("\t\tRun time trials\n\n");
+				printf("\t-h\n");
+				printf("\t\tThis\n\n");	
+				break;	
 			case '?':
 			default:
-				ERROR_PRINT("Unknown option, use -H for help");
+				ERROR_PRINT("Unknown option, use -h for help");
 				exit(1);
 		}
 	}

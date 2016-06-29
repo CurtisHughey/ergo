@@ -2,3 +2,4 @@ ergo
 *.o
 *~
 output/*
+callgrind*
