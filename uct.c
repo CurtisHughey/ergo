@@ -18,21 +18,59 @@ UctNode *createRootUctNode(State *state) {
 	return root;
 }
 
+void displayUctTree(UctNode *node, State *S) {
+	_displayUctTree(node, 0,S);
+}
+
+void _displayUctTree(UctNode *node, int tabs, State *state) {
+	char *whiteSpace = calloc(tabs, sizeof(char));
+	for (int i = 0; i < tabs; i++) {  // I know there's a one-liner for this ^^^
+		whiteSpace[i] = '\t';
+	}
+	printf("%s%d\n", whiteSpace, node->action);
+	UnmakeMoveInfo unmakeMoveInfo;
+	if (node->action != ROOT_MOVE)
+		makeMoveAndSave(state, node->action, &unmakeMoveInfo);
+	displayState(state);
+	for (int i = 0; i < node->childrenCount; i++) {
+		_displayUctTree(node->children[i], tabs+1, state);
+	}
+	if (node->action != ROOT_MOVE)
+		unmakeMove(state, &unmakeMoveInfo);
+}
+
 // Adds children to UctNode
 void expandUctNode(State *state, UctNode *parent) {
 	UnmakeMoveInfo unmakeMoveInfo;
 
 	State *copy = copyState(state);
 
-	makeMoveAndSave(state, parent->action, &unmakeMoveInfo);
-	Moves *moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
-	unmakeMove(state, &unmakeMoveInfo);
+	Moves *moves = NULL;
+	if (parent->action != ROOT_MOVE) {
+		makeMoveAndSave(state, parent->action, &unmakeMoveInfo);
+		moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
+		unmakeMove(state, &unmakeMoveInfo);
+	} else {
+		moves = getMoves(state);
+	}
 
 	if (!statesAreEqual(copy, state)) {
-		serializeState(state, "output.txt");
-		ERROR_PRINT("ERROR\n");
+		serializeState(state, "output/output.txt");
+		ERROR_PRINT("ERROR, %d\n", parent->action);
+
+		while (parent->parent != NULL) 
+			parent = parent->parent;
+		displayUctTree(parent,state); 
+
+		for (int i = 0; i < moves->count; i++) {
+			printf("%d, ", moves->array[i]);
+		}
+		printf("\n");
+
+		free(copy);
 		exit(1);
 	}
+	free(copy);
 
 	setChildren(parent, moves);
 	free(moves);
@@ -75,9 +113,11 @@ int uctSearch(State *state, int iterations) {
 	
 	UctNode *v = NULL;
 	for (int i = 0; i < iterations; i++) {
-		v = treePolicy(state, root, lengthOfGame);
-		double reward = defaultPolicy(state, lengthOfGame);
+		State *copy = copyState(state);
+		v = treePolicy(copy, root, lengthOfGame);
+		double reward = defaultPolicy(copy, lengthOfGame);
 		backupNegamax(v, reward);
+		destroyState(copy);
 	}
 
 	UctNode *bestNode = bestChild(root);
@@ -92,9 +132,16 @@ int uctSearch(State *state, int iterations) {
 UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
 	for (int i = 0; i < lengthOfGame; i++) {
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
-			return expand(state, v);
+			UctNode *terminal = expand(state, v);
+			if (terminal->action != ROOT_MOVE) {  // Might not need this check ^^^
+				makeMove(state, terminal->action);
+			}
+			return terminal;
 		} else {
 			v = bestChild(v);
+			if (v->action != ROOT_MOVE) {  // Might not need this check ^^^
+				makeMove(state, v->action);
+			}
 		}
 	}
 	return v;
@@ -153,7 +200,7 @@ UctNode *bestChild(UctNode *v) {
 }
 
 // Simulates rest of game, for lengthOfGame moves
-// state will be unchanged
+// state will be unchanged (might not care)
 double defaultPolicy(State *state, int lengthOfGame) {
 	int color = state->turn;
 	State *playoutCopy = copyState(state);

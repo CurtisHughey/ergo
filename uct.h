@@ -32,6 +32,12 @@ UctNode *createRootUctNode(State *state);
 // Adds children to UctNode
 void expandUctNode(State *state, UctNode *parent);
 
+// Wrapper function for _displayUctTree
+void displayUctTree(UctNode *node, State *);
+
+// Internal, displays the Uct tree with node as the starting root.
+void _displayUctTree(UctNode *node, int tabs, State *);
+
 // Explicitly sets children
 void setChildren(UctNode *parent, Moves *moves);
 
