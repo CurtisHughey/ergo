@@ -18,13 +18,13 @@ int main(int argc, char **argv) {
 				runHumanVsHuman();
 				break;
 			case 'c':
-				runHumanVsComputer(500);
+				runHumanVsComputer(1000);
 				break;
 			case 'x':
-				runComputerVsComputer(3);
+				runComputerVsComputer(1000);
 				break;
 			case 'y':
-				testComputer(10, 100);
+				testComputer(10, 500);
 				break;
 			case 't':
 				timeTrials(5, 1);

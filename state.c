@@ -352,6 +352,7 @@ Moves *getMoves(State *state) {
 	return moves;
 }
 
+// So I guess I'm not bothering with number of captured stones
 int calcScore(State *state, int type) {
 	// First have to do a slightly annoying check to see if the entire board is empty
 	// Maybe combine with for loop below ^^^

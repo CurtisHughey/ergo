@@ -92,6 +92,8 @@ void runHumanVsComputer(int numSimulations) {
 }
 
 void runComputerVsComputer(int numSimulations) {	
+	srand(time(NULL));  // Make sure I'm seeding everywhere good ^^^
+
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };

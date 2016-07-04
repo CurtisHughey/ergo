@@ -149,8 +149,6 @@ UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
 
 // Chooses a random unexplored child (v')
 UctNode *expand(State *state, UctNode *v) {
-	srand(time(NULL));  // I should stop doing this all over the place, just initialize in beginning ^^^
-
 	int numUnvisited = v->childrenCount - v->childrenVisited;
 	int untriedIndex = rand() % numUnvisited;
 
@@ -204,8 +202,6 @@ UctNode *bestChild(UctNode *v) {
 double defaultPolicy(State *state, int lengthOfGame) {
 	int color = state->turn;
 	State *playoutCopy = copyState(state);
-
-	srand(time(NULL));  // I should stop doing this all over the place, just initialize in beginning ^^^
 
 	for (int i = 0; i < lengthOfGame; i++) {
 		Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
