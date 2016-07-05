@@ -21,10 +21,10 @@ int main(int argc, char **argv) {
 				runHumanVsComputer(1000);
 				break;
 			case 'x':
-				runComputerVsComputer(1000);
+				runComputerVsComputer(100000);
 				break;
 			case 'y':
-				testComputer(10, 500);
+				testComputer(20, 10000);
 				break;
 			case 't':
 				timeTrials(5, 1);

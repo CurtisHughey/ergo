@@ -15,7 +15,7 @@
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 
-#define UCT_CONSTANT 2  // This is the 2C_P\sqrt{2} term
+#define UCT_CONSTANT 0.70710678118 // This is the C_p=1/sqrt(2) term
 
 typedef struct UctNode {
 	int action;  // The move
@@ -33,10 +33,10 @@ UctNode *createRootUctNode(State *state);
 void expandUctNode(State *state, UctNode *parent);
 
 // Wrapper function for _displayUctTree
-void displayUctTree(UctNode *node, State *);
+void displayUctTree(UctNode *node);
 
 // Internal, displays the Uct tree with node as the starting root.
-void _displayUctTree(UctNode *node, int tabs, State *);
+void _displayUctTree(UctNode *node, int tabs);
 
 // Explicitly sets children
 void setChildren(UctNode *parent, Moves *moves);
@@ -53,8 +53,8 @@ UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame);
 // Creates new child node
 UctNode *expand(State *state, UctNode *v);
 
-// Returns the best child by the UCB1 algorithm
-UctNode *bestChild(UctNode *v);
+// Returns the best child by the UCB1 algorithm.  c is the constant defined in the paper (either C_p or 0)
+UctNode *bestChild(UctNode *v, double c);
 
 // Simulates rest of game, for lengthOfGame moves
 double defaultPolicy(State *state, int lengthOfGame);

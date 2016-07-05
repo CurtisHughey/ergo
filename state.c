@@ -78,7 +78,6 @@ void displayState(State *state) {
 	printf("\n\n");
 }
 
-// I honestly should typedef int move ^^^
 int isLegalMove(State *state, int move) {
 	if (move < MOVE_PASS || move >= BOARD_SIZE) {  // Could be < -1 if parsed as INVALID_MOVE
 		return 0;  // Duh
@@ -100,7 +99,7 @@ int isLegalMove(State *state, int move) {
 
 	// Not suicidal:
 	state->board[move] = state->turn;  // Makes the move
-	if (!groupBordersTypeAndReset(state, move, STATE_EMPTY)) {
+	if (!groupBordersTypeAndReset(state, move, STATE_EMPTY)) {  // Checks to see if it has any liberties (if it does, then legal)
 		// Now needs to find if it kills any of the opponents stones (i.e. there exists a neighboring family that dies)
 		int otherTurn = OTHER_COLOR(state->turn);
 
@@ -130,7 +129,7 @@ int isLegalMove(State *state, int move) {
 void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors) {
 	int count = 0;
 
-	if (point != MOVE_PASS) {  // ??? ^^^  i guess it's good to be defensive here?
+	if (point != MOVE_PASS) {  // I guess it's good to be defensive here?
 		int col = point % BOARD_DIM;
 		int row = point / BOARD_DIM; 
 
@@ -326,7 +325,7 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 		state->board[unmakeMoveInfo->move] = STATE_EMPTY;  // Removes the move
 	}
 
-	state->koPoint = unmakeMoveInfo->koPoint;  // I'm not convinced this is working ^^^, check ko point detection
+	state->koPoint = unmakeMoveInfo->koPoint;
 	state->turn = OTHER_COLOR(state->turn);
 	state->blackPassed = unmakeMoveInfo->blackPassed;
 
@@ -352,10 +351,9 @@ Moves *getMoves(State *state) {
 	return moves;
 }
 
-// So I guess I'm not bothering with number of captured stones
+// So I guess I'm not bothering with number of captured stones ^^^
 int calcScore(State *state, int type) {
 	// First have to do a slightly annoying check to see if the entire board is empty
-	// Maybe combine with for loop below ^^^
 	int empty = 1;
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		if (state->board[i] != STATE_EMPTY) {
@@ -369,7 +367,7 @@ int calcScore(State *state, int type) {
 
 	int numStones = 0;
 
-	// First counts score, can't move this into switch :(
+	// First counts score
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		if (state->board[i] == type) {
 			numStones += 1;

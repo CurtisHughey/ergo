@@ -18,25 +18,19 @@ UctNode *createRootUctNode(State *state) {
 	return root;
 }
 
-void displayUctTree(UctNode *node, State *S) {
-	_displayUctTree(node, 0,S);
+void displayUctTree(UctNode *node) {
+	_displayUctTree(node, 0);
 }
 
-void _displayUctTree(UctNode *node, int tabs, State *state) {
+void _displayUctTree(UctNode *node, int tabs) {
 	char *whiteSpace = calloc(tabs, sizeof(char));
 	for (int i = 0; i < tabs; i++) {  // I know there's a one-liner for this ^^^
 		whiteSpace[i] = '\t';
 	}
 	printf("%s%d\n", whiteSpace, node->action);
-	UnmakeMoveInfo unmakeMoveInfo;
-	if (node->action != ROOT_MOVE)
-		makeMoveAndSave(state, node->action, &unmakeMoveInfo);
-	displayState(state);
 	for (int i = 0; i < node->childrenCount; i++) {
-		_displayUctTree(node->children[i], tabs+1, state);
+		_displayUctTree(node->children[i], tabs+1);
 	}
-	if (node->action != ROOT_MOVE)
-		unmakeMove(state, &unmakeMoveInfo);
 }
 
 // Adds children to UctNode
@@ -54,13 +48,13 @@ void expandUctNode(State *state, UctNode *parent) {
 		moves = getMoves(state);
 	}
 
-	if (!statesAreEqual(copy, state)) {
+	if (!statesAreEqual(copy, state)) {  // This is kinda bad, eventually remove ^^^
 		serializeState(state, "output/output.txt");
 		ERROR_PRINT("ERROR, %d\n", parent->action);
 
 		while (parent->parent != NULL) 
 			parent = parent->parent;
-		displayUctTree(parent,state); 
+		displayUctTree(parent); 
 
 		for (int i = 0; i < moves->count; i++) {
 			printf("%d, ", moves->array[i]);
@@ -82,7 +76,7 @@ void setChildren(UctNode *parent, Moves *moves) {
 		children[i] = malloc(sizeof(UctNode));
 
 		children[i]->action = moves->array[i];
-		children[i]->reward = 0;
+		children[i]->reward = 0;  // Maybe? ^^^
 		children[i]->visitCount = 0;
 		children[i]->children = NULL;
 		children[i]->childrenCount = 0;
@@ -120,7 +114,7 @@ int uctSearch(State *state, int iterations) {
 		destroyState(copy);
 	}
 
-	UctNode *bestNode = bestChild(root);
+	UctNode *bestNode = bestChild(root, 0);
 	int move = bestNode->action;
 
 	destroyUctNode(root);
@@ -130,26 +124,29 @@ int uctSearch(State *state, int iterations) {
 
 // Finds non-terminal node
 UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
-	for (int i = 0; i < lengthOfGame; i++) {
+	while (1) {  // Will stop when it finds a terminal node ^^^ ish
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
-			UctNode *terminal = expand(state, v);
-			if (terminal->action != ROOT_MOVE) {  // Might not need this check ^^^
-				makeMove(state, terminal->action);
+			UctNode *added = expand(state, v);
+			if (added->action != ROOT_MOVE) {  // Might not need this check ^^^
+				makeMove(state, added->action);
 			}
-			return terminal;
+			return added;
 		} else {
-			v = bestChild(v);
+			v = bestChild(v, UCT_CONSTANT);
 			if (v->action != ROOT_MOVE) {  // Might not need this check ^^^
 				makeMove(state, v->action);
 			}
+			// if (v->action == MOVE_PASS) {
+			// 	return v;  // I guess this is terminal ^^^
+			// }
 		}
 	}
-	return v;
 }
 
 // Chooses a random unexplored child (v')
 UctNode *expand(State *state, UctNode *v) {
 	int numUnvisited = v->childrenCount - v->childrenVisited;
+	assert (numUnvisited > 0);
 	int untriedIndex = rand() % numUnvisited;
 
 	UctNode *child = NULL;
@@ -174,31 +171,34 @@ UctNode *expand(State *state, UctNode *v) {
 }
 
 // Returns the best child by the UCB1 algorithm
-UctNode *bestChild(UctNode *v) {
-	int bestReward = -1;  // INT_MIN?
-	int bestChildIndex = -1;  // There is always at least 1 child, so this will be filled
+UctNode *bestChild(UctNode *v, double c) {
+	double bestReward = -2;  // INT_MIN?   /// CRAAPPPPPPPPPPPPPP, it wass originally an int
+	int bestChildIndex = 0;  // There is always at least 1 child, so this will be filled
 	for (int i = 0; i < v->childrenCount; i++) {
 		UctNode *child = v->children[i];
-		int reward = 0;
+		double reward = 0;  // IT WAS AN INT TOOOOO
 		if (child->visitCount > 0) {  // I.e. if visited
-			reward = child->reward / child->visitCount 
-					+ UCT_CONSTANT*sqrt(log((double)v->visitCount)/child->visitCount);
+			reward = ((double)(child->reward)) / child->visitCount 
+					+ c*sqrt(2*log((double)v->visitCount)/child->visitCount);
 		} else {
-			// This is bad because it will favor later children ^^^
-			reward = INT_MAX;  // Highest possible
+			reward = -2;  // Not sure what this should be set to
 		}
+		if (c == 0)
+			printf("(%d, %lf)", child->action, reward);
 		if (reward > bestReward) {
 			bestReward = reward;
 			bestChildIndex = i;
 		}
 	}
+	if (c == 0)
+		printf("\n");
 	assert(bestChildIndex != -1);
 
 	return v->children[bestChildIndex];
 }
 
 // Simulates rest of game, for lengthOfGame moves
-// state will be unchanged (might not care)
+// state will be unchanged (might not care) ^^^
 double defaultPolicy(State *state, int lengthOfGame) {
 	int color = state->turn;
 	State *playoutCopy = copyState(state);
@@ -206,16 +206,31 @@ double defaultPolicy(State *state, int lengthOfGame) {
 	for (int i = 0; i < lengthOfGame; i++) {
 		Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
 		int randomIndex = rand() % moves->count;
-
-		// Use commented policy for beginning of game
-		// int randomIndex = -2;
-		// do {
-		// 	randomIndex = rand() % (BOARD_SIZE+1);
-		// } while (!isLegalMove(playoutCopy, randomIndex));
-
-		makeMove(playoutCopy, moves->array[randomIndex]);
+		int randomMove = moves->array[randomIndex];
+		makeMove(playoutCopy, randomMove);
 		free(moves);
 		moves = NULL;
+
+		// This makes it soooo much faster (like 25%)
+		// This means if both players randomly pass in the middle of the game, we stop
+		if (randomMove == MOVE_PASS && playoutCopy->turn == STATE_BLACK && playoutCopy->blackPassed) {  // I.e. if the last move was a pass by white (so the turn just became black), and black had also passed
+			break;  // We're done
+		}
+
+		// int randomMove;
+		// if (i >= 100) {
+		// 	Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
+		// 	int randomIndex = rand() % moves->count;
+		// 	randomMove = moves->array[randomIndex];
+		// 	free(moves);
+		// 	moves = NULL;
+		// }
+		// else {  // Better to do it first and ask forgiveness later.
+		// 	do {
+		// 		randomMove = rand() % (BOARD_SIZE+1);
+		// 	} while (!isLegalMove(playoutCopy, randomMove));
+		// }
+		// makeMove(playoutCopy, randomMove);
 	}
 
 	Score scores = calcScores(playoutCopy);
@@ -250,6 +265,7 @@ void backupNegamax(UctNode *v, double reward) {
 }
 
 // Used for the second argument of defaultPolicy.  Just returning constant right now 
+// Unused
 int chooseLengthOfGame(int lengthSoFar) {
 	// Lol, IDK ^^^
 	if (lengthSoFar < 100) {
