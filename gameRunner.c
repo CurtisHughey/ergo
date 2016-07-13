@@ -66,14 +66,14 @@ void runHumanVsComputer(int numSimulations) {
 	char *colors[2] = { "Black", "White" };
 
 	srand(time(NULL));
-	int compTurn = rand() % 2;  // 0 for black, 1 for white
+	int compTurn = rand() % 2;  // 0 for black, 1 for white (macro this?)
 
 	int status = 0;
 	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
-				int move = uctSearch(state, numSimulations);  // Lol, IDK about 1000 (it's so wrong ^^^)
+				int move = uctSearch(state, numSimulations); 
 				printf("%s chooses move: %d\n", colors[i], move);  // Shoud translate to string move ^^^
 				status = state->blackPassed && move == MOVE_PASS;
 				makeMove(state, move);
@@ -114,10 +114,10 @@ void runComputerVsComputer(int numSimulations) {
 	destroyState(state);	
 }
 
+// Rand must already be initialized
 int runComputerVsRandom(int numSimulations) {
 	State *state = createState();
 
-	srand(time(NULL));
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
 
 	int status = 0;
@@ -157,6 +157,8 @@ int runComputerVsRandom(int numSimulations) {
 }
 
 void testComputer(int iterations, int numSimulations) {
+	srand(time(NULL));	
+
 	int compWon = 0;
 	int otherWon = 0;
 	int draws = 0;
@@ -193,7 +195,7 @@ void testComputer(int iterations, int numSimulations) {
 	printf("Draws:        %d\n", draws);
 }
 
-// Like computer vs computer
+// Like computer vs computer.  srand needs to be called by callee
 void runTrial(int numSimulations) {	
 	State *state = createState();
 
@@ -210,6 +212,8 @@ void runTrial(int numSimulations) {
 }
 
 void timeTrials(int trials, int numSimulations) {
+	srand(time(NULL));
+
 	double totalTime = 0;
 
 	Timer timer;

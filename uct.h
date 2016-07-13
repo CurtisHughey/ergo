@@ -15,12 +15,13 @@
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 
-#define UCT_CONSTANT 0.70710678118 // This is the C_p=1/sqrt(2) term
+#define UCT_CONSTANT 1.41 // This is the C_p=sqrt(2) term
 
 typedef struct UctNode {
 	int action;  // The move
 	double reward;  // Maybe just float...
 	int visitCount;
+	int terminal;  // Whether it's terminal or not (i.e. it's a white passing move, black passed last turn)
 	struct UctNode **children;
 	int childrenCount;
 	int childrenVisited;
@@ -39,7 +40,7 @@ void displayUctTree(UctNode *node);
 void _displayUctTree(UctNode *node, int tabs);
 
 // Explicitly sets children
-void setChildren(UctNode *parent, Moves *moves);
+void setChildren(UctNode *parent, Moves *moves, State *state);
 
 // Recursively destroys UctNodes
 void destroyUctNode(UctNode *v);
@@ -57,7 +58,7 @@ UctNode *expand(State *state, UctNode *v);
 UctNode *bestChild(UctNode *v, double c);
 
 // Simulates rest of game, for lengthOfGame moves
-double defaultPolicy(State *state, int lengthOfGame);
+double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v);
 
 // Propagates new score back to root
 void backupNegamax(UctNode *v, double reward);

@@ -407,6 +407,8 @@ Score calcScores(State *state) {
 	int whiteScore = calcScore(state, STATE_WHITE);
 	int blackScore = calcScore(state, STATE_BLACK);
 
+	// Need to factor in komi^^^
+
 	return (Score){whiteScore, blackScore};
 }
 
