@@ -58,7 +58,7 @@ void setChildren(UctNode *parent, Moves *moves, State *state) {
 		children[i]->action = moves->array[i];
 		children[i]->reward = 0;  // Maybe? ^^^
 		children[i]->visitCount = 0;
-		children[i]->terminal = state->blackPassed && moves->array[i] == MOVE_PASS;  // Maybe?
+		children[i]->terminal = state->blackPassed && moves->array[i] == MOVE_PASS;  // Maybe?.  Might be better to record ISWINNER^^^
 		children[i]->children = NULL;
 		children[i]->childrenCount = 0;
 		children[i]->childrenVisited = 0;
@@ -85,11 +85,11 @@ int uctSearch(State *state, int iterations) {
 	const int lengthOfGame = 250;  // IRDK ^^^
 
 	UctNode *root = createRootUctNode(state);
-	
+	int rootTurn = state->turn;
 	for (int i = 0; i < iterations; i++) {
 		State *copy = copyState(state);
 		UctNode *v = treePolicy(copy, root, lengthOfGame);
-		double reward = defaultPolicy(state->turn, copy, lengthOfGame, v);
+		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
 		backupNegamax(v, reward);
 		destroyState(copy);
 	}
@@ -144,18 +144,13 @@ UctNode *expand(State *state, UctNode *v) {
 }
 
 // Returns the best child by the UCB1 algorithm
+// This should be good
 UctNode *bestChild(UctNode *v, double c) {
 	double bestReward = INT_MIN;  // INT_MIN?   /// CRAAPPPPPPPPPPPPPP, it wass originally an int
 	int bestChildIndex = 0;  // There is always at least 1 child, so this will be filled
 	for (int i = 0; i < v->childrenCount; i++) {
 		UctNode *child = v->children[i];
-		double reward = 0;  // IT WAS AN INT TOOOOO
-		if (child->visitCount > 0) {  // I.e. if visited.  Check that at least one of these was filled ^^^
-			reward = ((double)(child->reward)) / child->visitCount 
-					+ c*sqrt(log((double)v->visitCount)/child->visitCount);
-		} else {
-			reward = INT_MIN;  // Not sure what this should be set to ^^^
-		}
+		double reward = calcReward(v, child, c);
 		if (c == 0)
 			printf("(%d, %d, %lf)", child->action, child->visitCount, reward);
 		if (reward > bestReward) {
@@ -168,6 +163,17 @@ UctNode *bestChild(UctNode *v, double c) {
 	assert(bestChildIndex != -1);
 
 	return v->children[bestChildIndex];
+}
+
+double calcReward(UctNode *parent, UctNode *child, double c) {
+	double reward = 0;
+	if (child->visitCount > 0) {  // I.e. if visited.
+		reward = ((double)(child->reward))/child->visitCount 
+					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
+	} else {
+		reward = INT_MIN;  // Not sure what this should be set to ^^^
+	}
+	return reward;
 }
 
 // Simulates rest of game, for lengthOfGame moves
@@ -222,12 +228,12 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 		reward = 0.5;
 	}
 	// Reverses reward if necessary
-	if (color == STATE_WHITE) {
+	if (rootTurn == STATE_WHITE) {
 		reward = 1-reward;
 	}
 
 	if (color == rootTurn) {
-		reward = -1*reward;
+		reward = -1*reward;  // To work with negamax
 	}
 
 	destroyState(playoutCopy);
@@ -237,7 +243,7 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 
 // Propagates new score back to root
 void backupNegamax(UctNode *v, double reward) {
-	while (v != NULL) {
+	while (v != NULL) {  // This or checking if root?
 		v->visitCount += 1;
 		v->reward += reward;
 		reward = -1*reward;  // Maybe?? ^^^

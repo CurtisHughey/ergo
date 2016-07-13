@@ -141,13 +141,13 @@ int runComputerVsRandom(int numSimulations) {
 	if (score.blackScore == score.whiteScore) {
 		return 0;  // draw
 	} else {
-		// This could get refactored better ^^^
+		// This could get refactored way better ^^^
 		int result = -1;
-		if (compTurn == STATE_BLACK) {
+		if (compTurn == 0) {  // The 0 and 1 is annoying
 			if (score.blackScore > score.whiteScore) {
 				result = 1;
 			}
-		} else {  /* compTurn == STATE_WHITE */
+		} else {  /* compTurn == 1 */
 			if (score.blackScore < score.whiteScore) {
 				result = 1;
 			}			

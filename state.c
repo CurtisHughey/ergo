@@ -1,3 +1,5 @@
+// Technically, I have an error, if the board is completely filled by black but for one square, black can't move in the vacant square ^^^
+
 #include "state.h"
 
 State *createState(void) {

@@ -57,6 +57,9 @@ UctNode *expand(State *state, UctNode *v);
 // Returns the best child by the UCB1 algorithm.  c is the constant defined in the paper (either C_p or 0)
 UctNode *bestChild(UctNode *v, double c);
 
+// Calculates the reward by the UCT algorithm
+double calcReward(UctNode *parent, UctNode *child, double c);
+
 // Simulates rest of game, for lengthOfGame moves
 double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v);
 
