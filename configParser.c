@@ -7,6 +7,7 @@ Config *getDefaultConfig(void) {
 	config->threads = 1;
 	config->tests = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
+	config->warmupTrials = 2;  // To warm up the cpu for the time trials
 	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
 
 	return config;
@@ -43,7 +44,7 @@ Config *parseConfigFile(char *configFileName) {
 }
 
 int updateConfig(Config *config, char *variableName, int value) {
-	// Huge long ugly if chain.  Definitely could automatically generate
+	// Huge long ugly if else chain.  Definitely could automatically generate
 	if (!strcmp(variableName, "rollouts")) {  // strncmp ^^^
 		if (value < 1) {
 			ERROR_PRINT("Number of rollouts must be greater than 0, got: %d", value);
@@ -59,10 +60,30 @@ int updateConfig(Config *config, char *variableName, int value) {
 		}
 		config->threads = value;
 		return 0;
-	}
-	else if (!strcmp(variableName, "unitRandomMakeUnmakeTests")) {
+	} else if (!strcmp(variableName, "tests")) {
 		if (value < 1) {
-			ERROR_PRINT("Number of random makeUnmakeTests must be greater than or equal to 0, got: %d", value);
+			ERROR_PRINT("Number of tests must be greater than 0, got: %d", value);
+			return 1;
+		}
+		config->tests = value;
+		return 0;
+	} else if (!strcmp(variableName, "trials")) {
+		if (value < 1) {
+			ERROR_PRINT("Number of trials must be greater than 0, got: %d", value);
+			return 1;
+		}
+		config->trials = value;
+		return 0;
+	} else if (!strcmp(variableName, "warmupTrials")) {
+		if (value < 0) {
+			ERROR_PRINT("Number of warmup trials must be greater than or equal to 0, got: %d", value);
+			return 1;
+		}
+		config->warmupTrials = value;
+		return 0;
+	} else if (!strcmp(variableName, "unitRandomMakeUnmakeTests")) {
+		if (value < 1) {
+			ERROR_PRINT("Number of random makeUnmakeTests must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->unitRandomMakeUnmakeTests = value;

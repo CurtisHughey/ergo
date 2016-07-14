@@ -152,15 +152,11 @@ UctNode *bestChild(UctNode *v, double c) {
 	for (int i = 0; i < v->childrenCount; i++) {
 		UctNode *child = v->children[i];
 		double reward = calcReward(v, child, c);
-		if (c == 0)
-			printf("(%d, %d, %lf)", child->action, child->visitCount, reward);
 		if (reward > bestReward) {
 			bestReward = reward;
 			bestChildIndex = i;
 		}
 	}
-	if (c == 0)
-		printf("\n");
 	assert(bestChildIndex != -1);
 
 	return v->children[bestChildIndex];

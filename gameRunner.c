@@ -199,24 +199,22 @@ int testComputer(int iterations, int rollouts) {
 	return totalScore > 0.8*iterations;  // Means it won a lot
 }
 
-// Like computer vs computer.  srand needs to be called by callee
+// Finds a single move, measures how long
 void runTrial(int rollouts) {	
 	State *state = createState();
 
-	int status = 0;
-	while (!status) {
-		for (int i = 0; i < 2; i++) {
-			int move = uctSearch(state, rollouts); 
-			status = state->blackPassed && move == MOVE_PASS;
-			makeMove(state, move);
-		}
-	}
+	int move = uctSearch(state, rollouts); 
+	makeMove(state, move);
 
 	destroyState(state);	
 }
 
-int timeTrials(int trials, int rollouts) {
+void timeTrials(int warmupTrials, int trials, int rollouts) {
 	srand(time(NULL));
+
+	for (int i = 0; i < warmupTrials; i++) {  // Just to warm up the CPU
+		runTrial(rollouts);
+	}
 
 	double totalTime = 0;
 
@@ -226,7 +224,11 @@ int timeTrials(int trials, int rollouts) {
 		runTrial(rollouts);
 		stopTimer(&timer);
 
-		totalTime += timeElapsed(&timer);
+		double elapsedTime = timeElapsed(&timer);
+
+		DEBUG_PRINT("%lf\n", elapsedTime);
+
+		totalTime += elapsedTime;
 		printf(".");
 		fflush(stdout);
 	}
@@ -235,5 +237,13 @@ int timeTrials(int trials, int rollouts) {
 	double average = totalTime/trials;
 	printf("Average runtime: %lf millis\n", average);
 
-	return (int)average;
+	
+	FILE *fp  = fopen(PERFORMANCE_FILE, "w");
+	if (fp == NULL) {
+		ERROR_PRINT("Error opening file, exiting");
+		exit(1);
+	}
+
+	fprintf(fp, "%d\n", (int)average);
+	fclose(fp);
 }

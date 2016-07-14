@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Add debugging flag ^^^
+
 dim=19  # The default dimension
 valgrind="VALGRIND="  # Nothing by default
 
@@ -47,5 +49,13 @@ echo ""
 echo "COMPILING"
 echo "Board dimension: $dim"
 make DIM=-DBOARD_DIM=$dim $valgrind
-echo ""
-echo "FINISHED"
+if [ $? -eq 0 ]
+then 
+	echo ""
+	echo "FINISHED"
+	exit 0
+else
+	echo ""
+	echo "COMPILATION FAILED"
+	exit 1
+fi

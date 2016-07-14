@@ -9,42 +9,44 @@ int main(int argc, char **argv) {
 	}
 
 	int customConfig = 0;
+	int rollouts = -1;
 	char *configFileName;
 	functions function = NONE;
 
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "C:upcxyth")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "C:r:upcxyth")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'C':
 				customConfig = 1;
 				configFileName = optarg;
 				break;
+			case 'r':
+				rollouts = atoi(optarg);
+				break;
 			case 'u':
 				function = UNIT;
-				//runAllUnitTests();
 				break;
 			case 'p':
 				function = HVH;
-				//runHumanVsHuman();
 				break;
 			case 'c':
 				function = HVC;
-				//runHumanVsComputer(config->rollouts);
 				break;
 			case 'x':
 				function = CVC;
-				//runComputerVsComputer(config->rollouts);
 				break;
 			case 'y':
 				function = CVR;
-				//testComputer(config->tests, config->rollouts);
 				break;
 			case 't':
 				function = TIME;
-				//timeTrials(config->trials, config->rollouts);
 				break;
 			case 'h':
 				printf("Options\n");
+				printf("\t-C\n");
+				printf("\t\tUse a custom configuration file\n\n");
+				printf("\t-r\n");
+				printf("\t\tSpecify the number of rollouts\n\n");
 				printf("\t-u\n");
 				printf("\t\tRun unit tests\n\n");
 				printf("\t-p\n");
@@ -75,6 +77,10 @@ int main(int argc, char **argv) {
 		config = getDefaultConfig();
 	}
 
+	if (rollouts > 0) {
+		config->rollouts = rollouts;
+	}
+
 	int result = 0;
 	switch (function) {
 		case UNIT:
@@ -93,7 +99,7 @@ int main(int argc, char **argv) {
 			return testComputer(config->tests, config->rollouts);
 			break;
 		case TIME:
-			return timeTrials(config->trials, config->rollouts);
+			timeTrials(config->warmupTrials, config->trials, config->rollouts);
 			break;
 		case NONE:
 		default:

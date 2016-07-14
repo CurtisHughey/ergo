@@ -3,7 +3,7 @@
 #ifndef _DBG_H
 #define _DBG_H
 
-#define DEBUG  // Uncomment to turn on debugging
+//#define DEBUG  // Uncomment to turn on debugging
 
 #include <stdio.h>
 #include <errno.h>

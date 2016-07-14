@@ -9,8 +9,19 @@ testLog="log/test.log"
 rm -f $tempConfig  # In case it's already there
 rm -f $testLog
 
+echo "Started at: " >> $testLog
+date >> $testLog
+
 numPassed=0
 numTests=0
+
+# First verify that it correctly compiles
+./build.sh &>/dev/null
+if [[ $? -ne 0 ]]
+then
+	echo "Failed to compile"
+	exit 1
+fi
 
 # First unit tests
 echo "--------------------"
@@ -27,6 +38,8 @@ else
 fi
 numTests=$((numTests+1))
 echo "--------------------"
+
+echo "--------------------------------------------------------------------------------" >> $testLog
 #########################################
 
 # Memory tests
@@ -50,6 +63,7 @@ else
 fi
 numTests=$((numTests+1))
 rm $tempConfig
+"---"
 
 echo "Simulation"  # Computer vs computer
 ./build.sh -d 3 -v &>/dev/null
@@ -67,12 +81,15 @@ fi
 numTests=$((numTests+1))
 rm $tempConfig
 echo "--------------------"
+
+echo "--------------------------------------------------------------------------------" >> $testLog
 #########################################
 
 
 # Correct AI tests (ish)
 echo "--------------------"
 echo "MCTS Correctness Tests"
+echo "3x3"
 ./build.sh -d 3 &>/dev/null  # 19 is way too big
 
 # Now need to give custom configurations
@@ -88,7 +105,27 @@ else
 fi
 numTests=$((numTests+1))
 rm $tempConfig
+echo "---"
+
+./build.sh -d 6 &>/dev/null  # Bigger for more variation
+
+# Now need to give custom configurations
+echo "rollouts 500" >> $tempConfig
+
+echo "6x6"
+./ergo -y -C $tempConfig &>> $testLog
+if [[ $? -eq 1 ]]
+then
+	echo "Passed :)"
+	numPassed=$((numPassed+1))
+else
+	echo "Failed :("
+fi
+numTests=$((numTests+1))
+rm $tempConfig
 echo "--------------------"
+
+echo "--------------------------------------------------------------------------------" >> $testLog
 #########################################
 
 
@@ -103,3 +140,6 @@ else
 	echo "Check $testLog for details"
 fi
 echo "--------------------"
+
+echo "Finished at: " >> $testLog
+date >> $testLog

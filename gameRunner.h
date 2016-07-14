@@ -8,6 +8,8 @@
 #include "uct.h"
 #include "timer.h"
 
+#define PERFORMANCE_FILE "perf/rawPerformance.txt"
+
 // Prints the results of a game
 void showResults(State *state);
 
@@ -29,6 +31,7 @@ int testComputer(int iterations, int rollouts);
 
 void runTrial(int rollouts);
 
-// Returns average time in millis
-int timeTrials(int trials, int rollouts);
+// Writes the average time in millis to the default performance file
+void timeTrials(int warmupTrials, int trials, int rollouts);
+
 #endif

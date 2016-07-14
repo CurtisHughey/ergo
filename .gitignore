@@ -3,4 +3,5 @@ ergo
 *~
 output/*
 log/*
+perf/*
 callgrind*
