@@ -1,7 +1,13 @@
 #!/bin/bash
 
+# This runs unit, memory, and AI correctness tests
+# Make sure you do not modify any files while this is running
+
 tempConfig="configs/tempConfig.txt"
+testLog="log/test.log"
+
 rm -f $tempConfig  # In case it's already there
+rm -f $testLog
 
 numPassed=0
 numTests=0
@@ -11,7 +17,7 @@ echo "--------------------"
 echo "Unit Tests"
 ./build.sh -d 19 &>/dev/null
 
-./ergo -u &>/dev/null
+./ergo -u &>> $testLog
 if [[ $? -eq 0 ]]
 then
 	echo "Passed :)"
@@ -34,7 +40,7 @@ echo "Unit"
 
 echo "unitRandomMakeUnmakeTests 1" >> $tempConfig  # We'll test this stuff more later
 
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -u -C $tempConfig &>/dev/null  # This is probably overkill
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -50,7 +56,7 @@ echo "Simulation"  # Computer vs computer
 
 echo "rollouts 100000" >> $tempConfig  # Doesn't need to be fast
 
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x &>/dev/null # This is probably overkill
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -72,7 +78,7 @@ echo "MCTS Correctness Tests"
 # Now need to give custom configurations
 echo "rollouts 1000" >> $tempConfig
 
-./ergo -y -C $tempConfig &>/dev/null
+./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -94,5 +100,6 @@ then
 	echo "All Passed :)"
 else
 	echo "Failed :("
+	echo "Check $testLog for details"
 fi
 echo "--------------------"

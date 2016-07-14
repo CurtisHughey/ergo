@@ -348,7 +348,6 @@ TestResult runStateRandomMakeUnmakeTests() {
 
 	srand(time(NULL));
 
-	printf("ASDFASDFASDFASDFASDF: %d\n", randomIterations);
 	for (int i = 0; i < randomIterations; i++) {
 		State *state = createState();
 

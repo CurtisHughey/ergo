@@ -2,4 +2,5 @@ ergo
 *.o
 *~
 output/*
+log/*
 callgrind*
