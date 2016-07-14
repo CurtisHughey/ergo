@@ -116,10 +116,10 @@ Moves *getMoves(State *state);
 
 // Calculates the score for the given type according to Chinese rules:
 // Living stones + territory
-// Note only one score is returned (see below)
+// Should factor in komi ^^^
 int calcScore(State *state, int type);
 
-// Returns both scores
+// Returns both scores (calls calcScore)
 Score calcScores(State *state);
 
 // Returns 1 if the states are equal, 0 otherwise

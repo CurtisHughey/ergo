@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	while ((opt = getopt(argc, argv, "upchxyt")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'u':
-				runAllUnitTests();
+				return runAllUnitTests();
 				break;
 			case 'p':
 				runHumanVsHuman();

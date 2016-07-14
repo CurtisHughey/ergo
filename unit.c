@@ -18,7 +18,7 @@ int runAllUnitTests(void) {
 
 	printf("------------------------------\n");
 
-	return 1;
+	return result;
 }
 
 // Maybe this should just be called runStateTests, TBH
