@@ -1,7 +1,7 @@
 ergo
 *.o
 *~
+configs/*  # Might change this alter
 output/*
 log/*
-perf/*
 callgrind*

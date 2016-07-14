@@ -27,20 +27,18 @@ then
 fi
 
 echo "rollouts 1000" >> $tempPerfConfig
-echo "trials 1" >> $tempPerfConfig
-echo "warmupTrials 1" >> $tempPerfConfig
+echo "trials 20" >> $tempPerfConfig
+echo "warmupTrials 3" >> $tempPerfConfig
 
 ./ergo -t -C $tempPerfConfig
 
 read -r average < $rawPerfFile  # Should just be one line
 
-echo "$average"
-
 if [[ $save -eq 1 ]]
 then
 	gitCommitData=$(git shortlog -s)
 	set -- $gitCommitData
-	echo "$1, $average" >> $perfFile
+	echo "$1,$average" >> $perfFile
 fi
 
 rm $rawPerfFile

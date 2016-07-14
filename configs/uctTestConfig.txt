@@ -1,1 +1,0 @@
-rollouts 100000  # This is reasonable since the board dimension should be 3
