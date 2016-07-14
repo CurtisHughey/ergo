@@ -9,6 +9,7 @@ UctNode *createRootUctNode(State *state) {
 	root->action = ROOT_MOVE;
 	root->reward = 0;  // I guess?
 	root->visitCount = 0;
+	root->terminal = 0;  // Should never be terminal itself
 	root->parent = NULL;  // No parent
 	
 	Moves *moves = getMoves(state);

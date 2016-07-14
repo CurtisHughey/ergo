@@ -1,12 +1,13 @@
 #include "configParser.h"
 
 Config *getDefaultConfig(void) {
-	Config *config = calloc(1, sizeof(config));  // 1 so 0 setting everything
+	Config *config = calloc(1, sizeof(Config));  // 1 so 0 setting everything
 	
 	config->rollouts = 1000;
 	config->threads = 1;
 	config->tests = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
+	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
 
 	return config;
 }
@@ -43,7 +44,7 @@ Config *parseConfigFile(char *configFileName) {
 
 int updateConfig(Config *config, char *variableName, int value) {
 	// Huge long ugly if chain.  Definitely could automatically generate
-	if (!strcmp(variableName, "rollouts")) {
+	if (!strcmp(variableName, "rollouts")) {  // strncmp ^^^
 		if (value < 1) {
 			ERROR_PRINT("Number of rollouts must be greater than 0, got: %d", value);
 			return 1;
@@ -57,6 +58,14 @@ int updateConfig(Config *config, char *variableName, int value) {
 			return 1;
 		}
 		config->threads = value;
+		return 0;
+	}
+	else if (!strcmp(variableName, "unitRandomMakeUnmakeTests")) {
+		if (value < 1) {
+			ERROR_PRINT("Number of random makeUnmakeTests must be greater than or equal to 0, got: %d", value);
+			return 1;
+		}
+		config->unitRandomMakeUnmakeTests = value;
 		return 0;
 	} else {
 		ERROR_PRINT("Unknown variable name: %s", variableName);

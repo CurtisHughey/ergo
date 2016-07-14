@@ -17,10 +17,11 @@ typedef struct {
 	int totalTests;
 } TestResult;
 
-// Entry point to run all unit functions.  Return 1 if full success
-int runAllUnitTests(void);
+// Entry point to run all unit functions.  Return 0 if full success
+int runAllUnitTests(int stateRandomIterations);
 
-int runStateTests(void);
+// Returns 0 if full success
+int runStateTests(int stateRandomIterations);
 
 TestResult runFillWithTests(void);
 

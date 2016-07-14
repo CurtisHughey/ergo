@@ -75,9 +75,10 @@ int main(int argc, char **argv) {
 		config = getDefaultConfig();
 	}
 
+	int result = 0;
 	switch (function) {
 		case UNIT:
-			runAllUnitTests();
+			result = runAllUnitTests(config->unitRandomMakeUnmakeTests);
 			break;
 		case HVH:
 			runHumanVsHuman();
@@ -89,10 +90,11 @@ int main(int argc, char **argv) {
 			runComputerVsComputer(config->rollouts);
 			break;
 		case CVR:
-			testComputer(config->tests, config->rollouts);
+			return testComputer(config->tests, config->rollouts);
 			break;
 		case TIME:
-			timeTrials(config->trials, config->rollouts);
+			return timeTrials(config->trials, config->rollouts);
+			break;
 		case NONE:
 		default:
 			ERROR_PRINT("Function not specified\n");
@@ -100,4 +102,6 @@ int main(int argc, char **argv) {
 	}
 
 	destroyConfig(config);
+
+	return result;
 }

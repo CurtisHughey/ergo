@@ -15,6 +15,7 @@ typedef struct {
 	int threads;
 	int tests;
 	int trials;
+	int unitRandomMakeUnmakeTests;
 } Config;
 
 // Default configurations

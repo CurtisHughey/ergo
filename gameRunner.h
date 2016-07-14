@@ -16,17 +16,19 @@ int promptHuman(State *state, char *color);
 
 void runHumanVsHuman(void);
 
-// For the moment, numSimulations is a hard count, but later time will be factored in ^^^
-void runHumanVsComputer(int numSimulations);
+// For the moment, rollouts is a hard count, but later time will be factored in ^^^
+void runHumanVsComputer(int rollouts);
 
-void runComputerVsComputer(int numSimulations);
+void runComputerVsComputer(int rollouts);
 
 // Used for testing.  Returns 1 if the computer won, 0 if draw, -1 if lost
-int runComputerVsRandom(int numSimulations);
+int runComputerVsRandom(int rollouts);
 
-void testComputer(int iterations, int numSimulations);
+// Returns 0 if computer passes (wins sufficient number of games)
+int testComputer(int iterations, int rollouts);
 
-void runTrial(int numSimulations);
+void runTrial(int rollouts);
 
-void timeTrials(int trials, int numSimulations);
+// Returns average time in millis
+int timeTrials(int trials, int rollouts);
 #endif

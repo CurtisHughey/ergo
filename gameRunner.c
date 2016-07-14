@@ -156,7 +156,7 @@ int runComputerVsRandom(int rollouts) {
 	}
 }
 
-void testComputer(int iterations, int rollouts) {
+int testComputer(int iterations, int rollouts) {
 	srand(time(NULL));	
 
 	int compWon = 0;
@@ -193,6 +193,10 @@ void testComputer(int iterations, int rollouts) {
 	printf("Computer won: %d\n", compWon);
 	printf("Other won:    %d\n", otherWon);
 	printf("Draws:        %d\n", draws);
+
+	double totalScore = compWon + draws*0.5;  // Really rudimentary for now ^^
+
+	return totalScore > 0.8*iterations;  // Means it won a lot
 }
 
 // Like computer vs computer.  srand needs to be called by callee
@@ -211,7 +215,7 @@ void runTrial(int rollouts) {
 	destroyState(state);	
 }
 
-void timeTrials(int trials, int rollouts) {
+int timeTrials(int trials, int rollouts) {
 	srand(time(NULL));
 
 	double totalTime = 0;
@@ -228,5 +232,8 @@ void timeTrials(int trials, int rollouts) {
 	}
 	printf("\n");
 
-	printf("Average runtime: %lf millis\n", totalTime/trials);
+	double average = totalTime/trials;
+	printf("Average runtime: %lf millis\n", average);
+
+	return (int)average;
 }

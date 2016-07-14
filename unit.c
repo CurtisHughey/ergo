@@ -2,15 +2,17 @@
 
 // Eventually, abstract a lot of the test harness stuff out
 
-int runAllUnitTests(void) {
+int randomIterations = 1000;  // The number of iterations for the runStateRandomMakeUnmakeTests ^^^
+
+int runAllUnitTests(int stateRandomIterations) {
 	printf("------------------------------\n");
 	printf("All Tests: \n");
 	
-	int result = 1;
+	int result = 0;
 
-	result &= runStateTests();
+	result |= runStateTests(stateRandomIterations);
 
-	if (result) {
+	if (!result) {
 		printf("ALL PASSED :)\n");
 	} else {
 		printf("FAILED :(\n");
@@ -18,13 +20,14 @@ int runAllUnitTests(void) {
 
 	printf("------------------------------\n");
 
-	return result;
+	return result;  // Return 0 if no error, 1 if error
 }
 
-// Maybe this should just be called runStateTests, TBH
-int runStateTests(void) {
+int runStateTests(int stateRandomIterations) {
 	printf("\t--------------------\n");
 	printf("\tstate Tests: \n");
+
+	randomIterations = stateRandomIterations;  // This is so freaking annoying ^^^
 
 	int totalPasses = 0;
 	int totalTests = 0;
@@ -67,14 +70,14 @@ int runStateTests(void) {
 
 	//////////////
 
-	int result = 0;
+	int result = 1;
 	printf("\t%d/%d\n", totalPasses, totalTests);
 	if (totalPasses == totalTests) {
 		printf("\tPassed :)\n");
-		result = 1;
+		result = 0;
 	} else {
 		printf("\tFailed :(\n");
-		result = 0;
+		result = 1;
 	}
 
 	printf("\t--------------------\n");
@@ -335,18 +338,18 @@ TestResult runStateMakeUnmakeTests(void) {
 	return (TestResult){0, totalPasses, totalTests};
 }
 
-TestResult runStateRandomMakeUnmakeTests(void) {
+TestResult runStateRandomMakeUnmakeTests() {
 	printf("\t\trandomMakeUnmake Tests: \n");
 
 	int totalPasses = 0;
 	int totalTests = 0;
 
-	const int iterations = 1000;  // The number of iterations we run through
 	const int depth = 250;  // The depth of each iteration (about average for a game)
 
 	srand(time(NULL));
 
-	for (int i = 0; i < iterations; i++) {
+	printf("ASDFASDFASDFASDFASDF: %d\n", randomIterations);
+	for (int i = 0; i < randomIterations; i++) {
 		State *state = createState();
 
 		int passed = 1;
@@ -356,7 +359,6 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 			int randIndex = rand() % moves->count;
 			UnmakeMoveInfo unmakeMoveInfo;
 			makeMoveAndSave(copy, moves->array[randIndex], &unmakeMoveInfo);
-			getMoves(copy);
 			unmakeMove(copy, &unmakeMoveInfo);
 
 			// Maybe should write this to a file if there's an error, rather than print to terminal ^^^
@@ -375,7 +377,7 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 				makeMove(state, moves->array[randIndex]);  // Now makes move for realsies
 			}
 			destroyState(copy);
-			free(moves);  // Eh, should make function
+			free(moves); 
 		}
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
