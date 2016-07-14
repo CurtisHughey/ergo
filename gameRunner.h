@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "state.h"
-#include "parser.h"
+#include "gameParser.h"
 #include "uct.h"
 #include "timer.h"
 

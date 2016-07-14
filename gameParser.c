@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "gameParser.h"
 
 // Parses line by line, each point is either W, B, or space (" ")
 // Then some extra metadata (turn, ko, etc.)

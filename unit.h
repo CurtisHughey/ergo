@@ -7,7 +7,7 @@
 
 #include "dbg.h"
 #include "state.h"
-#include "parser.h"
+#include "gameParser.h"
 
 #define NUM_TESTS 9
 

@@ -11,7 +11,7 @@
 
 #include "dbg.h"
 #include "state.h"
-#include "parser.h"
+#include "gameParser.h"
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 

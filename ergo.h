@@ -7,9 +7,19 @@
 
 #include "state.h"
 #include "dbg.h"
-#include "parser.h"
+#include "gameParser.h"
 #include "gameRunner.h"
 #include "unit.h"
+
+// typedef enum {
+// 	NONE,
+// 	UNIT,
+// 	HVH,
+// 	HVC,
+// 	CVC,
+// 	CVR,
+// 	TIME,
+// } functions;
 
 int main(int argc, char **argv);
 
