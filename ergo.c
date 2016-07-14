@@ -8,26 +8,40 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
+	int customConfig = 0;
+	char *configFileName;
+	functions function = NONE;
+
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "upchxyt")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "C:upcxyth")) != -1) {  // Add more options later
 		switch (opt) {
+			case 'C':
+				customConfig = 1;
+				configFileName = optarg;
+				break;
 			case 'u':
-				runAllUnitTests();
+				function = UNIT;
+				//runAllUnitTests();
 				break;
 			case 'p':
-				runHumanVsHuman();
+				function = HVH;
+				//runHumanVsHuman();
 				break;
 			case 'c':
-				runHumanVsComputer(100000);
+				function = HVC;
+				//runHumanVsComputer(config->rollouts);
 				break;
 			case 'x':
-				runComputerVsComputer(100000);
+				function = CVC;
+				//runComputerVsComputer(config->rollouts);
 				break;
 			case 'y':
-				testComputer(25, 10000);
+				function = CVR;
+				//testComputer(config->tests, config->rollouts);
 				break;
 			case 't':
-				timeTrials(5, 1);
+				function = TIME;
+				//timeTrials(config->trials, config->rollouts);
 				break;
 			case 'h':
 				printf("Options\n");
@@ -52,4 +66,38 @@ int main(int argc, char **argv) {
 				exit(1);
 		}
 	}
+
+	Config *config = NULL;
+	if (customConfig) {
+		config = parseConfigFile(configFileName);
+	}
+	else {
+		config = getDefaultConfig();
+	}
+
+	switch (function) {
+		case UNIT:
+			runAllUnitTests();
+			break;
+		case HVH:
+			runHumanVsHuman();
+			break;
+		case HVC:
+			runHumanVsComputer(config->rollouts);
+			break;
+		case CVC:
+			runComputerVsComputer(config->rollouts);
+			break;
+		case CVR:
+			testComputer(config->tests, config->rollouts);
+			break;
+		case TIME:
+			timeTrials(config->trials, config->rollouts);
+		case NONE:
+		default:
+			ERROR_PRINT("Function not specified\n");
+			break;
+	}
+
+	destroyConfig(config);
 }

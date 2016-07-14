@@ -1,5 +1,5 @@
-#ifndef _PARSER_H
-#define _PARSER_H
+#ifndef _GAMEPARSER_H
+#define _GAMEPARSER_H
 
 #include <stdio.h>
 

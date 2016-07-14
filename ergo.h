@@ -10,16 +10,18 @@
 #include "gameParser.h"
 #include "gameRunner.h"
 #include "unit.h"
+#include "configParser.h"
 
-// typedef enum {
-// 	NONE,
-// 	UNIT,
-// 	HVH,
-// 	HVC,
-// 	CVC,
-// 	CVR,
-// 	TIME,
-// } functions;
+typedef enum {
+	NONE,
+	UNIT,
+	HVH,
+	HVC,
+	CVC,
+	CVR,
+	TIME,
+} functions;
+
 
 int main(int argc, char **argv);
 

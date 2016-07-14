@@ -46,7 +46,7 @@ void setChildren(UctNode *parent, Moves *moves, State *state);
 void destroyUctNode(UctNode *v);
 
 // Returns the best move
-int uctSearch(State *state, int iterations);
+int uctSearch(State *state, int rollouts);
 
 // Finds non-terminal node
 UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame);

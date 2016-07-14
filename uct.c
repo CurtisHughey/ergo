@@ -81,12 +81,12 @@ void destroyUctNode(UctNode *v) {
 }
 
 // Returns the best move
-int uctSearch(State *state, int iterations) {
+int uctSearch(State *state, int rollouts) {
 	const int lengthOfGame = 250;  // IRDK ^^^
 
 	UctNode *root = createRootUctNode(state);
 	int rootTurn = state->turn;
-	for (int i = 0; i < iterations; i++) {
+	for (int i = 0; i < rollouts; i++) {
 		State *copy = copyState(state);
 		UctNode *v = treePolicy(copy, root, lengthOfGame);
 		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
