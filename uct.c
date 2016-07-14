@@ -212,10 +212,8 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 			// }
 			// makeMove(playoutCopy, randomMove);
 		}
-	} else {
-		// color *= -1;  // ???? ^^^^
 	}
-
+	
 	Score scores = calcScores(playoutCopy);
 	
 	// Calculates reward for black

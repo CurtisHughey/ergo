@@ -6,7 +6,11 @@
 
 #include "dbg.h"
 
-#define BOARD_DIM 3
+// This can be defined via the makefile
+#ifndef BOARD_DIM
+#define BOARD_DIM 19  // The default
+#endif
+
 #define BOARD_SIZE BOARD_DIM*BOARD_DIM  // Should I just say 361?
 
 #define NUM_NEIGHBORS 4
@@ -23,7 +27,7 @@
 
 #define MOVE_PASS (-1)
 
-#define OTHER_COLOR(x) ((-1)*x)
+#define OTHER_COLOR(x) ((-1)*(x))
 
 // Encodes all necessary board state
 typedef struct {

@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 				runHumanVsComputer(100000);
 				break;
 			case 'x':
-				runComputerVsComputer(100000);
+				runComputerVsComputer(5000);
 				break;
 			case 'y':
 				testComputer(25, 100000);
