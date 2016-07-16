@@ -63,7 +63,7 @@ else
 fi
 numTests=$((numTests+1))
 rm $tempConfig
-"---"
+echo "---"
 
 echo "Simulation"  # Computer vs computer
 ./build.sh -d 3 -v &>/dev/null

@@ -60,7 +60,7 @@ void runHumanVsHuman(void) {
 	destroyState(state);
 }
 
-void runHumanVsComputer(int rollouts) {
+void runHumanVsComputer(int rollouts, int lengthOfGame) {
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };
@@ -73,7 +73,7 @@ void runHumanVsComputer(int rollouts) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
-				int move = uctSearch(state, rollouts); 
+				int move = uctSearch(state, rollouts, lengthOfGame); 
 				printf("%s chooses move: %d\n", colors[i], move);  // Shoud translate to string move ^^^
 				status = state->blackPassed && move == MOVE_PASS;
 				makeMove(state, move);
@@ -91,7 +91,7 @@ void runHumanVsComputer(int rollouts) {
 	destroyState(state);
 }
 
-void runComputerVsComputer(int rollouts) {	
+void runComputerVsComputer(int rollouts, int lengthOfGame) {	
 	srand(time(NULL));  // Make sure I'm seeding everywhere good ^^^
 
 	State *state = createState();
@@ -102,7 +102,7 @@ void runComputerVsComputer(int rollouts) {
 	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
-			int move = uctSearch(state, rollouts); 
+			int move = uctSearch(state, rollouts, lengthOfGame); 
 			printf("%s chooses move: %d\n", colors[i], move);
 			status = state->blackPassed && move == MOVE_PASS;
 			makeMove(state, move);
@@ -115,7 +115,7 @@ void runComputerVsComputer(int rollouts) {
 }
 
 // Rand must already be initialized
-int runComputerVsRandom(int rollouts) {
+int runComputerVsRandom(int rollouts, int lengthOfGame) {
 	State *state = createState();
 
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
@@ -125,7 +125,7 @@ int runComputerVsRandom(int rollouts) {
 		for (int i = 0; i < 2; i++) {
 			int move;
 			if (i == compTurn) {  // AI move
-				move = uctSearch(state, rollouts); 
+				move = uctSearch(state, rollouts, lengthOfGame); 
 			} else {  // Random move
 				Moves *moves = getMoves(state);
 				move = moves->array[rand() % moves->count];
@@ -156,7 +156,7 @@ int runComputerVsRandom(int rollouts) {
 	}
 }
 
-int testComputer(int iterations, int rollouts) {
+int testComputer(int iterations, int rollouts, int lengthOfGame) {
 	srand(time(NULL));	
 
 	int compWon = 0;
@@ -165,7 +165,7 @@ int testComputer(int iterations, int rollouts) {
 
 	const int interval = 1;
 	for (int i = 0; i < iterations; i++) {
-		int result = runComputerVsRandom(rollouts);
+		int result = runComputerVsRandom(rollouts, lengthOfGame);
 		switch (result) {
 			case 1:
 				compWon += 1;
@@ -196,24 +196,24 @@ int testComputer(int iterations, int rollouts) {
 
 	double totalScore = compWon + draws*0.5;  // Really rudimentary for now ^^
 
-	return totalScore > 0.8*iterations;  // Means it won a lot
+	return totalScore > 0.9*iterations;  // Means it won a lot
 }
 
 // Finds a single move, measures how long
-void runTrial(int rollouts) {	
+void runTrial(int rollouts, int lengthOfGame) {	
 	State *state = createState();
 
-	int move = uctSearch(state, rollouts); 
+	int move = uctSearch(state, rollouts, lengthOfGame); 
 	makeMove(state, move);
 
 	destroyState(state);	
 }
 
-void timeTrials(int warmupTrials, int trials, int rollouts) {
+void timeTrials(int warmupTrials, int trials, int rollouts, int lengthOfGame) {
 	srand(time(NULL));
 
 	for (int i = 0; i < warmupTrials; i++) {  // Just to warm up the CPU
-		runTrial(rollouts);
+		runTrial(rollouts, lengthOfGame);
 	}
 
 	double totalTime = 0;
@@ -221,7 +221,7 @@ void timeTrials(int warmupTrials, int trials, int rollouts) {
 	Timer timer;
 	for (int i = 0; i < trials; i++) {
 		startTimer(&timer);
-		runTrial(rollouts);
+		runTrial(rollouts, lengthOfGame);
 		stopTimer(&timer);
 
 		double elapsedTime = timeElapsed(&timer);

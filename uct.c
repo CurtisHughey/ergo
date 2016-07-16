@@ -82,9 +82,7 @@ void destroyUctNode(UctNode *v) {
 }
 
 // Returns the best move
-int uctSearch(State *state, int rollouts) {
-	const int lengthOfGame = 250;  // IRDK ^^^
-
+int uctSearch(State *state, int rollouts, int lengthOfGame) {
 	UctNode *root = createRootUctNode(state);
 	int rootTurn = state->turn;
 	for (int i = 0; i < rollouts; i++) {
@@ -145,7 +143,6 @@ UctNode *expand(State *state, UctNode *v) {
 }
 
 // Returns the best child by the UCB1 algorithm
-// This should be good
 UctNode *bestChild(UctNode *v, double c) {
 	double bestReward = INT_MIN;  // INT_MIN?   /// CRAAPPPPPPPPPPPPPP, it wass originally an int
 	int bestChildIndex = 0;  // There is always at least 1 child, so this will be filled
@@ -179,35 +176,41 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	int color = state->turn;
 	State *playoutCopy = copyState(state);
 
+	static int numMoves = -1;  // From from static to saved pointer (because need to reset on different uctSearch calls)
+
 	if (!v->terminal) {
-		for (int i = 0; i < lengthOfGame; i++) {
+		for (int i = 0; i < lengthOfGame; i++) {  // At some point, this is going to have to be dynamic
 			int blackPassed = playoutCopy->blackPassed;
-			Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
-			int randomIndex = rand() % moves->count;
-			int randomMove = moves->array[randomIndex];
-			makeMove(playoutCopy, randomMove);
-			free(moves);
-			moves = NULL;
+
+			int randomMove = -2;
+			if (numMoves == -1 || numMoves < 100) {  // Magically hardcoded ^^^, need to adjust for board size
+				Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
+				int randomIndex = rand() % moves->count;
+				randomMove = moves->array[randomIndex];
+				makeMove(playoutCopy, randomMove);
+				//numMoves = moves->count;
+				free(moves);
+				moves = NULL;
+			}
+			else {  // Better to do it first and ask forgiveness later.
+				int counter = 0;
+				do {
+					randomMove = rand() % (BOARD_SIZE+1);
+					counter += 1;
+				} while (!isLegalMove(playoutCopy, randomMove));  // Need to keep track of how many times it took ^^^^ (so we know if we should do it the next iteration)
+				makeMove(playoutCopy, randomMove);
+				numMoves = 361-counter;
+				if (numMoves < 0) {
+					numMoves = 0;
+				}
+			}
 
 			// This means if both players randomly pass in the middle of the game, we stop
 			if (randomMove == MOVE_PASS && blackPassed) {  // I.e. if the last move was a pass by white (so the turn just became black), and black had also passed
 				break;  // We're done
 			}
 
-			// int randomMove;
-			// if (i >= 100) {
-			// 	Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
-			// 	int randomIndex = rand() % moves->count;
-			// 	randomMove = moves->array[randomIndex];
-			// 	free(moves);
-			// 	moves = NULL;
-			// }
-			// else {  // Better to do it first and ask forgiveness later.
-			// 	do {
-			// 		randomMove = rand() % (BOARD_SIZE+1);
-			// 	} while (!isLegalMove(playoutCopy, randomMove));
-			// }
-			// makeMove(playoutCopy, randomMove);
+			//depth += 1;
 		}
 	}
 	

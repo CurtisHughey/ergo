@@ -2,10 +2,9 @@
 
 CC = gcc-4.9
 LFLAGS = -std=gnu99
-CFLAGS = -Wall -Werror -Wno-array-bounds -O3
+CFLAGS = -pthread -Wall -Werror -Wno-array-bounds -O3
 DIM = -D BOARD_DIM=19
 VALGRIND =
-# -pthread, also get rid of -g at some point
 SRC = $(wildcard *.c)
 OBJECTS = $(SRC:.c=.o)
 EXE = ergo

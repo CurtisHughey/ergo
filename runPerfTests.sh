@@ -41,5 +41,7 @@ then
 	echo "$1,$average" >> $perfFile
 fi
 
+python perf/processPerf.py perf/performance.txt
+
 rm $rawPerfFile
 rm $tempPerfConfig

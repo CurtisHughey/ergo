@@ -1,4 +1,5 @@
 # This is good enough for now, boy I suck at python
+# Might be an issue if just one entry
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import operator as op
 import sys
 from matplotlib.ticker import MaxNLocator
 
-perfGraph = "performance.png"
+perfGraph = "perf/performance.png"
 
 inputFileName = sys.argv[1]
 
@@ -22,8 +23,6 @@ finalData = []
 for key, group in it.groupby(parsedData, key=lambda x: x[0]):
 	group, copy = it.tee(group)
 	finalData.append((key, sum(y for _,y in group)/len(list(copy))))
-
-print finalData
 
 fig, ax = plt.subplots()
 

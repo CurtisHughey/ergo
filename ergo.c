@@ -90,16 +90,16 @@ int main(int argc, char **argv) {
 			runHumanVsHuman();
 			break;
 		case HVC:
-			runHumanVsComputer(config->rollouts);
+			runHumanVsComputer(config->rollouts, config->averageLengthOfGame);
 			break;
 		case CVC:
-			runComputerVsComputer(config->rollouts);
+			runComputerVsComputer(config->rollouts, config->averageLengthOfGame);
 			break;
 		case CVR:
-			return testComputer(config->tests, config->rollouts);
+			return testComputer(config->tests, config->rollouts, config->averageLengthOfGame);
 			break;
 		case TIME:
-			timeTrials(config->warmupTrials, config->trials, config->rollouts);
+			timeTrials(config->warmupTrials, config->trials, config->rollouts, config->averageLengthOfGame);
 			break;
 		case NONE:
 		default:

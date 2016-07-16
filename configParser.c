@@ -8,6 +8,7 @@ Config *getDefaultConfig(void) {
 	config->tests = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 2;  // To warm up the cpu for the time trials
+	config->averageLengthOfGame = 350;  // Eh, no idea
 	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
 
 	return config;
@@ -80,6 +81,13 @@ int updateConfig(Config *config, char *variableName, int value) {
 			return 1;
 		}
 		config->warmupTrials = value;
+		return 0;
+	} else if (!strcmp(variableName, "averageLengthOfGame")) {
+		if (value < 1) {
+			ERROR_PRINT("Average length of game must be greater than 0, got: %d", value);
+			return 1;
+		}
+		config->averageLengthOfGame = value;
 		return 0;
 	} else if (!strcmp(variableName, "unitRandomMakeUnmakeTests")) {
 		if (value < 1) {

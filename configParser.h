@@ -16,6 +16,7 @@ typedef struct {
 	int tests;
 	int trials;
 	int warmupTrials;
+	int averageLengthOfGame;
 	int unitRandomMakeUnmakeTests;
 } Config;
 

@@ -17,6 +17,10 @@
 
 #define UCT_CONSTANT 1.41 // This is the C_p=sqrt(2) term
 
+#ifndef SYSTEM_CORES
+#define SYSTEM_CORES 4
+#endif
+
 typedef struct UctNode {
 	int action;  // The move
 	double reward;  // Maybe just float...
@@ -46,7 +50,7 @@ void setChildren(UctNode *parent, Moves *moves, State *state);
 void destroyUctNode(UctNode *v);
 
 // Returns the best move
-int uctSearch(State *state, int rollouts);
+int uctSearch(State *state, int rollouts, int lengthOfGame);
 
 // Finds non-terminal node
 UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame);
