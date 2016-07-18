@@ -5,3 +5,4 @@ configs/*  # Might change this alter
 output/*
 log/*
 callgrind*
+kgsGtp*

@@ -65,30 +65,12 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-echo "Simulation 3x3"  # Computer vs computer
+echo "Simulation"  # Computer vs computer
 ./build.sh -d 3 -v &>/dev/null
 
 echo "rollouts 100000" >> $tempConfig  # Doesn't need to be fast
 
 valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x &>> $testLog # This is probably overkill
-if ! [[ $? -eq 1 ]]
-then
-	echo "Passed :)"
-	numPassed=$((numPassed+1))
-else
-	echo "Failed :("
-fi
-numTests=$((numTests+1))
-rm $tempConfig
-echo "--------------------"
-
-echo "Simulation 19x19"  # Computer vs computer
-./build.sh -d 19 &>/dev/null  # Regulation
-
-# Now need to give custom configurations
-echo "rollouts 50" >> $tempConfig
-
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -y -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"

@@ -238,7 +238,7 @@ void timeTrials(int warmupTrials, int trials, int rollouts, int lengthOfGame) {
 	printf("Average runtime: %lf millis\n", average);
 
 	
-	FILE *fp  = fopen(PERFORMANCE_FILE, "w");
+	FILE *fp = fopen(PERFORMANCE_FILE, "w");
 	if (fp == NULL) {
 		ERROR_PRINT("Error opening file, exiting");
 		exit(1);

@@ -88,7 +88,7 @@ int uctSearch(State *state, int rollouts, int lengthOfGame) {
 	for (int i = 0; i < rollouts; i++) {
 		State *copy = copyState(state);
 		UctNode *v = treePolicy(copy, root, lengthOfGame);
-		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
+		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);   // Getting stuck here
 		backupNegamax(v, reward);
 		destroyState(copy);
 	}
@@ -188,17 +188,21 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 				randomMove = moves->array[randomIndex];
 				makeMove(state, randomMove);
 				prevNumMoves = moves->count;
-				free(moves);
+				free(moves);  // Should have destroy function ^^^
 				moves = NULL;
 			}
 			else {  // Better to do it first and ask forgiveness later.
 				int counter = 0;
-				do {
+				do {  // Frik, I forgot to include MOVE_PASS
 					randomMove = rand() % (BOARD_SIZE+1);
+					if (randomMove == BOARD_SIZE) {  // This represented a pass
+						randomMove = MOVE_PASS;
+					}
 					counter += 1;
-				} while (!isLegalMove(state, randomMove));  // Need to keep track of how many times it took ^^^^ (so we know if we should do it the next iteration)
+				} while (!isLegalMove(state, randomMove));  // At some point, worth to give up? ^^^
+
 				makeMove(state, randomMove);
-				prevNumMoves = 361-counter;  // Its best guess
+				prevNumMoves = BOARD_SIZE/counter;  // Its best guess
 				if (prevNumMoves < 0) {
 					prevNumMoves = 1;  // You can always pass.  Not really necessary to do this check
 				}

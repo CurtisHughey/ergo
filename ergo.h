@@ -9,6 +9,7 @@
 #include "dbg.h"
 #include "gameParser.h"
 #include "gameRunner.h"
+#include "gtpRunner.h"
 #include "unit.h"
 #include "configParser.h"
 
@@ -20,6 +21,7 @@ typedef enum {
 	CVC,
 	CVR,
 	TIME,
+	GTP,
 } functions;
 
 

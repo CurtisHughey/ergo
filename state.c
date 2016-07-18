@@ -4,14 +4,17 @@
 
 State *createState(void) {
 	State *state = malloc(sizeof(State));
+	clearBoard(state);
+	return state;
+}
+
+void clearBoard(State *state) {
 	memset(state->board, STATE_EMPTY, sizeof(state->board)); 
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
 	state->whitePrisoners = 0;
 	state->blackPrisoners = 0;
 	state->blackPassed = 0;
-
-	return state;
 }
 
 int destroyState(State *state) {
@@ -81,12 +84,12 @@ void displayState(State *state) {
 }
 
 int isLegalMove(State *state, int move) {
-	if (move < MOVE_PASS || move >= BOARD_SIZE) {  // Could be < -1 if parsed as INVALID_MOVE
-		return 0;  // Duh
-	}
-
 	if (move == MOVE_PASS) {
 		return 1;  // Always legal
+	}
+
+	if (move < 0 || move >= BOARD_SIZE) {  // Could be < -1 if parsed as INVALID_MOVE.  MOVE_PASS already covered above, which is also negative
+		return 0;  // Duh
 	}
 
 	// Occupied board:

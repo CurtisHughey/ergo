@@ -154,6 +154,7 @@ int parseMoveFromTerminal(void) {
 }
 
 // Should provide some unit testing to make sure it errors out correctly ^^^
+// Should technically also do length checking ^^^
 int parseMove(char *line) {
 	if (line[0] == 'q') {  // Special quit command
 		return QUIT;

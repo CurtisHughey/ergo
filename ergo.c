@@ -1,8 +1,6 @@
 #include "ergo.h"
 
 int main(int argc, char **argv) {
-	printf("Hello World!\n");
-
 	if (argc <= 1) {
 		ERROR_PRINT("Must provide command line arguments (-h for help)");
 		exit(1);
@@ -14,7 +12,7 @@ int main(int argc, char **argv) {
 	functions function = NONE;
 
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "C:r:upcxyth")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "C:r:upcxytgh")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'C':
 				customConfig = 1;
@@ -41,6 +39,9 @@ int main(int argc, char **argv) {
 			case 't':
 				function = TIME;
 				break;
+			case 'g':
+				function = GTP;
+				break;
 			case 'h':
 				printf("Options\n");
 				printf("\t-C\n");
@@ -59,6 +60,8 @@ int main(int argc, char **argv) {
 				printf("\t\tRun computer vs other tests\n\n");
 				printf("\t-t\n");
 				printf("\t\tRun time trials\n\n");
+				printf("\t-t\n");
+				printf("\t\tRun GTP protocol (used for playing on KGS)\n\n");
 				printf("\t-h\n");
 				printf("\t\tThis\n\n");	
 				break;	
@@ -100,6 +103,9 @@ int main(int argc, char **argv) {
 			break;
 		case TIME:
 			timeTrials(config->warmupTrials, config->trials, config->rollouts, config->averageLengthOfGame);
+			break;
+		case GTP:
+			runGtp(config->rollouts, config->averageLengthOfGame);
 			break;
 		case NONE:
 		default:

@@ -7,8 +7,7 @@
 #include "dbg.h"
 
 #define MAX_MOVE_LEN 7  // Ish
-#define INVALID_MOVE -2
-#define QUIT -3
+#define QUIT (-3)
 
 // Parses a custom board in a file into a State
 // Returns NULL if incorrectly formatted

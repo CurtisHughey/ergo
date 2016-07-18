@@ -7,7 +7,9 @@
 #include "gameParser.h"
 #include "uct.h"
 #include "timer.h"
+#include "dbg.h"
 
+// This was a bit hacky, would be nice to configure ^^^
 #define PERFORMANCE_FILE "perf/rawPerformance.txt"
 
 // Prints the results of a game

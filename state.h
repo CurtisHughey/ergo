@@ -26,6 +26,7 @@
 #define STATE_ALL (-2)
 
 #define MOVE_PASS (-1)
+#define INVALID_MOVE (-2)  // Moved this from gameParser.h
 
 #define OTHER_COLOR(x) ((-1)*(x))
 
@@ -65,8 +66,10 @@ typedef struct {
 	int blackScore;
 } Score;
 
-// Allocates a new state struct, initially empty, black to move
+// Allocates a new state struct, initially empty (calling clearBoard), black to move
 State *createState(void);
+
+void clearBoard(State *state);
 
 // Destroys state
 int destroyState(State *state);
