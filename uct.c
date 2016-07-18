@@ -171,24 +171,23 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 }
 
 // Simulates rest of game, for lengthOfGame moves
-// state will be unchanged (might not care) ^^^
+// state will be mutated, you should save if you want it later
 double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	int color = state->turn;
-	State *playoutCopy = copyState(state);
 
-	static int numMoves = -1;  // From from static to saved pointer (because need to reset on different uctSearch calls)
+	int prevNumMoves = 0;  // Maybe we could guess based on how many moves have happened
 
 	if (!v->terminal) {
 		for (int i = 0; i < lengthOfGame; i++) {  // At some point, this is going to have to be dynamic
-			int blackPassed = playoutCopy->blackPassed;
+			int blackPassed = state->blackPassed;
 
 			int randomMove = -2;
-			if (numMoves == -1 || numMoves < 100) {  // Magically hardcoded ^^^, need to adjust for board size
-				Moves *moves = getMoves(playoutCopy);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
+			if (prevNumMoves < 100) {  // Magically hardcoded ^^^, need to adjust for board size.  This is forgiveness prediction.  Also handles initial prevNumMoves=0
+				Moves *moves = getMoves(state);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
 				int randomIndex = rand() % moves->count;
 				randomMove = moves->array[randomIndex];
-				makeMove(playoutCopy, randomMove);
-				//numMoves = moves->count;
+				makeMove(state, randomMove);
+				prevNumMoves = moves->count;
 				free(moves);
 				moves = NULL;
 			}
@@ -197,11 +196,11 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 				do {
 					randomMove = rand() % (BOARD_SIZE+1);
 					counter += 1;
-				} while (!isLegalMove(playoutCopy, randomMove));  // Need to keep track of how many times it took ^^^^ (so we know if we should do it the next iteration)
-				makeMove(playoutCopy, randomMove);
-				numMoves = 361-counter;
-				if (numMoves < 0) {
-					numMoves = 0;
+				} while (!isLegalMove(state, randomMove));  // Need to keep track of how many times it took ^^^^ (so we know if we should do it the next iteration)
+				makeMove(state, randomMove);
+				prevNumMoves = 361-counter;  // Its best guess
+				if (prevNumMoves < 0) {
+					prevNumMoves = 1;  // You can always pass.  Not really necessary to do this check
 				}
 			}
 
@@ -209,12 +208,10 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 			if (randomMove == MOVE_PASS && blackPassed) {  // I.e. if the last move was a pass by white (so the turn just became black), and black had also passed
 				break;  // We're done
 			}
-
-			//depth += 1;
 		}
 	}
 	
-	Score scores = calcScores(playoutCopy);
+	Score scores = calcScores(state);
 	
 	// Calculates reward for black
 	double reward = 0;
@@ -233,8 +230,6 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	if (color == rootTurn) {
 		reward = -1*reward;  // To work with negamax
 	}
-
-	destroyState(playoutCopy);
 
 	return reward;
 }

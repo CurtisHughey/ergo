@@ -16,7 +16,7 @@ Config *getDefaultConfig(void) {
 
 Config *parseConfigFile(char *configFileName) {
 	const char commentChar = '#';
-	const char* whitespace = " \t";  // Not allowing newlines.  const pointer?
+	const char* whitespace = " \t";  // Not allowing newlines.  const pointer? ^^
 
 	FILE *fp = fopen(configFileName, "r");
 

@@ -1,5 +1,6 @@
 # This is good enough for now, boy I suck at python
 # Might be an issue if just one entry
+# What the heck is going on here ^^^
 
 import numpy as np
 import matplotlib.pyplot as plt
