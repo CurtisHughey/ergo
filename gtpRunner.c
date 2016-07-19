@@ -9,13 +9,21 @@ void runGtp(int rollouts, int lengthOfGame) {
 
 	///////////////
 
+	FILE *fp = fopen(LOG_FILE_NAME, "a");
+	if (fp == NULL) {
+		ERROR_PRINT("Failed to open file %s", LOG_FILE_NAME);
+		return;
+	}
+
+	fprintf(fp, "--------------------\n");
+	fflush(fp);
 
 	// Add undo, kgs-game_over, time ^^
 	// Need to account for comments ^^^
 
  	const char *commands[] = { "protocol_version",  // Maybe dynamically generate from below ^^^
 							"list_commands", 
-							"known_command"
+							"known_command",
 							"name", 
 							"version",
 							"quit",
@@ -26,6 +34,7 @@ void runGtp(int rollouts, int lengthOfGame) {
 							"genmove",
 							"kgs-rules",
 							"kgs-time_settings",
+							"kgs-game_over",
 						};
 
 	const char *whitespace = " \t";
@@ -33,6 +42,9 @@ void runGtp(int rollouts, int lengthOfGame) {
 	int quit = 0;
 	char inBuffer[GTP_MAX_LENGTH];
 	while (fgets(inBuffer, GTP_MAX_LENGTH, stdin)) {
+		fprintf(fp, "> %s\n", inBuffer);
+		fflush(fp);
+
 		if (strlen(inBuffer) == 0) {  // Nothing, probably won't happen
 			continue;
 		} else {  // Must get rid of newlines at the end of the string
@@ -56,7 +68,7 @@ void runGtp(int rollouts, int lengthOfGame) {
 		if (isdigit(token[0])) {  // Then id was sent (assuming there are no commands that start with number)
 			command = strtok(NULL, whitespace);
 			if (command == NULL) {
-				sprintf(errorMessage, "sytax error, command not specified");
+				sprintf(errorMessage, "syntax error, command not specified");
 				goto ERROR;
 			}
 			sprintf(returnId, "=%s", token);
@@ -79,7 +91,7 @@ void runGtp(int rollouts, int lengthOfGame) {
 		} else if (!strncmp(command, "known_command", GTP_MAX_LENGTH)) {
 			char *subCommand = strtok(NULL, whitespace);
 			if (subCommand == NULL) {
-				sprintf(errorMessage, "sytax error, sub command not specified");
+				sprintf(errorMessage, "syntax error, sub command not specified");
 				goto ERROR;
 			}
 			int found = 0;
@@ -97,20 +109,21 @@ void runGtp(int rollouts, int lengthOfGame) {
 		} else if (!strncmp(command, "name", GTP_MAX_LENGTH)) {
 			sprintf(response, "%s", GTP_NAME);
 		} else if (!strncmp(command, "version", GTP_MAX_LENGTH)) {
-			sprintf(response, "%s", GTP_NAME);
+			sprintf(response, "%s", GTP_VERSION);
 		} else if (!strncmp(command, "quit", GTP_MAX_LENGTH)) {
 			quit = 1; 
 			// No output
 		} else if (!strncmp(command, "boardsize", GTP_MAX_LENGTH)) {
 			char *sizeString = strtok(NULL, whitespace);
 			if (sizeString == NULL) {
-				sprintf(errorMessage, "sytax error, size not specified");
+				sprintf(errorMessage, "syntax error, size not specified");
 				goto ERROR;
 			}
-			int newSize = atoi(strtok(NULL, whitespace));  // Must be a int
+			int newSize = atoi(sizeString);  // Must be a int
 
 			if (newSize != BOARD_DIM) {  // Can't change given our program, since BOARD_DIM is defined
 				sprintf(errorMessage, "unacceptable size");
+				goto ERROR;
 			}
 			// No output
 		} else if (!strncmp(command, "clear_board", GTP_MAX_LENGTH)) {
@@ -120,7 +133,7 @@ void runGtp(int rollouts, int lengthOfGame) {
 		} else if (!strncmp(command, "komi", GTP_MAX_LENGTH)) {
 			char *komiString = strtok(NULL, whitespace);
 			if (komiString == NULL) {
-				sprintf(errorMessage, "sytax error, komi not specified");
+				sprintf(errorMessage, "syntax error, komi not specified");
 				goto ERROR;
 			}			
 			float newKomi = atof(komiString);
@@ -129,28 +142,20 @@ void runGtp(int rollouts, int lengthOfGame) {
 		} else if (!strncmp(command, "play", GTP_MAX_LENGTH)) {
 
 			// Color
-			const int maxColorLength = 10;  // High
 
 			char *colorString = strtok(NULL, whitespace);
 			if (colorString == NULL) {
-				sprintf(errorMessage, "sytax error, color not specified");
+				sprintf(errorMessage, "syntax error, color not specified");
 				goto ERROR;
 			}
 
-			int color;
-
-			if (!strncasecmp(colorString, "white", maxColorLength) || !strncasecmp(colorString, "w", maxColorLength)) {
-				color = STATE_WHITE;
-			} else if (!strncasecmp(colorString, "black", maxColorLength) || !strncasecmp(colorString, "b", maxColorLength)) {
-				color = STATE_BLACK;
-			} else {
+			int color = stringColorToInt(colorString);
+			if (color == 0) {
 				sprintf(errorMessage, "syntax error, invalid color");
 				goto ERROR;
 			}
 			
-			state->turn = color;  // Potentially changes it (I guess if we were setting up positions)
 			////////////////
-
 
 			// Move
 
@@ -174,21 +179,61 @@ void runGtp(int rollouts, int lengthOfGame) {
 				goto ERROR;
 			}
 			////////////////
-			printf("MOVE: %d\n", move);
-			//makeMove(state, move);  // At some stage, will want to be able to unmake
-			// No output
-		}
 
+			state->turn = color;  // Potentially changes it (I guess if we were setting up positions).  This is done at the end in case there were prior errors
+			makeMove(state, move);  // At some stage, will want to be able to unmake
+			// No output
+		} else if (!strncmp(command, "genmove", GTP_MAX_LENGTH)) {
+			char *colorString = strtok(NULL, whitespace);
+			if (colorString == NULL) {
+				sprintf(errorMessage, "syntax error, vertex not specified");
+				goto ERROR;
+			}
+			
+			int color = stringColorToInt(colorString);
+
+			if (color == 0) {
+				sprintf(errorMessage, "syntax error, invalid color");
+				goto ERROR;  // Technically, I shouldn't error out, according to the spec ^^^
+			}
+			
+			state->turn = color;
+
+			int move = uctSearch(state, rollouts, lengthOfGame);
+			makeMove(state, move);  // Again, give ability to unmake ^^^
+
+			char *vertex = moveToGtpString(move);  // Can also resign ^^
+
+			sprintf(response, vertex);
+			
+			free(vertex);
+			vertex = NULL;
+		} else if (!strncmp(command, "kgs-rules", GTP_MAX_LENGTH)) {
+			char *rules = strtok(NULL, whitespace);
+			UNUSED(rules);  // Might be useful ^^^	
+		} else if (!strncmp(command, "kgs-time_settings", GTP_MAX_LENGTH)) {
+			// Ignoring right now, implement! ^^^
+		} else if (!strncmp(command, "time_left", GTP_MAX_LENGTH)) {
+			// Ignoring right now, implement! ^^^
+		} else if (!strncmp(command, "kgs-game_over", GTP_MAX_LENGTH)) {
+			quit = 1;  // Like the quit command
+		}
 		else {
 			sprintf(errorMessage, "unknown command");
 			goto ERROR;
-		}		
+		}
 
 
 		// This goto stuff is a little wonky, especially with the continue
 		fprintf(stdout, "%s %s\n\n", returnId, response);  // Writes it back
+		fflush(stdout);
+		fprintf(fp, "< %s %s\n\n", returnId, response);
+		fflush(fp);
+
+
 		if (quit) {  // quitting early, whatever
-			// Free stuff ^^^
+			destroyState(state);
+			fclose(fp);
 			return;
 		}
 		continue;
@@ -196,6 +241,9 @@ void runGtp(int rollouts, int lengthOfGame) {
 ERROR:
 		returnId[0] = '?';  // Now an error message
 		fprintf(stdout, "%s %s\n\n", returnId, errorMessage);  // Writes it back
+		fflush(stdout);
+		fprintf(fp, "< %s %s\n\n", returnId, errorMessage);
+		fflush(fp);
 	}
 }
 
@@ -242,29 +290,32 @@ int parseGtpMove(char *vertex) {
 	if (!isdigit(vertex[1])) {
 		return INVALID_MOVE;
 	} else {
-		ones = vertex[1]-'1';
+		tens = vertex[1]-'1';  // Initally guess that this is the tens index
 
-		if (ones < 0 || ones > 9) {
+		if (tens < 0 || tens > 9) {
 			return INVALID_MOVE;
 		}
 	}
 
-	// Same thing with tens
+	// Same thing with ones
 	if (vertex[2] != '\0') {
 		if (!isdigit(vertex[2])) {
 			return INVALID_MOVE;
 		} else {
-			tens = vertex[2]-'1';
+			ones = vertex[2]-'1';
 
-			if (tens < 0 || tens > 9) {
+			if (ones < 0 || ones > 9) {
 				return INVALID_MOVE;
 			}
 		}
+	} else {
+		ones = tens;  // Guess was wrong, correcting
+		tens = 0; 
 	}
 
 	row = ones+10*tens;
 
-	if (row <= 0 || row >= BOARD_DIM) {
+	if (row < 0 || row >= BOARD_DIM) {
 		return INVALID_MOVE;
 	}
 
@@ -273,4 +324,40 @@ int parseGtpMove(char *vertex) {
 	int position = column+row*BOARD_DIM;
 
 	return position;
+}
+
+// Just the vertex
+char *moveToGtpString(int move) {
+	char *moveString = calloc(10, sizeof(char));
+
+	if (move == MOVE_PASS) {
+		sprintf(moveString, "pass");
+	} else {
+		char column = 'A'+ move % BOARD_DIM;
+		if (column > 'I'-'A') {
+			column -= 1;  // Ignoring I;
+		}
+
+		int row = move / BOARD_DIM + 1;  // Makes it [1-BOARD_DIM]
+
+		sprintf(moveString, "%c%d", column, row);
+	}
+
+	return moveString;
+}
+
+int stringColorToInt(char *colorString) {
+	const int maxColorLength = 10;  // High
+
+	int color;
+
+	if (!strncasecmp(colorString, "white", maxColorLength) || !strncasecmp(colorString, "w", maxColorLength)) {
+		color = STATE_WHITE;
+	} else if (!strncasecmp(colorString, "black", maxColorLength) || !strncasecmp(colorString, "b", maxColorLength)) {
+		color = STATE_BLACK;
+	} else {
+		color = 0;  // Error
+	}
+
+	return color;
 }

@@ -68,9 +68,9 @@ echo "---"
 echo "Simulation"  # Computer vs computer
 ./build.sh -d 3 -v &>/dev/null
 
-echo "rollouts 100000" >> $tempConfig  # Doesn't need to be fast
+echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
 
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x &>> $testLog # This is probably overkill
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
