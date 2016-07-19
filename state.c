@@ -417,6 +417,27 @@ Score calcScores(State *state) {
 	return (Score){whiteScore, blackScore};
 }
 
+int getResult(State *state, int color) {
+	Score score = calcScores(state);
+
+	if (score.blackScore == score.whiteScore) {
+		return 0;  // draw
+	} else {
+		// This could get refactored way better ^^^
+		int result = -1;
+		if (color == STATE_BLACK) {  // The 0 and 1 is annoying
+			if (score.blackScore > score.whiteScore) {
+				result = 1;
+			}
+		} else {  /* color == STATE_WHITE */
+			if (score.blackScore < score.whiteScore) {
+				result = 1;
+			}			
+		}
+		return result;
+	}	
+}
+
 int statesAreEqual(State *state1, State *state2) {
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		if (state1->board[i] != state2->board[i]) {

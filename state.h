@@ -125,6 +125,9 @@ int calcScore(State *state, int type);
 // Returns both scores (calls calcScore)
 Score calcScores(State *state);
 
+// Returns the result for the color (-1 for loss, 1 for win, 0 for draw)
+int getResult(State *state, int color);
+
 // Returns 1 if the states are equal, 0 otherwise
 int statesAreEqual(State *state1, State *state2);
 

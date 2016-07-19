@@ -136,24 +136,9 @@ int runComputerVsRandom(int rollouts, int lengthOfGame) {
 		}
 	}
 
-	Score score = calcScores(state);
+	int color = compTurn == 0 ? STATE_BLACK : STATE_WHITE;  // Converts
 
-	if (score.blackScore == score.whiteScore) {
-		return 0;  // draw
-	} else {
-		// This could get refactored way better ^^^
-		int result = -1;
-		if (compTurn == 0) {  // The 0 and 1 is annoying
-			if (score.blackScore > score.whiteScore) {
-				result = 1;
-			}
-		} else {  /* compTurn == 1 */
-			if (score.blackScore < score.whiteScore) {
-				result = 1;
-			}			
-		}
-		return result;
-	}
+	return getResult(state, color);
 }
 
 int testComputer(int iterations, int rollouts, int lengthOfGame) {

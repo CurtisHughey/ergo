@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 			timeTrials(config->warmupTrials, config->trials, config->rollouts, config->averageLengthOfGame);
 			break;
 		case GTP:
-			runGtp(config->rollouts, config->averageLengthOfGame);
+			return runGtp(config->rollouts, config->averageLengthOfGame)+2;  // +2 to make it non-negative.  0 for failure, 1 for loss, 2 for draw, 3 for win, should log
 			break;
 		case NONE:
 		default:

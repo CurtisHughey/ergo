@@ -22,8 +22,8 @@ extern const char *commands[];  // Defined in gameRunner.c, function runGtp
 
 #define numCommands (sizeof(commands) / sizeof(const char *))
 
-// Runs GTP to connect with KGS
-void runGtp(int rollouts, int lengthOfGame);
+// Runs GTP to connect with KGS.  Returns 1 if computer wins, -1 if loses, 0 if draw.  -2 if quit
+int runGtp(int rollouts, int lengthOfGame);
 
 // Returns INVALID_MOVE if invalid.  Parses according to GTP specification
 int parseGtpMove(char *vertex);

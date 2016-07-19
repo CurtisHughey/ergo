@@ -1,22 +1,9 @@
 #include "gtpRunner.h"
 
-void runGtp(int rollouts, int lengthOfGame) {
+int runGtp(int rollouts, int lengthOfGame) {
 	// First set up go board
 
 	srand(time(NULL));	
-
-	State *state = createState();
-
-	///////////////
-
-	FILE *fp = fopen(LOG_FILE_NAME, "a");
-	if (fp == NULL) {
-		ERROR_PRINT("Failed to open file %s", LOG_FILE_NAME);
-		return;
-	}
-
-	fprintf(fp, "--------------------\n");
-	fflush(fp);
 
 	// Add undo, kgs-game_over, time ^^
 	// Need to account for comments ^^^
@@ -39,7 +26,22 @@ void runGtp(int rollouts, int lengthOfGame) {
 
 	const char *whitespace = " \t";
 
+	State *state = createState();
+
+	///////////////
+
+	FILE *fp = fopen(LOG_FILE_NAME, "a");
+	if (fp == NULL) {
+		ERROR_PRINT("Failed to open file %s", LOG_FILE_NAME);
+		return -2;
+	}
+
+	fprintf(fp, "--------------------\n");
+	fflush(fp);
+
 	int quit = 0;
+	int finished = 0;
+	int compColor = 0;
 	char inBuffer[GTP_MAX_LENGTH];
 	while (fgets(inBuffer, GTP_MAX_LENGTH, stdin)) {
 		fprintf(fp, "> %s\n", inBuffer);
@@ -192,6 +194,8 @@ void runGtp(int rollouts, int lengthOfGame) {
 			
 			int color = stringColorToInt(colorString);
 
+			compColor = color;  // Used for scoring
+
 			if (color == 0) {
 				sprintf(errorMessage, "syntax error, invalid color");
 				goto ERROR;  // Technically, I shouldn't error out, according to the spec ^^^
@@ -216,13 +220,14 @@ void runGtp(int rollouts, int lengthOfGame) {
 		} else if (!strncmp(command, "time_left", GTP_MAX_LENGTH)) {
 			// Ignoring right now, implement! ^^^
 		} else if (!strncmp(command, "kgs-game_over", GTP_MAX_LENGTH)) {
-			quit = 1;  // Like the quit command
+			quit = 1;  // I guess? ^^^
+			finished = 1;
+			// No output
 		}
 		else {
 			sprintf(errorMessage, "unknown command");
 			goto ERROR;
 		}
-
 
 		// This goto stuff is a little wonky, especially with the continue
 		fprintf(stdout, "%s %s\n\n", returnId, response);  // Writes it back
@@ -234,8 +239,14 @@ void runGtp(int rollouts, int lengthOfGame) {
 		if (quit) {  // quitting early, whatever
 			destroyState(state);
 			fclose(fp);
-			return;
+
+			if (finished) {
+				return getResult(state, compColor);
+			} else {
+				return -2;  // Unfinished
+			}
 		}
+
 		continue;
 
 ERROR:
@@ -245,6 +256,8 @@ ERROR:
 		fprintf(fp, "< %s %s\n\n", returnId, errorMessage);
 		fflush(fp);
 	}
+
+	return -2;  // Should never end up here
 }
 
 int parseGtpMove(char *vertex) {
@@ -259,21 +272,22 @@ int parseGtpMove(char *vertex) {
 	// First parse column
 	int column;
 
-	const char highestColumnUpperCase = BOARD_DIM > 'I'-'A' ? 'A'+BOARD_DIM : 'A'+BOARD_DIM-1;  // I think I got this right ^^^
-	const char highestColumnLowerCase = BOARD_DIM > 'i'-'a' ? 'a'+BOARD_DIM : 'a'+BOARD_DIM-1;
+	const char highestColumnUpperCase = BOARD_DIM > 'I'-'A' ? 'A'+BOARD_DIM-1 : 'A'+BOARD_DIM;  // I think I got this right ^^^
+	const char highestColumnLowerCase = BOARD_DIM > 'i'-'a' ? 'a'+BOARD_DIM : 'a'+BOARD_DIM;
 
 	char columnChar = vertex[0];
 
 	// I could probably call a lib function
+	// Return error if i/I
 	if (columnChar >= 'A' && columnChar <= highestColumnUpperCase) {
 		column = columnChar-'A';
 		if (columnChar >= 'J') {
-			column += 1;  // Correcting the skipped I
+			column -= 1;  // Correcting the skipped I
 		}
 	} else if (columnChar >= 'a' && columnChar <= highestColumnLowerCase) {
 		column = columnChar-'a';
 		if (columnChar >= 'j') {
-			column += 1;  // Correcting the skipped j
+			column -= 1;  // Correcting the skipped j
 		}
 	} else {
 		return INVALID_MOVE;
@@ -290,7 +304,7 @@ int parseGtpMove(char *vertex) {
 	if (!isdigit(vertex[1])) {
 		return INVALID_MOVE;
 	} else {
-		tens = vertex[1]-'1';  // Initally guess that this is the tens index
+		tens = vertex[1]-'0';  // Initally guess that this is the tens index
 
 		if (tens < 0 || tens > 9) {
 			return INVALID_MOVE;
@@ -302,26 +316,26 @@ int parseGtpMove(char *vertex) {
 		if (!isdigit(vertex[2])) {
 			return INVALID_MOVE;
 		} else {
-			ones = vertex[2]-'1';
+			ones = vertex[2]-'0';
 
 			if (ones < 0 || ones > 9) {
 				return INVALID_MOVE;
 			}
 		}
-	} else {
-		ones = tens;  // Guess was wrong, correcting
-		tens = 0; 
+	} else {  // Switches it
+		ones = tens;
+		tens = 0;
 	}
 
 	row = ones+10*tens;
 
-	if (row < 0 || row >= BOARD_DIM) {
+	if (row < 0 || row > BOARD_DIM) {
 		return INVALID_MOVE;
 	}
 
 	////////
 
-	int position = column+row*BOARD_DIM;
+	int position = column+(row-1)*BOARD_DIM;
 
 	return position;
 }
@@ -333,14 +347,14 @@ char *moveToGtpString(int move) {
 	if (move == MOVE_PASS) {
 		sprintf(moveString, "pass");
 	} else {
-		char column = 'A'+ move % BOARD_DIM;
-		if (column > 'I'-'A') {
-			column -= 1;  // Ignoring I;
+		char columnChar = 'A'+ move % BOARD_DIM;
+		if (columnChar >= 'I') {
+			columnChar += 1;  // Incrementing
 		}
 
 		int row = move / BOARD_DIM + 1;  // Makes it [1-BOARD_DIM]
 
-		sprintf(moveString, "%c%d", column, row);
+		sprintf(moveString, "%c%d", columnChar, row);
 	}
 
 	return moveString;

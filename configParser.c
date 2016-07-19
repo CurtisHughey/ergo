@@ -3,7 +3,7 @@
 Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));  // 1 so 0 setting everything
 	
-	config->rollouts = 10000;
+	config->rollouts = 100000;
 	config->threads = 1;
 	config->tests = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
