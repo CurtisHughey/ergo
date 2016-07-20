@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 		config = getDefaultConfig();
 	}
 
-	if (rollouts > 0) {
+	if (rollouts > 0) {  // Then the number of rollouts was also specified on the command line
 		config->rollouts = rollouts;
 	}
 

@@ -80,9 +80,9 @@ int runGtp(int rollouts, int lengthOfGame) {
 		}
 		
 		// Huge parser
-		if (!strncmp(command, "protocol_version", GTP_MAX_LENGTH)) {
+		if (!strcmp(command, "protocol_version")) {
 			sprintf(response, "%d", GTP_PROTOCOL_VERSION);
-		} else if (!strncmp(command, "list_commands", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "list_commands")) {
 			for (int i = 0; i < numCommands; i++) {
 				strncat(response, commands[i], strlen(commands[i])+1);
 
@@ -90,7 +90,7 @@ int runGtp(int rollouts, int lengthOfGame) {
 					strncat(response, "\n", 2);
 				}
 			}
-		} else if (!strncmp(command, "known_command", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "known_command")) {
 			char *subCommand = strtok(NULL, whitespace);
 			if (subCommand == NULL) {
 				sprintf(errorMessage, "syntax error, sub command not specified");
@@ -108,14 +108,14 @@ int runGtp(int rollouts, int lengthOfGame) {
 			if (!found) {
 				sprintf(response, "false");
 			}
-		} else if (!strncmp(command, "name", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "name")) {
 			sprintf(response, "%s", GTP_NAME);
-		} else if (!strncmp(command, "version", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "version")) {
 			sprintf(response, "%s", GTP_VERSION);
-		} else if (!strncmp(command, "quit", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "quit")) {
 			quit = 1; 
 			// No output
-		} else if (!strncmp(command, "boardsize", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "boardsize")) {
 			char *sizeString = strtok(NULL, whitespace);
 			if (sizeString == NULL) {
 				sprintf(errorMessage, "syntax error, size not specified");
@@ -128,11 +128,11 @@ int runGtp(int rollouts, int lengthOfGame) {
 				goto ERROR;
 			}
 			// No output
-		} else if (!strncmp(command, "clear_board", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "clear_board")) {
 			clearBoard(state);
 			// Will also eventually have to remove other state info ^^
 			// No output
-		} else if (!strncmp(command, "komi", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "komi")) {
 			char *komiString = strtok(NULL, whitespace);
 			if (komiString == NULL) {
 				sprintf(errorMessage, "syntax error, komi not specified");
@@ -141,7 +141,7 @@ int runGtp(int rollouts, int lengthOfGame) {
 			float newKomi = atof(komiString);
 			UNUSED(newKomi);  // CHANGE!!! ^^^^
 			// No output
-		} else if (!strncmp(command, "play", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "play")) {
 
 			// Color
 
@@ -185,7 +185,7 @@ int runGtp(int rollouts, int lengthOfGame) {
 			state->turn = color;  // Potentially changes it (I guess if we were setting up positions).  This is done at the end in case there were prior errors
 			makeMove(state, move);  // At some stage, will want to be able to unmake
 			// No output
-		} else if (!strncmp(command, "genmove", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "genmove")) {
 			char *colorString = strtok(NULL, whitespace);
 			if (colorString == NULL) {
 				sprintf(errorMessage, "syntax error, vertex not specified");
@@ -212,14 +212,14 @@ int runGtp(int rollouts, int lengthOfGame) {
 			
 			free(vertex);
 			vertex = NULL;
-		} else if (!strncmp(command, "kgs-rules", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "kgs-rules")) {
 			char *rules = strtok(NULL, whitespace);
 			UNUSED(rules);  // Might be useful ^^^	
-		} else if (!strncmp(command, "kgs-time_settings", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "kgs-time_settings")) {
 			// Ignoring right now, implement! ^^^
-		} else if (!strncmp(command, "time_left", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "time_left")) {
 			// Ignoring right now, implement! ^^^
-		} else if (!strncmp(command, "kgs-game_over", GTP_MAX_LENGTH)) {
+		} else if (!strcmp(command, "kgs-game_over")) {
 			quit = 1;  // I guess? ^^^
 			finished = 1;
 			// No output
@@ -247,6 +247,8 @@ int runGtp(int rollouts, int lengthOfGame) {
 			}
 		}
 
+		//displayState(state);  // Remove ^^^
+
 		continue;
 
 ERROR:
@@ -261,7 +263,7 @@ ERROR:
 }
 
 int parseGtpMove(char *vertex) {
-	if (!strncasecmp(vertex, "pass", 5)) {
+	if (!strcasecmp(vertex, "pass")) {
 		return MOVE_PASS;
 	}
 
@@ -342,7 +344,7 @@ int parseGtpMove(char *vertex) {
 
 // Just the vertex
 char *moveToGtpString(int move) {
-	char *moveString = calloc(10, sizeof(char));
+	char *moveString = calloc(MAX_GTP_MOVE_LENGTH, sizeof(char));
 
 	if (move == MOVE_PASS) {
 		sprintf(moveString, "pass");
@@ -361,13 +363,11 @@ char *moveToGtpString(int move) {
 }
 
 int stringColorToInt(char *colorString) {
-	const int maxColorLength = 10;  // High
-
 	int color;
 
-	if (!strncasecmp(colorString, "white", maxColorLength) || !strncasecmp(colorString, "w", maxColorLength)) {
+	if (!strcasecmp(colorString, "white") || !strcasecmp(colorString, "w")) {
 		color = STATE_WHITE;
-	} else if (!strncasecmp(colorString, "black", maxColorLength) || !strncasecmp(colorString, "b", maxColorLength)) {
+	} else if (!strcasecmp(colorString, "black") || !strcasecmp(colorString, "b")) {
 		color = STATE_BLACK;
 	} else {
 		color = 0;  // Error

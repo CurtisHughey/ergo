@@ -1,9 +1,11 @@
 #include "configParser.h"
 
+// Automatically generate ^^^
+
 Config *getDefaultConfig(void) {
-	Config *config = calloc(1, sizeof(Config));  // 1 so 0 setting everything
+	Config *config = calloc(1, sizeof(Config));
 	
-	config->rollouts = 100000;
+	config->rollouts = 30000;
 	config->threads = 1;
 	config->tests = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
@@ -16,7 +18,7 @@ Config *getDefaultConfig(void) {
 
 Config *parseConfigFile(char *configFileName) {
 	const char commentChar = '#';
-	const char* whitespace = " \t";  // Not allowing newlines.  const pointer? ^^
+	const char* whitespace = " \t";
 
 	FILE *fp = fopen(configFileName, "r");
 
@@ -46,7 +48,7 @@ Config *parseConfigFile(char *configFileName) {
 
 int updateConfig(Config *config, char *variableName, int value) {
 	// Huge long ugly if else chain.  Definitely could automatically generate
-	if (!strcmp(variableName, "rollouts")) {  // strncmp ^^^
+	if (!strcmp(variableName, "rollouts")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of rollouts must be greater than 0, got: %d", value);
 			return 1;

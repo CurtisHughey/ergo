@@ -136,7 +136,7 @@ int parseMoveFromFile(char *fileName) {
 
 	char line[MAX_MOVE_LEN];
 
-	if (fscanf(fp, "%s", line) == EOF) {  // change to fgets? ^^^
+	if (fgets(line, MAX_MOVE_LEN, fp) == NULL) {
 		ERROR_PRINT("Move is missing");
 		return INVALID_MOVE;
 	}
@@ -154,7 +154,6 @@ int parseMoveFromTerminal(void) {
 }
 
 // Should provide some unit testing to make sure it errors out correctly ^^^
-// Should technically also do length checking ^^^
 int parseMove(char *line) {
 	if (line[0] == 'q') {  // Special quit command
 		return QUIT;
@@ -176,6 +175,11 @@ int parseMove(char *line) {
 
 	char colChar = line[2];
 	char rowChar = line[3];
+
+	if (colChar == '\0' || rowChar == '\0') {
+		ERROR_PRINT("Failed to specify row or column");
+		return INVALID_MOVE;		
+	}
 
 	if (line[4] != ']') {
 		ERROR_PRINT("Missing closing square bracket");
@@ -199,4 +203,27 @@ int parseMove(char *line) {
 	int point = BOARD_DIM*(rowChar-'a') + colChar-'a';
 
 	return point;
+}
+
+char *moveToString(int move, int color) {
+	char *moveString = calloc(MAX_MOVE_LEN, sizeof(char));  // 0's out to be safe
+
+	char colorChar = color == STATE_BLACK ? 'B' : 'W';
+
+	if (move == MOVE_PASS) {
+		sprintf(moveString, "%c[]", colorChar);
+	} else if (move >= 0 && move < BOARD_SIZE) {
+		int column = move % BOARD_DIM;
+		int row = move / BOARD_DIM;
+
+		int columnChar = column+'a';
+		int rowChar = row+'a';
+
+		sprintf(moveString, "%c[%c%c]", colorChar, columnChar, rowChar);
+	} else {
+		ERROR_PRINT("Invalid move, continuing");  // Could potentially be because of resignation
+		sprintf(moveString, "INVALID");
+	}
+
+	return moveString;
 }

@@ -1,5 +1,6 @@
 #include "gameRunner.h"
 
+// At this stage, not really used much
 int promptHuman(State *state, char *color) {
 	int gameFinishes = 0;
 	do {
@@ -10,7 +11,7 @@ int promptHuman(State *state, char *color) {
 		}
 		if (isLegalMove(state, move)) {
 			gameFinishes = state->blackPassed && move == MOVE_PASS; // i.e. both sides are passing, game finishes
-			makeMove(state, move);  // eventually makeMoveAndSave
+			makeMove(state, move);
 			break;
 		} else {
 			printf("Illegal move!\n");
@@ -38,7 +39,7 @@ void showResults(State *state) {
 	}
 }
 
-// Add ability to undo move ^^^
+// Not really used much now
 void runHumanVsHuman(void) {
 	State *state = createState();
 
@@ -60,13 +61,14 @@ void runHumanVsHuman(void) {
 	destroyState(state);
 }
 
+// Not really used much now
 void runHumanVsComputer(int rollouts, int lengthOfGame) {
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };
 
 	srand(time(NULL));
-	int compTurn = rand() % 2;  // 0 for black, 1 for white (macro this?)
+	int compTurn = rand() % 2;
 
 	int status = 0;
 	while (!status) {
@@ -74,7 +76,10 @@ void runHumanVsComputer(int rollouts, int lengthOfGame) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
 				int move = uctSearch(state, rollouts, lengthOfGame); 
-				printf("%s chooses move: %d\n", colors[i], move);  // Shoud translate to string move ^^^
+				char *moveString = moveToString(move, state->turn);
+				printf("%s chooses move: %s\n", colors[i], moveString);
+				free(moveString);
+				moveString = NULL;
 				status = state->blackPassed && move == MOVE_PASS;
 				makeMove(state, move);
 			} else {
@@ -92,7 +97,7 @@ void runHumanVsComputer(int rollouts, int lengthOfGame) {
 }
 
 void runComputerVsComputer(int rollouts, int lengthOfGame) {	
-	srand(time(NULL));  // Make sure I'm seeding everywhere good ^^^
+	srand(time(NULL)); 
 
 	State *state = createState();
 
@@ -103,7 +108,10 @@ void runComputerVsComputer(int rollouts, int lengthOfGame) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			int move = uctSearch(state, rollouts, lengthOfGame); 
-			printf("%s chooses move: %d\n", colors[i], move);
+			char *moveString = moveToString(move, state->turn);
+			printf("%s chooses move: %s\n", colors[i], moveString);
+			free(moveString);
+			moveString = NULL;			
 			status = state->blackPassed && move == MOVE_PASS;
 			makeMove(state, move);
 		}
@@ -181,7 +189,7 @@ int testComputer(int iterations, int rollouts, int lengthOfGame) {
 
 	double totalScore = compWon + draws*0.5;  // Really rudimentary for now ^^
 
-	return totalScore > 0.9*iterations;  // Means it won a lot
+	return totalScore >= 1.0*iterations;  // Means for 1.0, means it won all games (honestly should always win against random)
 }
 
 // Finds a single move, measures how long

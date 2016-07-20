@@ -25,4 +25,7 @@ int parseMoveFromTerminal(void);
 // Parses a move (internal function).  Returns -2 if incorrectly formatted (-1 means pass)
 int parseMove(char *line);
 
+// Translates int move into string
+char *moveToString(int move, int color);
+
 #endif

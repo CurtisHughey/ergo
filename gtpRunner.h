@@ -11,7 +11,8 @@
 #include "uct.h"
 #include "dbg.h"
 
-#define GTP_MAX_LENGTH 1024  // Ish? ^^^
+#define GTP_MAX_LENGTH 1024  // Conservative, accounting for list_commands, so might eventually need to be extended
+#define MAX_GTP_MOVE_LENGTH  10  // Conservative
 #define GTP_PROTOCOL_VERSION 2
 #define GTP_NAME "Ergo"
 #define GTP_VERSION "1.0"
