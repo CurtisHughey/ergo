@@ -87,10 +87,10 @@ int runGtp(int rollouts, int lengthOfGame) {
 			sprintf(response, "%d", GTP_PROTOCOL_VERSION);
 		} else if (!strcmp(command, "list_commands")) {
 			for (int i = 0; i < numCommands; i++) {
-				strncat(response, commands[i], strlen(commands[i])+1);
+				strcat(response, commands[i]);
 
 				if (i < numCommands-1) {  // Bit hacky, TBH.  Need to append new line if more commands
-					strncat(response, "\n", 2);
+					strcat(response, "\n");
 				}
 			}
 		} else if (!strcmp(command, "known_command")) {

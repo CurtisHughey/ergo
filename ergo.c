@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 				break;	
 			case '?':
 			default:
-				ERROR_PRINT("Unknown option, use -h for help");
+				ERROR_PRINT("Unknown option %c, use -h for help", opt);
 				exit(1);
 		}
 	}
