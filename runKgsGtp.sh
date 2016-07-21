@@ -27,7 +27,7 @@ cd "$kgsGtpDir"
 gamesPlayed=0
 while true
 do
-	java -jar kgsGtp.jar configs/defaultKgsConfig.txt "boardsize=$dim"  # dim overrides what's provided in the default file
+	java -jar kgsGtp.jar kgsConfigs/defaultKgsConfig.txt "rules.boardSize=$dim"  # dim overrides what's provided in the default file
 	
 	if [[ $? -gt 128 ]]  # I.e. if error, ctl-c, etc., we quit
 	then

@@ -11,4 +11,4 @@ rules.time=30:00
 talk=I'm a bot!  Check out my code on https://github.com/CurtisHughey/ergo
 gameNotes=Chinese rules.  Let's play!
 undo=f
-engine=/home/curtis/Desktop/College/projects/ergo/ergo -g
+engine=/home/curtis/Desktop/College/projects/ergo/kgsGtp/ergo -g -C /home/curtis/Desktop/College/projects/ergo/kgsGtp/configs/defaultConfig.txt
