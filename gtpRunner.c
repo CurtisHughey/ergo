@@ -6,7 +6,6 @@ int runGtp(int rollouts, int lengthOfGame) {
 	srand(time(NULL));	
 
 	// Add undo, kgs-game_over, time ^^
-	// Need to account for comments ^^^
 
  	const char *commands[] = { "protocol_version",  // Maybe dynamically generate from below ^^^
 							"list_commands", 
@@ -64,6 +63,10 @@ int runGtp(int rollouts, int lengthOfGame) {
 		char *token = strtok(inBuffer, whitespace);
 
 		if (token == NULL) {  // Ignore, was just whitespace/newline
+			continue;
+		}
+
+		if (token[0] == '#') {  // Line starts with a comment, ignore.  Other comments are implicitly ignored at the ends of lines below (we stop parsing tokens)
 			continue;
 		}
 
@@ -130,7 +133,7 @@ int runGtp(int rollouts, int lengthOfGame) {
 			// No output
 		} else if (!strcmp(command, "clear_board")) {
 			clearBoard(state);
-			// Will also eventually have to remove other state info ^^
+			// Would also have to remove other state info at this point
 			// No output
 		} else if (!strcmp(command, "komi")) {
 			char *komiString = strtok(NULL, whitespace);
@@ -139,10 +142,9 @@ int runGtp(int rollouts, int lengthOfGame) {
 				goto ERROR;
 			}			
 			float newKomi = atof(komiString);
-			UNUSED(newKomi);  // CHANGE!!! ^^^^
+			setKomi(newKomi);
 			// No output
 		} else if (!strcmp(command, "play")) {
-
 			// Color
 
 			char *colorString = strtok(NULL, whitespace);
@@ -152,13 +154,12 @@ int runGtp(int rollouts, int lengthOfGame) {
 			}
 
 			int color = stringColorToInt(colorString);
-			if (color == 0) {
+			if (color != STATE_WHITE && color != STATE_BLACK) {
 				sprintf(errorMessage, "syntax error, invalid color");
 				goto ERROR;
 			}
 			
 			////////////////
-
 			// Move
 
 			char *vertexString = strtok(NULL, whitespace);
@@ -194,13 +195,12 @@ int runGtp(int rollouts, int lengthOfGame) {
 			
 			int color = stringColorToInt(colorString);
 
-			compColor = color;  // Used for scoring
-
-			if (color == 0) {
+			if (color != STATE_WHITE && color != STATE_BLACK) {
 				sprintf(errorMessage, "syntax error, invalid color");
-				goto ERROR;  // Technically, I shouldn't error out, according to the spec ^^^
+				goto ERROR;  // We choose to error out, even against the spec
 			}
-			
+
+			compColor = color;  // Used for scoring			
 			state->turn = color;
 
 			int move = uctSearch(state, rollouts, lengthOfGame);
@@ -214,13 +214,16 @@ int runGtp(int rollouts, int lengthOfGame) {
 			vertex = NULL;
 		} else if (!strcmp(command, "kgs-rules")) {
 			char *rules = strtok(NULL, whitespace);
-			UNUSED(rules);  // Might be useful ^^^	
+			UNUSED(rules);  // Might be useful in the future
+			// No output
 		} else if (!strcmp(command, "kgs-time_settings")) {
-			// Ignoring right now, implement! ^^^
+			// Ignoring right now, I don't care what time settings for the moment, but eventually change, with time_left
+			// No output
 		} else if (!strcmp(command, "time_left")) {
-			// Ignoring right now, implement! ^^^
+			// Ignoring right now, implement when I start seriously caring about time
+			// No output
 		} else if (!strcmp(command, "kgs-game_over")) {
-			quit = 1;  // I guess? ^^^
+			quit = 1;
 			finished = 1;
 			// No output
 		}
@@ -243,14 +246,14 @@ int runGtp(int rollouts, int lengthOfGame) {
 			if (finished) {
 				return getResult(state, compColor);
 			} else {
-				return -2;  // Unfinished
+				return -2;  // Unfinished with the game, still quitting
 			}
 		}
 
-		//displayState(state);  // Remove ^^^
-
+		// Reads the next line of input
 		continue;
 
+		// Error time!
 ERROR:
 		returnId[0] = '?';  // Now an error message
 		fprintf(stdout, "%s %s\n\n", returnId, errorMessage);  // Writes it back
@@ -274,12 +277,11 @@ int parseGtpMove(char *vertex) {
 	// First parse column
 	int column;
 
-	const char highestColumnUpperCase = BOARD_DIM > 'I'-'A' ? 'A'+BOARD_DIM-1 : 'A'+BOARD_DIM;  // I think I got this right ^^^
+	const char highestColumnUpperCase = BOARD_DIM > 'I'-'A' ? 'A'+BOARD_DIM-1 : 'A'+BOARD_DIM;
 	const char highestColumnLowerCase = BOARD_DIM > 'i'-'a' ? 'a'+BOARD_DIM : 'a'+BOARD_DIM;
 
 	char columnChar = vertex[0];
 
-	// I could probably call a lib function
 	// Return error if i/I
 	if (columnChar >= 'A' && columnChar <= highestColumnUpperCase) {
 		column = columnChar-'A';
@@ -296,7 +298,7 @@ int parseGtpMove(char *vertex) {
 	}
 
 	////////
-
+	// This ended up being really wonky code.  Essentialy I'm parsing the two digits, while ensuring each are valid
 	// Now parse row
 	int row = 0;
 
@@ -354,7 +356,7 @@ char *moveToGtpString(int move) {
 			columnChar += 1;  // Incrementing
 		}
 
-		int row = move / BOARD_DIM + 1;  // Makes it [1-BOARD_DIM]
+		int row = move / BOARD_DIM + 1;  // Makes it range [1-BOARD_DIM]
 
 		sprintf(moveString, "%c%d", columnChar, row);
 	}

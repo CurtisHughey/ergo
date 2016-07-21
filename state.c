@@ -1,6 +1,5 @@
 #include "state.h"
 
-//Const?
 static double komi_g = 0;  // Global so we don't have to pass it freaking everywhere.  Sucks to do a global variable, though :/
 
 void setKomi(double komi) {
