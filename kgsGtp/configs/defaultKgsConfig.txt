@@ -1,0 +1,14 @@
+name=Xantos
+password=noj2bt
+room=Computer Go
+mode=both
+automatch.speed=blitz,medium,fast
+automatch.rank=30k
+verbose=t
+rules=chinese
+rules.boardSize=5
+rules.time=30:00
+talk=I'm a bot!  Check out my code on https://github.com/CurtisHughey/ergo
+gameNotes=Chinese rules.  Let's play!
+undo=f
+engine=/home/curtis/Desktop/College/projects/ergo/ergo -g

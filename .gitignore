@@ -1,8 +1,11 @@
 ergo
 *.o
 *~
-configs/*  # Might change this alter
+configs/*  # Might change this later
 output/*
 log/*
 callgrind*
-kgsGtp*
+kgsGtp/*.jar
+kgsGtp/ergo
+kgsGtp/log/*
+kgsGtp/kgsInfo/*
