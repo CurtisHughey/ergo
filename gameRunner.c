@@ -27,8 +27,8 @@ void showResults(State *state) {
 	printf("Final position:\n");
 	displayState(state);
 	Score score = calcScores(state);
-	printf("Black: %d\n", score.blackScore);
-	printf("White: %d\n", score.whiteScore);
+	printf("Black: %.1lf\n", score.blackScore);
+	printf("White: %.1lf\n", score.whiteScore);
 
 	if (score.blackScore > score.whiteScore) {
 		printf("Black won!\n");

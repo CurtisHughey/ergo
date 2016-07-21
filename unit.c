@@ -121,7 +121,7 @@ TestResult runFillWithTests(void) {
 				FILE *fp = fopen(modFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", modFile);
-					return (TestResult){1,0,0};
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
 				char line[10];  // Way extra space than we need
@@ -151,11 +151,11 @@ TestResult runFillWithTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }	
 
 TestResult runStateGroupBordersTypeAndResetTests(void) {
@@ -191,7 +191,7 @@ TestResult runStateGroupBordersTypeAndResetTests(void) {
 				FILE *fp = fopen(modFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", modFile);
-					return (TestResult){1,0,0};
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
 				char line[10];  // Way extra space than we need
@@ -217,11 +217,11 @@ TestResult runStateGroupBordersTypeAndResetTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runStateMakeMoveTests(void) {
@@ -276,11 +276,11 @@ TestResult runStateMakeMoveTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for makeMove");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runStateMakeUnmakeTests(void) {
@@ -331,11 +331,11 @@ TestResult runStateMakeUnmakeTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for makeUnmakeMove");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runStateRandomMakeUnmakeTests() {
@@ -388,7 +388,7 @@ TestResult runStateRandomMakeUnmakeTests() {
 		destroyState(state);
 	}
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runGetMovesTests(void) {
@@ -419,7 +419,7 @@ TestResult runGetMovesTests(void) {
 				FILE *fp = fopen(movesFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", movesFile);
-					return (TestResult){1,0,0};
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
 				char line[10];  // Way extra space than we need
@@ -457,11 +457,11 @@ TestResult runGetMovesTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for getMoves");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runIsLegalMoveTests(void) {
@@ -496,7 +496,7 @@ TestResult runIsLegalMoveTests(void) {
 				FILE *fp = fopen(moveFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", moveFile);
-					return (TestResult){1,0,0};
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
 				char line[10];  // Way extra space than we need
@@ -520,11 +520,11 @@ TestResult runIsLegalMoveTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for isLegalMove");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runCalcScoresTests(void) {
@@ -553,27 +553,27 @@ TestResult runCalcScoresTests(void) {
 				State* initialState = parseState(initialFile);
 
 				// Now parses the group details
-				// line 1: score for white
-				// line 2: score for black
+				// line 1: score for black
+				// line 2: score for white
 
 				FILE *fp = fopen(scoreFile, "r");
 				if (fp == NULL) {
 					ERROR_PRINT("Couldn't find file: %s", scoreFile);
-					return (TestResult){1,0,0};
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
 				char line[10];  // Way extra space than we need
 				fscanf(fp, "%s", line);
-				int whiteScore = atoi(line);
+				double blackScore = atof(line);		
 				fscanf(fp, "%s", line);
-				int blackScore = atoi(line);		
+				double whiteScore = atof(line);
 				fclose(fp);
 
 				Score score = calcScores(initialState);
 
 				if (score.whiteScore != whiteScore || score.blackScore != blackScore) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
-					printf("Got scores (%d, %d)\n", score.whiteScore, score.blackScore);
+					printf("Got scores (%lf, %lf)\n", score.whiteScore, score.blackScore);
 				} else {
 					totalPasses += 1;
 				}
@@ -586,14 +586,14 @@ TestResult runCalcScoresTests(void) {
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for calcScores");;
-		return (TestResult){1,0,0};
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
 
-	return (TestResult){0, totalPasses, totalTests};
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
 TestResult runSetTerritoryTests(void) {
 	printf("\t\tTODO setTerritory Tests\n");  // Trying to guilt myself
-	return (TestResult){0, 0, 0};
+	return (TestResult){ .errorCode = 0, .totalPasses = 0, .totalTests = 0 };
 }

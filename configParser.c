@@ -5,7 +5,8 @@
 Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));
 	
-	config->rollouts = 30000;
+	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
+ 	config->rollouts = 30000;
 	config->threads = 1;
 	config->tests = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
@@ -48,15 +49,18 @@ Config *parseConfigFile(char *configFileName) {
 
 int updateConfig(Config *config, char *variableName, int value) {
 	// Huge long ugly if else chain.  Definitely could automatically generate
-	if (!strcmp(variableName, "rollouts")) {
+	if (!strcmp(variableName, "komiTimes10")) {
+		// No bounds on komi (allowed to be negative).  Well, I guess you could exceed int bounds, but why?
+		config->komiTimes10 = value;
+		return 0;
+	} else if (!strcmp(variableName, "rollouts")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of rollouts must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->rollouts = value;
 		return 0;
-	}
-	else if (!strcmp(variableName, "numThreads")) {
+	} else if (!strcmp(variableName, "numThreads")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of threads must be greater than 0, got: %d", value);
 			return 1;

@@ -1,8 +1,13 @@
-// Technically, I have an error, if the board is completely filled by black but for one square, black can't move in the vacant square ^^^
-
 #include "state.h"
 
-State *createState(void) {
+//Const?
+static double komi_g = 0;  // Global so we don't have to pass it freaking everywhere.  Sucks to do a global variable, though :/
+
+void setKomi(double komi) {
+	komi_g = komi;
+}
+
+State *createState() {
 	State *state = malloc(sizeof(State));
 	clearBoard(state);
 	return state;
@@ -199,7 +204,6 @@ int groupBordersTypeAndReset(State *state, int point, int type) {
 	return result;
 }
 
-// Probably shouldn't make this and groupBordersType recursive ^^
 int fillWith(State *state, int point, int type) {
 	int stone = state->board[point];
 	if (stone == type) {  // Then initial call was wrong
@@ -337,8 +341,8 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 	return;
 }
 
-// Should optimize ^^^, right now it's O(n^2) calling isLegalMove every time could be rough
-// Should keep track of how many liberties each stone is directly and indirectly connected to ^^^ (hmm, maybe)
+// Should optimize, right now it's O(n^2) calling isLegalMove every time could be rough
+// Should keep track of how many liberties each stone is directly and indirectly connected to. edit: (hmm, maybe)
 Moves *getMoves(State *state) {
 	Moves *moves = malloc(sizeof(Moves));
 	int count = 0;
@@ -356,7 +360,6 @@ Moves *getMoves(State *state) {
 	return moves;
 }
 
-// So I guess I'm not bothering with number of captured stones ^^^
 int calcScore(State *state, int type) {
 	// First have to do a slightly annoying check to see if the entire board is empty
 	int empty = 1;
@@ -409,12 +412,10 @@ int calcScore(State *state, int type) {
 }
 
 Score calcScores(State *state) {
-	int whiteScore = calcScore(state, STATE_WHITE);
-	int blackScore = calcScore(state, STATE_BLACK);
+	double whiteScore = (double)calcScore(state, STATE_WHITE)+komi_g;  // komi_g is a global variable defined at the top of the file
+	double blackScore = (double)calcScore(state, STATE_BLACK);
 
-	// Need to factor in komi^^^
-
-	return (Score){whiteScore, blackScore};
+	return (Score){ .whiteScore = whiteScore, .blackScore = blackScore};
 }
 
 int getResult(State *state, int color) {
@@ -423,9 +424,9 @@ int getResult(State *state, int color) {
 	if (score.blackScore == score.whiteScore) {
 		return 0;  // draw
 	} else {
-		// This could get refactored way better ^^^
+		// This could get refactored better
 		int result = -1;
-		if (color == STATE_BLACK) {  // The 0 and 1 is annoying
+		if (color == STATE_BLACK) {
 			if (score.blackScore > score.whiteScore) {
 				result = 1;
 			}

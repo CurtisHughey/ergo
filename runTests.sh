@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This runs unit, memory, and AI correctness tests
-# Make sure you do not modify any files while this is running
+# DO NOT modify any files while this is running
 
 tempConfig="configs/tempConfig.txt"
 testLog="log/test.log"
@@ -28,50 +28,10 @@ echo "--------------------"
 echo "Unit Tests"
 ./build.sh -d 19 &>/dev/null
 
-./ergo -u &>> $testLog
+echo "komiTimes10 75" >> $tempConfig   # Needs to make sure the komi is correct when calculating scores
+
+./ergo -u -C $tempConfig &>> $testLog
 if [[ $? -eq 0 ]]
-then
-	echo "Passed :)"
-	numPassed=$((numPassed+1))
-else
-	echo "Failed :("
-fi
-numTests=$((numTests+1))
-echo "--------------------"
-
-echo "--------------------------------------------------------------------------------" >> $testLog
-#########################################
-
-# Memory tests
-echo "--------------------"
-echo "Memory Tests"
-echo "Unit"
-./build.sh -v &>/dev/null   # Need to track for valgrind, needs to be default for unit
-
-# # Now need to give custom configurations
-# echo "rollouts 5" >> $tempConfig  # Doesn't need to be fast
-
-echo "unitRandomMakeUnmakeTests 1" >> $tempConfig  # We'll test this stuff more later
-
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
-if ! [[ $? -eq 1 ]]
-then
-	echo "Passed :)"
-	numPassed=$((numPassed+1))
-else
-	echo "Failed :("
-fi
-numTests=$((numTests+1))
-rm $tempConfig
-echo "---"
-
-echo "Simulation"  # Computer vs computer
-./build.sh -d 3 -v &>/dev/null
-
-echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
-
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
-if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
 	numPassed=$((numPassed+1))
@@ -93,6 +53,7 @@ echo "3x3 Wins"
 ./build.sh -d 3 &>/dev/null  # 19 is way too big
 
 # Now need to give custom configurations
+echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 1000" >> $tempConfig
 
 ./ergo -y -C $tempConfig &>> $testLog
@@ -109,6 +70,8 @@ echo "---"
 
 echo "3x3 Loses"
 ./build.sh -d 3 &>/dev/null
+
+echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 1" >> $tempConfig  # Sanity check to make sure we suck if the number of rollouts is low
 
 ./ergo -y -C $tempConfig &>> $testLog
@@ -126,11 +89,58 @@ echo "---"
 ./build.sh -d 6 &>/dev/null  # Bigger for more variation
 
 # Now need to give custom configurations
+echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 500" >> $tempConfig
 
 echo "6x6"
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]
+then
+	echo "Passed :)"
+	numPassed=$((numPassed+1))
+else
+	echo "Failed :("
+fi
+numTests=$((numTests+1))
+rm $tempConfig
+echo "--------------------"
+
+echo "--------------------------------------------------------------------------------" >> $testLog
+#########################################
+
+
+# Memory tests (Moved to end)
+echo "--------------------"
+echo "Memory Tests"
+echo "Unit"
+./build.sh -v &>/dev/null   # Need to track for valgrind, needs to be default for unit
+
+# # Now need to give custom configurations
+# echo "rollouts 5" >> $tempConfig  # Doesn't need to be fast
+
+echo "komiTimes10 75" >> $tempConfig  
+echo "unitRandomMakeUnmakeTests 1" >> $tempConfig  # We'll test this stuff more later
+
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
+if ! [[ $? -eq 1 ]]
+then
+	echo "Passed :)"
+	numPassed=$((numPassed+1))
+else
+	echo "Failed :("
+fi
+numTests=$((numTests+1))
+rm $tempConfig
+echo "---"
+
+echo "MCTS Simulation"  # Computer vs computer
+./build.sh -d 3 -v &>/dev/null
+
+echo "komiTimes10 0" >> $tempConfig
+echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
+
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
 	numPassed=$((numPassed+1))

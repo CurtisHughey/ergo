@@ -3,8 +3,8 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <time.h>
-#include <x86_64-linux-gnu/sys/time.h>  // This probably isn't good to have ^^^
+#include <stdlib.h>
+#include <sys/time.h>
 
 typedef struct {
 	struct timeval startTime;

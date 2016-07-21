@@ -8,11 +8,12 @@ int main(int argc, char **argv) {
 
 	int customConfig = 0;
 	int rollouts = -1;
+	int komiTimes10 = INT_MIN;  // Unlikely we would set it to this :)
 	char *configFileName;
 	functions function = NONE;
 
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "C:r:upcxytgh")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "C:r:k:upcxytgh")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'C':
 				customConfig = 1;
@@ -20,6 +21,13 @@ int main(int argc, char **argv) {
 				break;
 			case 'r':
 				rollouts = atoi(optarg);
+				break;
+			case 'k':
+				komiTimes10 = atoi(optarg);
+				if (komiTimes10 % 10 != 0 || komiTimes10 % 5 != 0) {
+					ERROR_PRINT("You specified a 10*komi of %d, must end in 5 or 0.  Exiting.", komiTimes10);
+					return 1;
+				}
 				break;
 			case 'u':
 				function = UNIT;
@@ -48,6 +56,8 @@ int main(int argc, char **argv) {
 				printf("\t\tUse a custom configuration file\n\n");
 				printf("\t-r\n");
 				printf("\t\tSpecify the number of rollouts\n\n");
+				printf("\t-k\n");
+				printf("\t\tSpecify the komi, times 10 (e.g. input 75 for a komi of 7.5)\n\n");
 				printf("\t-u\n");
 				printf("\t\tRun unit tests\n\n");
 				printf("\t-p\n");
@@ -80,9 +90,17 @@ int main(int argc, char **argv) {
 		config = getDefaultConfig();
 	}
 
-	if (rollouts > 0) {  // Then the number of rollouts was also specified on the command line
+	// Config options that may have been overridden on the command line
+	if (rollouts > 0) { 
 		config->rollouts = rollouts;
 	}
+	if (komiTimes10 != INT_MIN) {
+		config->komiTimes10 = komiTimes10;
+	}
+
+	// Necessary configuration:
+	double komi = config->komiTimes10/10.0;
+	setKomi(komi);  // Sets global variable in state.c
 
 	int result = 0;
 	switch (function) {
@@ -99,13 +117,13 @@ int main(int argc, char **argv) {
 			runComputerVsComputer(config->rollouts, config->averageLengthOfGame);
 			break;
 		case CVR:
-			return testComputer(config->tests, config->rollouts, config->averageLengthOfGame);
+			result =  testComputer(config->tests, config->rollouts, config->averageLengthOfGame);
 			break;
 		case TIME:
 			timeTrials(config->warmupTrials, config->trials, config->rollouts, config->averageLengthOfGame);
 			break;
 		case GTP:
-			return runGtp(config->rollouts, config->averageLengthOfGame)+2;  // +2 to make it non-negative.  0 for failure, 1 for loss, 2 for draw, 3 for win, should log
+			result = runGtp(config->rollouts, config->averageLengthOfGame)+2;  // +2 to make it non-negative.  0 for failure, 1 for loss, 2 for draw, 3 for win, should log
 			break;
 		case NONE:
 		default:

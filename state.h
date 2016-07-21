@@ -11,9 +11,9 @@
 #define BOARD_DIM 19  // The default
 #endif
 
-#define BOARD_SIZE BOARD_DIM*BOARD_DIM  // Should I just say 361?
+#define BOARD_SIZE BOARD_DIM*BOARD_DIM
 
-#define NUM_NEIGHBORS 4
+#define NUM_NEIGHBORS 4  // Lol, this isn't really necessary.  Defines the number of directions at a point (up, down, left, right)
 
 // Maybe change these to EMPTY_*.  Realllly should change this to enum
 #define STATE_WHITE 1
@@ -33,7 +33,7 @@
 // Encodes all necessary board state
 typedef struct {
 	int board[BOARD_SIZE];
-	int turn;  // 1 for white, -1 for black  (ugh, this is going to screw me, first turn is different than chess ^^^)
+	int turn;  // 1 for white, -1 for black  (ugh, this is going to screw me, first turn is different than chess.  Hasn't screwed me yet, suck it)
 	int koPoint;  // The place (if any, on the board that is the ko point.  -1 otherwise)
 	int whitePrisoners;  // The number of white stones that have been captured (by black)
 	int blackPrisoners;  // Vice versa
@@ -62,9 +62,12 @@ typedef struct {
 
 // The score for both players
 typedef struct {
-	int whiteScore;
-	int blackScore;
+	double whiteScore;
+	double blackScore;
 } Score;
+
+// Sets the komi
+void setKomi(double komi);
 
 // Allocates a new state struct, initially empty (calling clearBoard), black to move
 State *createState(void);
@@ -119,10 +122,11 @@ Moves *getMoves(State *state);
 
 // Calculates the score for the given type according to Chinese rules:
 // Living stones + territory
-// Should factor in komi ^^^
+// This function does NOT factor in komi
 int calcScore(State *state, int type);
 
 // Returns both scores (calls calcScore)
+// This function factors in komi
 Score calcScores(State *state);
 
 // Returns the result for the color (-1 for loss, 1 for win, 0 for draw)

@@ -25,7 +25,7 @@ void displayUctTree(UctNode *node) {
 
 void _displayUctTree(UctNode *node, int tabs) {
 	char *whiteSpace = calloc(tabs, sizeof(char));
-	for (int i = 0; i < tabs; i++) {  // I know there's a one-liner for this ^^^
+	for (int i = 0; i < tabs; i++) {
 		whiteSpace[i] = '\t';
 	}
 	printf("%s%d\n", whiteSpace, node->action);
@@ -57,9 +57,9 @@ void setChildren(UctNode *parent, Moves *moves, State *state) {
 		children[i] = malloc(sizeof(UctNode));
 
 		children[i]->action = moves->array[i];
-		children[i]->reward = 0;  // Maybe? ^^^
+		children[i]->reward = 0;
 		children[i]->visitCount = 0;
-		children[i]->terminal = state->blackPassed && moves->array[i] == MOVE_PASS;  // Maybe?.  Might be better to record ISWINNER^^^
+		children[i]->terminal = state->blackPassed && moves->array[i] == MOVE_PASS;
 		children[i]->children = NULL;
 		children[i]->childrenCount = 0;
 		children[i]->childrenVisited = 0;
@@ -88,7 +88,7 @@ int uctSearch(State *state, int rollouts, int lengthOfGame) {
 	for (int i = 0; i < rollouts; i++) {
 		State *copy = copyState(state);
 		UctNode *v = treePolicy(copy, root, lengthOfGame);
-		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);   // Getting stuck here
+		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
 		backupNegamax(v, reward);
 		destroyState(copy);
 	}
@@ -102,7 +102,7 @@ int uctSearch(State *state, int rollouts, int lengthOfGame) {
 }
 
 UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
-	while (!v->terminal) {  // Will stop when it finds a terminal node ^^^ ish
+	while (!v->terminal) {  // Will stop when it finds a terminal node
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
 			UctNode *added = expand(state, v);
 			makeMove(state, added->action);
@@ -144,7 +144,7 @@ UctNode *expand(State *state, UctNode *v) {
 
 // Returns the best child by the UCB1 algorithm
 UctNode *bestChild(UctNode *v, double c) {
-	double bestReward = INT_MIN;  // INT_MIN?   /// CRAAPPPPPPPPPPPPPP, it wass originally an int
+	double bestReward = INT_MIN;
 	int bestChildIndex = 0;  // There is always at least 1 child, so this will be filled
 	for (int i = 0; i < v->childrenCount; i++) {
 		UctNode *child = v->children[i];
@@ -165,7 +165,7 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 		reward = ((double)(child->reward))/child->visitCount 
 					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
 	} else {
-		reward = INT_MIN;  // Not sure what this should be set to ^^^
+		reward = INT_MIN;
 	}
 	return reward;
 }

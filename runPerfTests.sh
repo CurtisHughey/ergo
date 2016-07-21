@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# DO NOT modify any files while this is running
+
 save=0
 if [[ -n "$1" ]]
 then
