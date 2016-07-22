@@ -8,10 +8,10 @@ Config *getDefaultConfig(void) {
 	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
  	config->rollouts = 30000;
 	config->threads = 1;
-	config->tests = 25;  // The random vs cpu tests
+	config->testGames = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 2;  // To warm up the cpu for the time trials
-	config->averageLengthOfGame = 350;  // Eh, no idea
+	config->lengthOfGame = 350;  // Eh, no idea
 	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
 
 	return config;
@@ -60,19 +60,19 @@ int updateConfig(Config *config, char *variableName, int value) {
 		}
 		config->rollouts = value;
 		return 0;
-	} else if (!strcmp(variableName, "numThreads")) {
+	} else if (!strcmp(variableName, "threads")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of threads must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->threads = value;
 		return 0;
-	} else if (!strcmp(variableName, "tests")) {
+	} else if (!strcmp(variableName, "testGames")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of tests must be greater than 0, got: %d", value);
 			return 1;
 		}
-		config->tests = value;
+		config->testGames = value;
 		return 0;
 	} else if (!strcmp(variableName, "trials")) {
 		if (value < 1) {
@@ -88,12 +88,12 @@ int updateConfig(Config *config, char *variableName, int value) {
 		}
 		config->warmupTrials = value;
 		return 0;
-	} else if (!strcmp(variableName, "averageLengthOfGame")) {
+	} else if (!strcmp(variableName, "lengthOfGame")) {
 		if (value < 1) {
 			ERROR_PRINT("Average length of game must be greater than 0, got: %d", value);
 			return 1;
 		}
-		config->averageLengthOfGame = value;
+		config->lengthOfGame = value;
 		return 0;
 	} else if (!strcmp(variableName, "unitRandomMakeUnmakeTests")) {
 		if (value < 1) {

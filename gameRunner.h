@@ -8,6 +8,7 @@
 #include "uct.h"
 #include "timer.h"
 #include "dbg.h"
+#include "configParser.h"
 
 // This was a bit hacky, would be nice to configure ^^^
 #define PERFORMANCE_FILE "perf/rawPerformance.txt"
@@ -18,22 +19,25 @@ void showResults(State *state);
 // Prompts human for valid move and does it, returns 1 if the game has finished
 int promptHuman(State *state, char *color);
 
-void runHumanVsHuman(void);
+// Runs human vs human game
+void runHumanVsHuman(Config *config);
 
 // For the moment, rollouts is a hard count, but later time will be factored in ^^^
-void runHumanVsComputer(int rollouts, int lengthOfGame);
+void runHumanVsComputer(Config *config);
 
-void runComputerVsComputer(int rollouts, int lengthOfGame);
+// Runs computer vs computer game
+void runComputerVsComputer(Config *config);
 
 // Used for testing.  Returns 1 if the computer won, 0 if draw, -1 if lost
-int runComputerVsRandom(int rollouts, int lengthOfGame);
+int runComputerVsRandom(Config *config);
 
 // Returns 0 if computer passes (wins sufficient number of games)
-int testComputer(int iterations, int rollouts, int lengthOfGame);
+int testComputer(Config *config);
 
-void runTrial(int rollouts, int lengthOfGame);
+// Runs a single trial from timeTrials
+void runTrial(Config *config);
 
 // Writes the average time in millis to the default performance file
-void timeTrials(int warmupTrials, int trials, int rollouts, int lengthOfGame);
+void timeTrials(Config *config);
 
 #endif

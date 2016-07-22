@@ -14,10 +14,10 @@ typedef struct {
 	int komiTimes10;   // E.g. komiTimes10=75 means komi of 7.5
 	int rollouts;
 	int threads;
-	int tests;
+	int testGames;
 	int trials;
 	int warmupTrials;
-	int averageLengthOfGame;
+	int lengthOfGame;
 	int unitRandomMakeUnmakeTests;
 } Config;
 

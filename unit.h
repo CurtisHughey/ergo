@@ -8,6 +8,7 @@
 #include "dbg.h"
 #include "state.h"
 #include "gameParser.h"
+#include "configParser.h"
 
 #define NUM_TESTS 9
 
@@ -18,7 +19,7 @@ typedef struct {
 } TestResult;
 
 // Entry point to run all unit functions.  Return 0 if full success
-int runAllUnitTests(int stateRandomIterations);
+int runAllUnitTests(Config *config);
 
 // Returns 0 if full success
 int runStateTests(int stateRandomIterations);

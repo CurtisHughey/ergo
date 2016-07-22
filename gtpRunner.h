@@ -10,6 +10,7 @@
 #include "gameParser.h"
 #include "uct.h"
 #include "dbg.h"
+#include "configParser.h"
 
 #define GTP_MAX_LENGTH 1024  // Conservative, accounting for list_commands, so might eventually need to be extended
 #define MAX_GTP_MOVE_LENGTH  10  // Conservative
@@ -24,7 +25,7 @@ extern const char *commands[];  // Defined in gameRunner.c, function runGtp
 #define numCommands (sizeof(commands) / sizeof(const char *))
 
 // Runs GTP to connect with KGS.  Returns 1 if computer wins, -1 if loses, 0 if draw.  -2 if quit
-int runGtp(int rollouts, int lengthOfGame);
+int runGtp(Config *config);
 
 // Returns INVALID_MOVE if invalid.  Parses according to GTP specification
 int parseGtpMove(char *vertex);

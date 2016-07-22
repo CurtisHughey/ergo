@@ -1,6 +1,8 @@
 #include "gtpRunner.h"
 
-int runGtp(int rollouts, int lengthOfGame) {
+int runGtp(Config *config) {
+	int rollouts = config->rollouts;
+	int lengthOfGame = config->lengthOfGame;
 	// First set up go board
 
 	srand(time(NULL));	

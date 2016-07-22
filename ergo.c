@@ -105,25 +105,25 @@ int main(int argc, char **argv) {
 	int result = 0;
 	switch (function) {
 		case UNIT:
-			result = runAllUnitTests(config->unitRandomMakeUnmakeTests);
+			result = runAllUnitTests(config);
 			break;
 		case HVH:
-			runHumanVsHuman();
+			runHumanVsHuman(config);
 			break;
 		case HVC:
-			runHumanVsComputer(config->rollouts, config->averageLengthOfGame);
+			runHumanVsComputer(config);
 			break;
 		case CVC:
-			runComputerVsComputer(config->rollouts, config->averageLengthOfGame);
+			runComputerVsComputer(config);
 			break;
 		case CVR:
-			result =  testComputer(config->tests, config->rollouts, config->averageLengthOfGame);
+			result = testComputer(config);
 			break;
 		case TIME:
-			timeTrials(config->warmupTrials, config->trials, config->rollouts, config->averageLengthOfGame);
+			timeTrials(config);  // Results written to file
 			break;
 		case GTP:
-			result = runGtp(config->rollouts, config->averageLengthOfGame)+2;  // +2 to make it non-negative.  0 for failure, 1 for loss, 2 for draw, 3 for win, should log
+			result = runGtp(config)+2;  // +2 to make it non-negative.  0 for failure, 1 for loss, 2 for draw, 3 for win, should log
 			break;
 		case NONE:
 		default:

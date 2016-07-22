@@ -4,13 +4,15 @@
 
 int randomIterations = 1000;  // The number of iterations for the runStateRandomMakeUnmakeTests ^^^
 
-int runAllUnitTests(int stateRandomIterations) {
+int runAllUnitTests(Config *config) {
+	int unitRandomMakeUnmakeTests = config->unitRandomMakeUnmakeTests;
+
 	printf("------------------------------\n");
 	printf("All Tests: \n");
 	
 	int result = 0;
 
-	result |= runStateTests(stateRandomIterations);
+	result |= runStateTests(unitRandomMakeUnmakeTests);
 
 	if (!result) {
 		printf("ALL PASSED :)\n");

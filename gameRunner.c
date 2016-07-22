@@ -39,8 +39,8 @@ void showResults(State *state) {
 	}
 }
 
-// Not really used much now
-void runHumanVsHuman(void) {
+// Not really used much now.  config is unused
+void runHumanVsHuman(Config *config) {
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };
@@ -62,12 +62,16 @@ void runHumanVsHuman(void) {
 }
 
 // Not really used much now
-void runHumanVsComputer(int rollouts, int lengthOfGame) {
+void runHumanVsComputer(Config *config) {
+	srand(time(NULL));
+
+	int rollouts = config->rollouts;
+	int lengthOfGame = config->lengthOfGame;
+
 	State *state = createState();
 
 	char *colors[2] = { "Black", "White" };
 
-	srand(time(NULL));
 	int compTurn = rand() % 2;
 
 	int status = 0;
@@ -96,8 +100,11 @@ void runHumanVsComputer(int rollouts, int lengthOfGame) {
 	destroyState(state);
 }
 
-void runComputerVsComputer(int rollouts, int lengthOfGame) {	
+void runComputerVsComputer(Config *config) {
 	srand(time(NULL)); 
+
+	int rollouts = config->rollouts;
+	int lengthOfGame = config->lengthOfGame;
 
 	State *state = createState();
 
@@ -123,7 +130,10 @@ void runComputerVsComputer(int rollouts, int lengthOfGame) {
 }
 
 // Rand must already be initialized
-int runComputerVsRandom(int rollouts, int lengthOfGame) {
+int runComputerVsRandom(Config *config) {
+	int rollouts = config->rollouts;
+	int lengthOfGame = config->lengthOfGame;
+
 	State *state = createState();
 
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
@@ -149,8 +159,10 @@ int runComputerVsRandom(int rollouts, int lengthOfGame) {
 	return getResult(state, color);
 }
 
-int testComputer(int iterations, int rollouts, int lengthOfGame) {
+int testComputer(Config *config) {
 	srand(time(NULL));	
+
+	int iterations = config->testGames;
 
 	int compWon = 0;
 	int otherWon = 0;
@@ -158,7 +170,7 @@ int testComputer(int iterations, int rollouts, int lengthOfGame) {
 
 	const int interval = 1;
 	for (int i = 0; i < iterations; i++) {
-		int result = runComputerVsRandom(rollouts, lengthOfGame);
+		int result = runComputerVsRandom(config);
 		switch (result) {
 			case 1:
 				compWon += 1;
@@ -193,7 +205,10 @@ int testComputer(int iterations, int rollouts, int lengthOfGame) {
 }
 
 // Finds a single move, measures how long
-void runTrial(int rollouts, int lengthOfGame) {	
+void runTrial(Config *config) {	
+	int rollouts = config->rollouts;
+	int lengthOfGame = config->lengthOfGame;
+
 	State *state = createState();
 
 	int move = uctSearch(state, rollouts, lengthOfGame); 
@@ -202,11 +217,14 @@ void runTrial(int rollouts, int lengthOfGame) {
 	destroyState(state);	
 }
 
-void timeTrials(int warmupTrials, int trials, int rollouts, int lengthOfGame) {
+void timeTrials(Config *config) {
 	srand(time(NULL));
 
+	int warmupTrials = config->warmupTrials;
+	int trials = config->trials;
+
 	for (int i = 0; i < warmupTrials; i++) {  // Just to warm up the CPU
-		runTrial(rollouts, lengthOfGame);
+		runTrial(config);
 	}
 
 	double totalTime = 0;
@@ -214,7 +232,7 @@ void timeTrials(int warmupTrials, int trials, int rollouts, int lengthOfGame) {
 	Timer timer;
 	for (int i = 0; i < trials; i++) {
 		startTimer(&timer);
-		runTrial(rollouts, lengthOfGame);
+		runTrial(config);
 		stopTimer(&timer);
 
 		double elapsedTime = timeElapsed(&timer);
