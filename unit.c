@@ -2,7 +2,7 @@
 
 // Eventually, abstract a lot of the test harness stuff out
 
-int randomIterations = 1000;  // The number of iterations for the runStateRandomMakeUnmakeTests ^^^
+int randomIterations = 1000;  // The number of iterations for the runStateRandomMakeUnmakeTests.  Sucks that it has to be global
 
 int runAllUnitTests(Config *config) {
 	int unitRandomMakeUnmakeTests = config->unitRandomMakeUnmakeTests;
@@ -12,7 +12,7 @@ int runAllUnitTests(Config *config) {
 	
 	int result = 0;
 
-	result |= runStateTests(unitRandomMakeUnmakeTests);
+	result |= runStateTests(unitRandomMakeUnmakeTests);  // Using | in anticipation of more tests, 0 means success
 
 	if (!result) {
 		printf("ALL PASSED :)\n");
@@ -29,7 +29,7 @@ int runStateTests(int stateRandomIterations) {
 	printf("\t--------------------\n");
 	printf("\tstate Tests: \n");
 
-	randomIterations = stateRandomIterations;  // This is so freaking annoying ^^^
+	randomIterations = stateRandomIterations;  // Setting the global variable
 
 	int totalPasses = 0;
 	int totalTests = 0;
@@ -340,7 +340,7 @@ TestResult runStateMakeUnmakeTests(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runStateRandomMakeUnmakeTests() {
+TestResult runStateRandomMakeUnmakeTests(void) {
 	printf("\t\trandomMakeUnmake Tests: \n");
 
 	int totalPasses = 0;
@@ -370,15 +370,16 @@ TestResult runStateRandomMakeUnmakeTests() {
 				printf("\t\tExpected\n");
 				displayState(state);
 				printf("\t\tMove: %d\n", moves->array[randIndex]);
+
 				destroyState(copy);
-				free(moves);  // Eh, should make function
+				destroyMoves(moves);
 				passed = 0;
 				break;
 			} else {
 				makeMove(state, moves->array[randIndex]);  // Now makes move for realsies
 			}
 			destroyState(copy);
-			free(moves); 
+			destroyMoves(moves);
 		}
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);

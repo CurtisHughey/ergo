@@ -14,7 +14,7 @@ UctNode *createRootUctNode(State *state) {
 	
 	Moves *moves = getMoves(state);
 	setChildren(root, moves, state);
-	free(moves);
+	destroyMoves(moves);
 
 	return root;
 }
@@ -48,7 +48,7 @@ void expandUctNode(State *state, UctNode *parent) {
 	}
 
 	setChildren(parent, moves, state);	
-	free(moves);
+	destroyMoves(moves);
 }
 
 void setChildren(UctNode *parent, Moves *moves, State *state) {
@@ -182,24 +182,23 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 			int blackPassed = state->blackPassed;
 
 			int randomMove = -2;
-			if (prevNumMoves < 100) {  // Magically hardcoded ^^^, need to adjust for board size.  This is forgiveness prediction.  Also handles initial prevNumMoves=0
+			if (prevNumMoves < 5) {  // Magically hardcoded ^^^, need to adjust for board size.  This is forgiveness prediction.  Also handles initial prevNumMoves=0
 				Moves *moves = getMoves(state);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
 				int randomIndex = rand() % moves->count;
 				randomMove = moves->array[randomIndex];
 				makeMove(state, randomMove);
 				prevNumMoves = moves->count;
-				free(moves);  // Should have destroy function ^^^
-				moves = NULL;
+				destroyMoves(moves);
 			}
 			else {  // Better to do it first and ask forgiveness later.
 				int counter = 0;
-				do {  // Frik, I forgot to include MOVE_PASS
+				do {
 					randomMove = rand() % (BOARD_SIZE+1);
 					if (randomMove == BOARD_SIZE) {  // This represented a pass
 						randomMove = MOVE_PASS;
 					}
 					counter += 1;
-				} while (!isLegalMove(state, randomMove));  // At some point, worth to give up? ^^^
+				} while (!isLegalMove(state, randomMove));  // Worth giving up at some time? ^^^
 
 				makeMove(state, randomMove);
 				prevNumMoves = BOARD_SIZE/counter;  // Its best guess
@@ -240,23 +239,10 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 
 // Propagates new score back to root
 void backupNegamax(UctNode *v, double reward) {
-	while (v != NULL) {  // This or checking if root?
+	while (v != NULL) {
 		v->visitCount += 1;
 		v->reward += reward;
-		reward = -1*reward;  // Maybe?? ^^^
+		reward = -1*reward;
 		v = v->parent;
-	}
-}
-
-// Used for the second argument of defaultPolicy.  Just returning constant right now 
-// Unused
-int chooseLengthOfGame(int lengthSoFar) {
-	// Lol, IDK ^^^
-	if (lengthSoFar < 100) {
-		return 200;
-	} else if (lengthSoFar < 200) {
-		return 100;
-	} else {
-		return 50;
 	}
 }

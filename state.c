@@ -359,6 +359,11 @@ Moves *getMoves(State *state) {
 	return moves;
 }
 
+void destroyMoves(Moves *moves) {
+	free(moves);
+	moves = NULL;
+}
+
 int calcScore(State *state, int type) {
 	// First have to do a slightly annoying check to see if the entire board is empty
 	int empty = 1;

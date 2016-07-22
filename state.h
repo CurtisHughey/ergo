@@ -120,6 +120,9 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo);
 // Pass move is always stored last (as -1)
 Moves *getMoves(State *state);
 
+// Call this to free moves
+void destroyMoves(Moves *moves);
+
 // Calculates the score for the given type according to Chinese rules:
 // Living stones + territory
 // This function does NOT factor in komi

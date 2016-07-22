@@ -17,10 +17,6 @@
 
 #define UCT_CONSTANT 1.41 // This is the C_p=sqrt(2) term
 
-#ifndef SYSTEM_CORES
-#define SYSTEM_CORES 4
-#endif
-
 typedef struct UctNode {
 	int action;  // The move
 	double reward;  // Maybe just float...
@@ -69,8 +65,5 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v);
 
 // Propagates new score back to root
 void backupNegamax(UctNode *v, double reward);
-
-// Used for the second argument of defaultPolicy.  Just returning constant right now 
-int chooseLengthOfGame(int lengthSoFar);
 
 #endif
