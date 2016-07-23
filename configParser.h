@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "state.h"
 #include "dbg.h"
 
 #define MAX_LINE 256  // Really conservative

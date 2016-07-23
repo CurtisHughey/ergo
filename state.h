@@ -13,7 +13,6 @@
 
 #define BOARD_SIZE BOARD_DIM*BOARD_DIM
 
-#define NUM_NEIGHBORS 4  // Lol, this isn't really necessary.  Defines the number of directions at a point (up, down, left, right)
 
 // Maybe change these to EMPTY_*.  Realllly should change this to enum
 #define STATE_WHITE 1
@@ -42,7 +41,7 @@ typedef struct {
 
 // An array of specified neighbors (left, right, up, down) to a point
 typedef struct {
-	int array[NUM_NEIGHBORS];
+	int array[4];  // The 4 directions
 	int count;
 } Neighbors;
 

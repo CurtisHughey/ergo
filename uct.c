@@ -1,6 +1,7 @@
 #include "uct.h"
 
 // I want to use AMAF/RAVE^^^
+// I should make it illegal to fill in eyes (when would it ever be good?  And it's messing up endgame evaluation ^^^)
 
 // Creates new root UctNode
 UctNode *createRootUctNode(State *state) {
@@ -153,6 +154,12 @@ UctNode *bestChild(UctNode *v, double c) {
 			bestReward = reward;
 			bestChildIndex = i;
 		}
+
+		// if (c == 0) {  // REmove ^^^^
+		// 	char *x = moveToString(v->children[i]->action, 1); 
+		// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
+		// 	free(x);
+		// }
 	}
 	assert(bestChildIndex != -1);
 

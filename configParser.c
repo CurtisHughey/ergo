@@ -11,8 +11,8 @@ Config *getDefaultConfig(void) {
 	config->testGames = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 2;  // To warm up the cpu for the time trials
-	config->lengthOfGame = 350;  // Eh, no idea
-	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
+	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know
+  	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
 
 	return config;
 }
