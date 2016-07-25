@@ -11,7 +11,11 @@
 #include "configParser.h"
 #include "linkedList.h"
 
-#define NUM_TESTS 9
+#define NUM_STATE_TESTS 9
+#define NUM_LINKEDLIST_TESTS 2
+
+
+#define RANDOMGAMEITERATIONS 10
 
 typedef struct {
 	int errorCode;  // 1 if error, 0 if not
@@ -23,9 +27,10 @@ typedef struct {
 int runAllUnitTests(Config *config);
 
 // Returns 0 if full success
-int runStateTests(int stateRandomIterations);
+// Takes in the name of the test suite, the array of test functions, and the number of them
+int runTests(char *testName, TestResult (**tests)(void), int numTests);
 
-TestResult runFillWithTests(void);
+TestResult runStateFillWithTests(void);
 
 TestResult runStateGroupBordersTypeAndResetTests(void);
 
@@ -34,15 +39,25 @@ TestResult runStateMakeMoveTests(void);
 TestResult runStateMakeUnmakeTests(void);
 
 // Also tests isLegalMoves
-TestResult runGetMovesTests(void);
+TestResult runStateGetMovesTests(void);
 
-TestResult runIsLegalMoveTests(void);
+TestResult runStateIsLegalMoveTests(void);
 
-TestResult runCalcScoresTests(void);
+TestResult runStateCalcScoresTests(void);
 
-TestResult runSetTerritoryTests(void);
+TestResult runStateSetTerritoryTests(void);
 
 // This makes a bunch of random moves and then unmakes them, checks to make sure that the states are equal
 TestResult runStateRandomMakeUnmakeTests(void);
+
+////
+// List tests
+TestResult runLinkedListAdd(void);
+
+TestResult runLinkedListContains(void);
+
+TestResult runLinkedListDelete(void);
+
+TestResult runLinkedListLength(void);
 
 #endif

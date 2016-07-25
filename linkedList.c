@@ -111,12 +111,24 @@ int flush(Node **head) {
 	while (current) {
 		Node *temp = current;
 		current = current->next;
-		//free(temp);
+		free(temp);
 		temp = NULL;
-		UNUSED(temp);
 	}
 
 	*head = NULL;  // for good measure
+
+	return 0;
+}
+
+// Prints the list
+int printList(Node **head) {
+	Node *current = *head;
+	
+	while (current) {
+		printf("%" PRIu64 "\n", current->hashValue);
+		current = current->next;
+	}	
+	printf("\n");
 
 	return 0;
 }

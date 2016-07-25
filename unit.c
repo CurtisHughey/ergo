@@ -1,18 +1,36 @@
 #include "unit.h"
 
 // Eventually, abstract a lot of the test harness stuff out
-
-int randomIterations = 1000;  // The number of iterations for the runStateRandomMakeUnmakeTests.  Sucks that it has to be global
+// SOOOOO MUCH COPY AND PASTING
 
 int runAllUnitTests(Config *config) {
-	int unitRandomMakeUnmakeTests = config->unitRandomMakeUnmakeTests;
 
 	printf("------------------------------\n");
 	printf("All Tests: \n");
 	
 	int result = 0;
 
-	result |= runStateTests(unitRandomMakeUnmakeTests);  // Using | in anticipation of more tests, 0 means success
+	TestResult (*stateTests[NUM_STATE_TESTS])(void) = { 
+									&runStateMakeMoveTests,
+									&runStateMakeUnmakeTests,
+									&runStateGroupBordersTypeAndResetTests,
+									&runStateFillWithTests,
+									&runStateGetMovesTests,
+									&runStateIsLegalMoveTests,
+									&runStateCalcScoresTests,
+									&runStateSetTerritoryTests,
+									&runStateRandomMakeUnmakeTests,
+								};
+
+	TestResult (*listTests[NUM_LINKEDLIST_TESTS])(void) = { 
+									&runLinkedListAdd,
+									&runLinkedListContains,
+									// &runLinkedListDelete,
+									// &runLinkedListLength,
+								};	
+
+	result |= runTests("state", stateTests, NUM_STATE_TESTS);  // Using | in anticipation of more tests, 0 means success
+	result |= runTests("linkedList", listTests, NUM_LINKEDLIST_TESTS);
 
 	if (!result) {
 		printf("ALL PASSED :)\n");
@@ -25,32 +43,19 @@ int runAllUnitTests(Config *config) {
 	return result;  // Return 0 if no error, 1 if error
 }
 
-int runStateTests(int stateRandomIterations) {
+int runTests(char *testName, TestResult (**tests)(void), int numTests) {
 	printf("\t--------------------\n");
-	printf("\tstate Tests: \n");
-
-	randomIterations = stateRandomIterations;  // Setting the global variable
+	printf("\t%s Tests: \n", testName);
 
 	int totalPasses = 0;
 	int totalTests = 0;
 
 	// Add new tests here, also update header file
-	TestResult (*stateTests[NUM_TESTS])(void) = { 
-									&runStateMakeMoveTests,
-									&runStateMakeUnmakeTests,
-									&runStateGroupBordersTypeAndResetTests,
-									&runFillWithTests,
-									&runGetMovesTests,
-									&runIsLegalMoveTests,
-									&runCalcScoresTests,
-									&runSetTerritoryTests,
-									&runStateRandomMakeUnmakeTests,
-								};
 
-	for (int i = 0; i < NUM_TESTS; i++) {
+	for (int i = 0; i < numTests; i++) {
 		printf("\t\t----------\n");
 
-		TestResult result = stateTests[i]();
+		TestResult result = tests[i]();
 
 		if (result.errorCode) {
 			printf("\t\tError >:(");
@@ -87,7 +92,7 @@ int runStateTests(int stateRandomIterations) {
 	return result;
 }
 
-TestResult runFillWithTests(void) {
+TestResult runStateFillWithTests(void) {
 	printf("\t\tfillWith Tests: \n");
 
 	int totalPasses = 0;
@@ -350,7 +355,7 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 
 	srand(time(NULL));
 
-	for (int i = 0; i < randomIterations; i++) {
+	for (int i = 0; i < RANDOMGAMEITERATIONS; i++) {
 		State *state = createState();
 
 		int passed = 1;
@@ -394,7 +399,7 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runGetMovesTests(void) {
+TestResult runStateGetMovesTests(void) {
 	printf("\t\tgetMoves Tests: \n");
 
 	int totalPasses = 0;
@@ -467,7 +472,7 @@ TestResult runGetMovesTests(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runIsLegalMoveTests(void) {
+TestResult runStateIsLegalMoveTests(void) {
 	printf("\t\tisLegalMoveTests Tests: \n");
 
 	int totalPasses = 0;
@@ -530,7 +535,7 @@ TestResult runIsLegalMoveTests(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runCalcScoresTests(void) {
+TestResult runStateCalcScoresTests(void) {
 	printf("\t\tcalcScores Tests: \n");
 
 	int totalPasses = 0;
@@ -596,7 +601,120 @@ TestResult runCalcScoresTests(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runSetTerritoryTests(void) {
-	printf("\t\tTODO setTerritory Tests\n");  // Trying to guilt myself
+TestResult runStateSetTerritoryTests(void) {
+	printf("\t\tTODO setTerritory Tests\n");  // Trying to guilt myself.  Ugh, still haven't done it, I suck
 	return (TestResult){ .errorCode = 0, .totalPasses = 0, .totalTests = 0 };
 }
+
+// List and hash table tests.  Note that the list tests don't take in files, we just hardcode
+TestResult runLinkedListAdd(void) {
+
+	printf("\t\tlistAdd Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 2;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		Node *head = NULL;  // Sets up the list
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				add(&head, 2);
+
+				passed = head->hashValue == 2;
+				break;
+
+			case 2: 
+				add(&head, 2);
+				add(&head, 1);
+
+				passed = head->hashValue == 1 && head->next->hashValue == 2;
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d", i);
+			printf("Got: ");
+			printList(&head);
+		} else {
+			totalPasses += 1;
+		}
+
+		flush(&head);  // Tears down the list
+	}
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+TestResult runLinkedListContains(void) {
+
+	printf("\t\tlistContains Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 4;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		Node *head = NULL;  // Sets up the list
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				add(&head, 2);
+
+				passed = contains(&head, 2);
+				break;
+
+			case 2: 
+				add(&head, 2);
+				add(&head, 3);
+
+				passed = contains(&head, 2) && contains(&head, 3);
+				break;
+
+			case 3: 
+				passed = !contains(&head, 2);
+				break;
+
+			case 4: 
+				add(&head, 2);
+
+				passed = !contains(&head, 3);
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d", i);
+			printf("Got: ");
+			printList(&head);
+		} else {
+			totalPasses += 1;
+		}
+
+		flush(&head);  // Tears down the list
+	}
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+TestResult runLinkedListDelete(void);
+
+TestResult runLinkedListLength(void);

@@ -7,6 +7,9 @@
 
 #include "dbg.h"
 
+// Note that *head MUST point to NULL on an initial call to a function
+
+// If you change this, you should also change linkedList's printList function to match format
 typedef int64_t HASHVALUETYPE;
 
 typedef struct Node {
@@ -28,5 +31,8 @@ int delete(Node **head, HASHVALUETYPE hashValue);
 
 // Returns 0 if successful, other if not.  Deletes all entries.
 int flush(Node **head);
+
+// Prints the list
+int printList(Node **head);
 
 #endif
