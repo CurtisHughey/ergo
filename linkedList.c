@@ -1,6 +1,6 @@
 #include "linkedList.h"
 
-// Returns 0 if not already present, other if already present (and will give error message)
+// Returns 0 if successful, other if not
 int add(Node **head, HASHVALUETYPE hashValue) {
 	if (!head) {
 		ERROR_PRINT("Failed to add node");
@@ -64,14 +64,15 @@ int length(Node **head) {
 }
 
 // Returns 0 if successfully deletes, other if not (and will give error message)
+// Deletes the first occurence
 int delete(Node **head, HASHVALUETYPE hashValue) {
 	if (!head) {  // This would be pretty bad
-		ERROR_PRINT("Failed to delete node");
+		DEBUG_PRINT("Failed to delete node");
 		return 1;
 	}
 
 	if (!(*head)) {  // Then empty
-		ERROR_PRINT("Trying to delete from empty list");
+		DEBUG_PRINT("Trying to delete from empty list");
 		return 1;
 	}
 
@@ -124,11 +125,12 @@ int flush(Node **head) {
 int printList(Node **head) {
 	Node *current = *head;
 	
+	printf("[");
 	while (current) {
-		printf("%" PRIu64 "\n", current->hashValue);
+		printf("%" PRIu64 ",", current->hashValue);
 		current = current->next;
 	}	
-	printf("\n");
+	printf("]\n");
 
 	return 0;
 }

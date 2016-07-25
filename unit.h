@@ -12,7 +12,7 @@
 #include "linkedList.h"
 
 #define NUM_STATE_TESTS 9
-#define NUM_LINKEDLIST_TESTS 2
+#define NUM_LINKEDLIST_TESTS 4
 
 
 #define RANDOMGAMEITERATIONS 10

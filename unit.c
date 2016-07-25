@@ -5,6 +5,11 @@
 
 int runAllUnitTests(Config *config) {
 
+	if (BOARD_DIM != 19) {
+		ERROR_PRINT("Board must be 19x19!");
+		return 1;  // Failure
+	}
+
 	printf("------------------------------\n");
 	printf("All Tests: \n");
 	
@@ -25,8 +30,8 @@ int runAllUnitTests(Config *config) {
 	TestResult (*listTests[NUM_LINKEDLIST_TESTS])(void) = { 
 									&runLinkedListAdd,
 									&runLinkedListContains,
-									// &runLinkedListDelete,
-									// &runLinkedListLength,
+									&runLinkedListDelete,
+									&runLinkedListLength,
 								};	
 
 	result |= runTests("state", stateTests, NUM_STATE_TESTS);  // Using | in anticipation of more tests, 0 means success
@@ -649,8 +654,8 @@ TestResult runLinkedListAdd(void) {
 		}
 
 		if (!passed) {
-			printf("\t\tFailure for test: %d", i);
-			printf("Got: ");
+			printf("\t\tFailure for test: %d\n", i);
+			printf("\t\tGot: ");
 			printList(&head);
 		} else {
 			totalPasses += 1;
@@ -708,8 +713,8 @@ TestResult runLinkedListContains(void) {
 		}
 
 		if (!passed) {
-			printf("\t\tFailure for test: %d", i);
-			printf("Got: ");
+			printf("\t\tFailure for test: %d\n", i);
+			printf("\t\tGot: ");
 			printList(&head);
 		} else {
 			totalPasses += 1;
@@ -763,11 +768,11 @@ TestResult runLinkedListDelete(void) {
 			case 4: 
 				add(&head, 2);
 
-				passed = !delete(&head, 3);
+				passed = delete(&head, 3);
 				break;
 
 			case 5: 
-				passed = !delete(&head, 3);
+				passed = delete(&head, 3);
 				break;
 
 			default:
@@ -777,8 +782,8 @@ TestResult runLinkedListDelete(void) {
 		}
 
 		if (!passed) {
-			printf("\t\tFailure for test: %d", i);
-			printf("Got: ");
+			printf("\t\tFailure for test: %d\n", i);
+			printf("\t\tGot: ");
 			printList(&head);
 		} else {
 			totalPasses += 1;
@@ -828,7 +833,7 @@ TestResult runLinkedListLength(void) {
 				add(&head, 2);
 				add(&head, 2);
 
-				passed = length(&head) == 1;  // Second add ignored
+				passed = length(&head) == 2;  // We currently allow duplicates
 				break;
 
 			case 5:
@@ -836,7 +841,7 @@ TestResult runLinkedListLength(void) {
 				add(&head, 3);
 				delete(&head, 3);
 
-				passed = length(&head) == 1;  // Second add ignored
+				passed = length(&head) == 1;
 				break;
 
 			case 6:
@@ -873,8 +878,8 @@ TestResult runLinkedListLength(void) {
 		}
 
 		if (!passed) {
-			printf("\t\tFailure for test: %d", i);
-			printf("Got: ");
+			printf("\t\tFailure for test: %d\n", i);
+			printf("\t\tGot: ");
 			printList(&head);
 		} else {
 			totalPasses += 1;
