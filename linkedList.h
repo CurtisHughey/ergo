@@ -7,10 +7,10 @@
 
 #include "dbg.h"
 
-// Note that *head MUST point to NULL on an initial call to a function
-
-// If you change this, you should also change linkedList's printList function to match format
+// If you change this, you should also change linkedList's listPrint function to match format
 typedef int64_t HASHVALUETYPE;
+
+// Note that *head MUST point to NULL on an initial call to a function
 
 typedef struct Node {
 	HASHVALUETYPE hashValue;
@@ -18,21 +18,21 @@ typedef struct Node {
 } Node;
 
 // Returns 0 if not already present, other if already present (and will give error message)
-int add(Node **head, HASHVALUETYPE hashValue);
+int listAdd(Node **head, HASHVALUETYPE hashValue);
 
 // Returns 1 if exists, 0 if not
-int contains(Node **head, HASHVALUETYPE hashValue);
+int listContains(Node **head, HASHVALUETYPE hashValue);
 
 // Returns the length of the list (0 if none)
-int length(Node **head);
+int listLength(Node **head);
 
 // Returns 0 if successfully deletes, other if not (and will give error message)
-int delete(Node **head, HASHVALUETYPE hashValue);
+int listDelete(Node **head, HASHVALUETYPE hashValue);
 
 // Returns 0 if successful, other if not.  Deletes all entries.
-int flush(Node **head);
+int listFlush(Node **head);
 
 // Prints the list
-int printList(Node **head);
+int listPrint(Node **head);
 
 #endif

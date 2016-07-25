@@ -1,7 +1,7 @@
 #include "linkedList.h"
 
 // Returns 0 if successful, other if not
-int add(Node **head, HASHVALUETYPE hashValue) {
+int listAdd(Node **head, HASHVALUETYPE hashValue) {
 	if (!head) {
 		ERROR_PRINT("Failed to add node");
 		return 1;  // Wasn't allocated, this is pretty bad
@@ -36,7 +36,7 @@ int add(Node **head, HASHVALUETYPE hashValue) {
 }
 
 // Returns 1 if exists, 0 if not
-int contains(Node **head, HASHVALUETYPE hashValue) {
+int listContains(Node **head, HASHVALUETYPE hashValue) {
 	Node *current = *head;
 	while (current) {
 		if (current->hashValue == hashValue) {
@@ -51,7 +51,7 @@ int contains(Node **head, HASHVALUETYPE hashValue) {
 }
 
 // Returns the length of the list (0 if none)
-int length(Node **head) {
+int listLength(Node **head) {
 	int length = 0;
 
 	Node *current = *head;
@@ -65,7 +65,7 @@ int length(Node **head) {
 
 // Returns 0 if successfully deletes, other if not (and will give error message)
 // Deletes the first occurence
-int delete(Node **head, HASHVALUETYPE hashValue) {
+int listDelete(Node **head, HASHVALUETYPE hashValue) {
 	if (!head) {  // This would be pretty bad
 		DEBUG_PRINT("Failed to delete node");
 		return 1;
@@ -106,7 +106,7 @@ int delete(Node **head, HASHVALUETYPE hashValue) {
 }
 
 // Returns 0 if successful, other if not.  Deletes all entries.
-int flush(Node **head) {
+int listFlush(Node **head) {
 	Node *current = *head;
 
 	while (current) {
@@ -122,7 +122,7 @@ int flush(Node **head) {
 }
 
 // Prints the list
-int printList(Node **head) {
+int listPrint(Node **head) {
 	Node *current = *head;
 	
 	printf("[");

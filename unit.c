@@ -629,22 +629,22 @@ TestResult runLinkedListAdd(void) {
 		Node *head = NULL;  // Sets up the list
 		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
 			case 1: 
-				add(&head, 2);
+				listAdd(&head, 2);
 
 				passed = head->hashValue == 2;
 				break;
 
 			case 2: 
-				add(&head, 2);
-				add(&head, 1);
+				listAdd(&head, 2);
+				listAdd(&head, 1);
 
 				passed = head->hashValue == 1 && head->next->hashValue == 2;
 				break;
 
 			case 3: 
-				add(&head, 2);
+				listAdd(&head, 2);
 
-				passed = !add(&head, 2);  // Makes sure there is an error if trying to add again
+				passed = !listAdd(&head, 2);  // Makes sure there is an error if trying to add again
 				break;
 
 			default:
@@ -656,12 +656,12 @@ TestResult runLinkedListAdd(void) {
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
 			printf("\t\tGot: ");
-			printList(&head);
+			listPrint(&head);
 		} else {
 			totalPasses += 1;
 		}
 
-		flush(&head);  // Tears down the list
+		listFlush(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -684,26 +684,26 @@ TestResult runLinkedListContains(void) {
 		Node *head = NULL;  // Sets up the list
 		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
 			case 1: 
-				add(&head, 2);
+				listAdd(&head, 2);
 
-				passed = contains(&head, 2);
+				passed = listContains(&head, 2);
 				break;
 
 			case 2: 
-				add(&head, 2);
-				add(&head, 3);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
 
-				passed = contains(&head, 2) && contains(&head, 3);
+				passed = listContains(&head, 2) && listContains(&head, 3);
 				break;
 
 			case 3: 
-				passed = !contains(&head, 2);
+				passed = !listContains(&head, 2);
 				break;
 
 			case 4: 
-				add(&head, 2);
+				listAdd(&head, 2);
 
-				passed = !contains(&head, 3);
+				passed = !listContains(&head, 3);
 				break;
 
 			default:
@@ -715,12 +715,12 @@ TestResult runLinkedListContains(void) {
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
 			printf("\t\tGot: ");
-			printList(&head);
+			listPrint(&head);
 		} else {
 			totalPasses += 1;
 		}
 
-		flush(&head);  // Tears down the list
+		listFlush(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -728,7 +728,7 @@ TestResult runLinkedListContains(void) {
 
 TestResult runLinkedListDelete(void) {
 
-	printf("\t\tlistDelete Tests: \n");
+	printf("\t\tlistlistDelete( Tests: \n");
 
 	int totalPasses = 0;
 	int totalTests = 0;
@@ -743,36 +743,36 @@ TestResult runLinkedListDelete(void) {
 		Node *head = NULL;  // Sets up the list
 		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
 			case 1: 
-				add(&head, 2);
-				delete(&head, 2);
+				listAdd(&head, 2);
+				listDelete(&head, 2);
 
-				passed = !contains(&head, 2);
+				passed = !listContains(&head, 2);
 				break;
 
 			case 2: 
-				add(&head, 2);
-				add(&head, 3);
-				delete(&head, 2);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
+				listDelete(&head, 2);
 
-				passed = !contains(&head, 2) && contains(&head, 3);
+				passed = !listContains(&head, 2) && listContains(&head, 3);
 				break;
 
 			case 3: 
-				add(&head, 2);
-				add(&head, 3);
-				delete(&head, 3);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
+				listDelete(&head, 3);
 
-				passed = !contains(&head, 3) && contains(&head, 2);
+				passed = !listContains(&head, 3) && listContains(&head, 2);
 				break;
 
 			case 4: 
-				add(&head, 2);
+				listAdd(&head, 2);
 
-				passed = delete(&head, 3);
+				passed = listDelete(&head, 3);
 				break;
 
 			case 5: 
-				passed = delete(&head, 3);
+				passed = listDelete(&head, 3);
 				break;
 
 			default:
@@ -784,12 +784,12 @@ TestResult runLinkedListDelete(void) {
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
 			printf("\t\tGot: ");
-			printList(&head);
+			listPrint(&head);
 		} else {
 			totalPasses += 1;
 		}
 
-		flush(&head);  // Tears down the list
+		listFlush(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -813,62 +813,62 @@ TestResult runLinkedListLength(void) {
 		Node *head = NULL;  // Sets up the list
 		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
 			case 1: 
-				passed = length(&head) == 0;
+				passed = listLength(&head) == 0;
 				break;
 
 			case 2: 
-				add(&head, 2);
+				listAdd(&head, 2);
 
-				passed = length(&head) == 1;
+				passed = listLength(&head) == 1;
 				break;
 
 			case 3: 
-				add(&head, 2);
-				add(&head, 3);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
 
-				passed = length(&head) == 2;
+				passed = listLength(&head) == 2;
 				break;
 
 			case 4:
-				add(&head, 2);
-				add(&head, 2);
+				listAdd(&head, 2);
+				listAdd(&head, 2);
 
-				passed = length(&head) == 2;  // We currently allow duplicates
+				passed = listLength(&head) == 2;  // We currently allow duplicates
 				break;
 
 			case 5:
-				add(&head, 2);
-				add(&head, 3);
-				delete(&head, 3);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
+				listDelete(&head, 3);
 
-				passed = length(&head) == 1;
+				passed = listLength(&head) == 1;
 				break;
 
 			case 6:
-				add(&head, 2);
-				add(&head, 3);
-				delete(&head, 3);
-				delete(&head, 2);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
+				listDelete(&head, 3);
+				listDelete(&head, 2);
 
-				passed = length(&head) == 0;  // Second add ignored
+				passed = listLength(&head) == 0;  // Second add ignored
 				break;
 
 			case 7:
-				add(&head, 2);
-				add(&head, 3);
-				delete(&head, 2);  // Inverting order of deleting from last case
-				delete(&head, 3);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
+				listDelete(&head, 2);  // Inverting order of deleting from last case
+				listDelete(&head, 3);
 
-				passed = length(&head) == 0;  // Second add ignored
+				passed = listLength(&head) == 0;  // Second add ignored
 				break;
 
 			case 8:
-				add(&head, 2);
-				add(&head, 3);
-				delete(&head, 3);  // Inverting order of deleting from last case
-				add(&head, 3);
+				listAdd(&head, 2);
+				listAdd(&head, 3);
+				listDelete(&head, 3);  // Inverting order of deleting from last case
+				listAdd(&head, 3);
 
-				passed = length(&head) == 2;  // Second add ignored
+				passed = listLength(&head) == 2;  // Second add ignored
 				break;
 
 			default:
@@ -880,12 +880,12 @@ TestResult runLinkedListLength(void) {
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
 			printf("\t\tGot: ");
-			printList(&head);
+			listPrint(&head);
 		} else {
 			totalPasses += 1;
 		}
 
-		flush(&head);  // Tears down the list
+		listFlush(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
