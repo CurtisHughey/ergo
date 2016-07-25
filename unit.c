@@ -636,6 +636,12 @@ TestResult runLinkedListAdd(void) {
 				passed = head->hashValue == 1 && head->next->hashValue == 2;
 				break;
 
+			case 3: 
+				add(&head, 2);
+
+				passed = !add(&head, 2);  // Makes sure there is an error if trying to add again
+				break;
+
 			default:
 				ERROR_PRINT("Set the wrong number of tests");
 				passed = 0;  // Might as well
@@ -715,6 +721,167 @@ TestResult runLinkedListContains(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runLinkedListDelete(void);
+TestResult runLinkedListDelete(void) {
 
-TestResult runLinkedListLength(void);
+	printf("\t\tlistDelete Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 5;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		Node *head = NULL;  // Sets up the list
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				add(&head, 2);
+				delete(&head, 2);
+
+				passed = !contains(&head, 2);
+				break;
+
+			case 2: 
+				add(&head, 2);
+				add(&head, 3);
+				delete(&head, 2);
+
+				passed = !contains(&head, 2) && contains(&head, 3);
+				break;
+
+			case 3: 
+				add(&head, 2);
+				add(&head, 3);
+				delete(&head, 3);
+
+				passed = !contains(&head, 3) && contains(&head, 2);
+				break;
+
+			case 4: 
+				add(&head, 2);
+
+				passed = !delete(&head, 3);
+				break;
+
+			case 5: 
+				passed = !delete(&head, 3);
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d", i);
+			printf("Got: ");
+			printList(&head);
+		} else {
+			totalPasses += 1;
+		}
+
+		flush(&head);  // Tears down the list
+	}
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+// This is a good catch-all test to see false positives
+TestResult runLinkedListLength(void) {
+
+	printf("\t\tlistLength Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 8;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		Node *head = NULL;  // Sets up the list
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				passed = length(&head) == 0;
+				break;
+
+			case 2: 
+				add(&head, 2);
+
+				passed = length(&head) == 1;
+				break;
+
+			case 3: 
+				add(&head, 2);
+				add(&head, 3);
+
+				passed = length(&head) == 2;
+				break;
+
+			case 4:
+				add(&head, 2);
+				add(&head, 2);
+
+				passed = length(&head) == 1;  // Second add ignored
+				break;
+
+			case 5:
+				add(&head, 2);
+				add(&head, 3);
+				delete(&head, 3);
+
+				passed = length(&head) == 1;  // Second add ignored
+				break;
+
+			case 6:
+				add(&head, 2);
+				add(&head, 3);
+				delete(&head, 3);
+				delete(&head, 2);
+
+				passed = length(&head) == 0;  // Second add ignored
+				break;
+
+			case 7:
+				add(&head, 2);
+				add(&head, 3);
+				delete(&head, 2);  // Inverting order of deleting from last case
+				delete(&head, 3);
+
+				passed = length(&head) == 0;  // Second add ignored
+				break;
+
+			case 8:
+				add(&head, 2);
+				add(&head, 3);
+				delete(&head, 3);  // Inverting order of deleting from last case
+				add(&head, 3);
+
+				passed = length(&head) == 2;  // Second add ignored
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d", i);
+			printf("Got: ");
+			printList(&head);
+		} else {
+			totalPasses += 1;
+		}
+
+		flush(&head);  // Tears down the list
+	}
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
