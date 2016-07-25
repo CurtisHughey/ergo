@@ -1,5 +1,11 @@
 #include "state.h"
 
+/* 
+	Ok, I need to detect superko.  The way I'm going to use this in the MCTS algorithm
+	is to detect superko only in the game tree, and not in the simulations (defaultPolicy)
+	Maybe this is a good compromise
+*/
+
 static double komi_g = 0;  // Global so we don't have to pass it freaking everywhere.  Sucks to do a global variable, though :/
 
 void setKomi(double komi) {

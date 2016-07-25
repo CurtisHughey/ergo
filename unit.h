@@ -9,6 +9,7 @@
 #include "state.h"
 #include "gameParser.h"
 #include "configParser.h"
+#include "linkedList.h"
 
 #define NUM_TESTS 9
 
