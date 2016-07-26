@@ -12,6 +12,7 @@
 #include "gtpRunner.h"
 #include "unit.h"
 #include "configParser.h"
+#include "hash.h"
 
 // Specifies the functions called in gameRunner.c or gtpRunner.c
 typedef enum {

@@ -98,9 +98,11 @@ int main(int argc, char **argv) {
 		config->komiTimes10 = komiTimes10;
 	}
 
-	// Necessary configuration:
+	// Necessary configurations (setting komi and setting up zobrist hashing:
 	double komi = config->komiTimes10/10.0;
 	setKomi(komi);  // Sets global variable in state.c
+
+	initHashVals();
 
 	int result = 0;
 	switch (function) {
