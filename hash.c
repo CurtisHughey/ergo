@@ -17,20 +17,21 @@ void initHashVals(void) {
 		if (blackValString == NULL) {
 			ERROR_PRINT("Not enough random numbers, at iteration %d\n", i);
 			exit(1);
-		}		
+		}	
+		HASHVALUETYPE blackVal = strtoull(blackValString, (char **)NULL, 16);	
+		
 		char *whiteValString = fgets(inBuffer, bufSize, fp);
 		if (whiteValString == NULL) {
 			ERROR_PRINT("Not enough random numbers, at iteration %d\n", i);
 			exit(1);
 		}
+		HASHVALUETYPE whiteVal = strtoull(whiteValString, (char **)NULL, 16);  // Base 16
+
 		char *emptyValString = fgets(inBuffer, bufSize, fp);
 		if (emptyValString == NULL) {
 			ERROR_PRINT("Not enough random numbers, at iteration %d\n", i);
 			exit(1);
 		}
-
-		HASHVALUETYPE blackVal = strtoull(blackValString, (char **)NULL, 16);
-		HASHVALUETYPE whiteVal = strtoull(whiteValString, (char **)NULL, 16);  // Base 16
 		HASHVALUETYPE emptyVal = strtoull(emptyValString, (char **)NULL, 16);
 
 		blackVals[i] = blackVal;

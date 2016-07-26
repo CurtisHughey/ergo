@@ -28,14 +28,22 @@ int runAllUnitTests(Config *config) {
 								};
 
 	TestResult (*listTests[NUM_LINKEDLIST_TESTS])(void) = { 
-									&runLinkedListAdd,
-									&runLinkedListContains,
-									&runLinkedListDelete,
-									&runLinkedListLength,
-								};	
+									&runListAddTests,
+									&runListContainsTests,
+									&runListDeleteTests,
+									&runListLengthTests,
+								};
+
+	TestResult (*hashTests[NUM_HASHTABLE_TESTS])(void) = { 
+									&runHashAddTests,
+									&runHashContainsTests,
+									&runHashDeleteTests,
+									&runHashSizeTests,
+								};
 
 	result |= runTests("state", stateTests, NUM_STATE_TESTS);  // Using | in anticipation of more tests, 0 means success
 	result |= runTests("linkedList", listTests, NUM_LINKEDLIST_TESTS);
+	result |= runTests("hash", hashTests, NUM_HASHTABLE_TESTS);
 
 	HashTable *h = createHashTable(1000);
 	destroyHashTable(h);
@@ -615,7 +623,7 @@ TestResult runStateSetTerritoryTests(void) {
 }
 
 // List and hash table tests.  Note that the list tests don't take in files, we just hardcode
-TestResult runLinkedListAdd(void) {
+TestResult runListAddTests(void) {
 
 	printf("\t\tlistAdd Tests: \n");
 
@@ -670,7 +678,7 @@ TestResult runLinkedListAdd(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runLinkedListContains(void) {
+TestResult runListContainsTests(void) {
 
 	printf("\t\tlistContains Tests: \n");
 
@@ -729,7 +737,7 @@ TestResult runLinkedListContains(void) {
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
 
-TestResult runLinkedListDelete(void) {
+TestResult runListDeleteTests(void) {
 
 	printf("\t\tlistDelete Tests: \n");
 
@@ -799,7 +807,7 @@ TestResult runLinkedListDelete(void) {
 }
 
 // This is a good catch-all test to see false positives
-TestResult runLinkedListLength(void) {
+TestResult runListLengthTests(void) {
 
 	printf("\t\tlistLength Tests: \n");
 
@@ -890,6 +898,318 @@ TestResult runLinkedListLength(void) {
 
 		listFlush(&head);  // Tears down the list
 	}
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+// Nothing much we can easily do to verify, just seeing if errors occur
+TestResult runHashAddTests(void) {
+	printf("\t\taddToHashTable Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 3;
+
+	State *s1 = createState();
+	State *s2 = createState();
+	s2->board[0] = STATE_WHITE;  // Just to make it different
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		HashTable *hashTable = createHashTable(500); // Sets up the hash table
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				addToHashTable(hashTable, s1);
+
+				passed = 1;
+				break;
+
+			case 2: 
+				addToHashTable(hashTable, s1);
+				addToHashTable(hashTable, s2);
+
+				passed = 1;
+				break;
+
+			case 3: 
+				addToHashTable(hashTable, s2);
+				addToHashTable(hashTable, s2);  // Seeing what happens when we add to same bucket
+				
+				passed = 1;
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d\n", i);  // Unfortunately, not easy to display
+		} else {
+			totalPasses += 1;
+		}
+
+		destroyHashTable(hashTable);  // Tears it doesn
+	}
+
+	destroyState(s1);
+	destroyState(s2);
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+TestResult runHashContainsTests(void) {
+	printf("\t\tcontainsInHashTable Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 4;
+
+	State *s1 = createState();
+	State *s2 = createState();
+	State *s3 = createState();
+	State *s4 = createState();
+	State *s5 = createState();
+	State *s6 = createState();
+	s2->board[0] = STATE_WHITE;
+	s3->board[0] = STATE_BLACK;
+	s4->koPoint = 0;
+	s5->board[1] = STATE_WHITE;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		HashTable *hashTable = createHashTable(500); // Sets up the hash table, 500 buckets, who cares
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				addToHashTable(hashTable, s1);
+
+				passed = containsInHashTable(hashTable, s1);
+				break;
+
+			case 2: 
+				addToHashTable(hashTable, s1);
+				addToHashTable(hashTable, s2);
+
+				passed = containsInHashTable(hashTable, s1) && containsInHashTable(hashTable, s2);
+				break;
+
+			case 3: 
+				addToHashTable(hashTable, s1);
+				
+				passed = containsInHashTable(hashTable, s1) && !containsInHashTable(hashTable, s2);
+				break;
+
+			case 4: 				
+				passed = !containsInHashTable(hashTable, s1);
+				break;
+
+			case 5:
+				addToHashTable(hashTable, s1);
+
+				passed = !containsInHashTable(hashTable, s2);
+				break;
+
+			case 6:
+				addToHashTable(hashTable, s1);
+
+				passed = !containsInHashTable(hashTable, s3);
+				break;
+
+			case 7:
+				addToHashTable(hashTable, s2);
+
+				passed = !containsInHashTable(hashTable, s3);
+				break;
+
+			case 8:
+				addToHashTable(hashTable, s1);
+
+				passed = !containsInHashTable(hashTable, s4);
+				break;
+
+			case 9:
+				addToHashTable(hashTable, s1);
+
+				passed = !containsInHashTable(hashTable, s5);
+				break;
+
+			case 10:
+				addToHashTable(hashTable, s1);
+
+				passed = containsInHashTable(hashTable, s6);  // Should hash to same value
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d\n", i);
+		} else {
+			totalPasses += 1;
+		}
+
+		destroyHashTable(hashTable);  // Tears it doesn
+	}
+
+	destroyState(s1);
+	destroyState(s2);
+	destroyState(s3);
+	destroyState(s4);
+	destroyState(s5);
+	destroyState(s6);
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+TestResult runHashDeleteTests(void) {
+	printf("\t\tdeleteFromHashTable Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 4;
+
+	State *s1 = createState();
+	State *s2 = createState();
+	s2->board[0] = STATE_WHITE;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		HashTable *hashTable = createHashTable(500); // Sets up the hash table
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				addToHashTable(hashTable, s1);
+				deleteFromHashTable(hashTable, s1);
+
+				passed = !containsInHashTable(hashTable, s1);
+				break;
+
+			case 2: 
+				addToHashTable(hashTable, s1);
+				addToHashTable(hashTable, s2);
+				deleteFromHashTable(hashTable, s1);
+
+				passed = !containsInHashTable(hashTable, s1) && containsInHashTable(hashTable, s2);
+				break;
+
+			case 3: 
+				addToHashTable(hashTable, s1);
+				
+				passed = deleteFromHashTable(hashTable, s2);  // Deleting nothing, should return 1
+				break;
+
+			case 4: 
+				addToHashTable(hashTable, s1);
+				addToHashTable(hashTable, s1);
+				deleteFromHashTable(hashTable, s1);
+
+				passed = containsInHashTable(hashTable, s1);  // Copies are allowed for now
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d\n", i);
+		} else {
+			totalPasses += 1;
+		}
+
+		destroyHashTable(hashTable);  // Tears it doesn
+	}
+
+	destroyState(s1);
+	destroyState(s2);
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+TestResult runHashSizeTests(void) {
+	printf("\t\tsizeOfHashTable Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	const int numTests = 5;
+
+	State *s1 = createState();
+	State *s2 = createState();
+	s2->board[0] = STATE_WHITE;
+
+	for (int i = 1; i <= numTests; i++) {
+		totalTests += 1;
+
+		int passed = 0;  // Whether the test passed or not
+
+		HashTable *hashTable = createHashTable(500); // Sets up the hash table
+		switch (i) {  // Decides which test to do (this way, we can easily identify the failed tests)
+			case 1: 
+				addToHashTable(hashTable, s1);
+
+				passed = sizeOfHashTable(hashTable) == 1;
+				break;
+
+			case 2: 
+				passed = sizeOfHashTable(hashTable) == 0;
+				break;
+
+			case 3: 
+				addToHashTable(hashTable, s1);
+				deleteFromHashTable(hashTable, s1);
+
+				passed = sizeOfHashTable(hashTable) == 0;
+				break;
+
+			case 4: 
+				addToHashTable(hashTable, s1);
+				addToHashTable(hashTable, s2);
+				deleteFromHashTable(hashTable, s1);
+
+				passed = sizeOfHashTable(hashTable) == 1;
+				break;
+
+			case 5: 
+				addToHashTable(hashTable, s1);
+				addToHashTable(hashTable, s1);
+
+				passed = sizeOfHashTable(hashTable) == 2;
+				break;
+
+			default:
+				ERROR_PRINT("Set the wrong number of tests");
+				passed = 0;  // Might as well
+				break;
+		}
+
+		if (!passed) {
+			printf("\t\tFailure for test: %d\n", i);
+		} else {
+			totalPasses += 1;
+		}
+
+		destroyHashTable(hashTable);  // Tears it doesn
+	}
+
+	destroyState(s1);
+	destroyState(s2);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
