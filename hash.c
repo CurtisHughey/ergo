@@ -79,10 +79,37 @@ HASHVALUETYPE zobristHash(State *state) {
 }
 
 // Creates a hash table with numBuckets buckets (linked lists)
-HashTable *createHashTable(int numBuckets);
+HashTable *createHashTable(int numBuckets) {
+	Node ***buckets = calloc(numBuckets, sizeof(Node **));
+	if (buckets == NULL) {
+		ERROR_PRINT("Failed to allocate buckets");
+		exit(1);
+	}
+
+	HashTable *hashTable = malloc(sizeof(hashTable));
+	if (hashTable == NULL) {
+		ERROR_PRINT("Failed to allocate buckets");
+		exit(1);
+	}
+
+	hashTable->buckets = buckets;
+	hashTable->numBuckets = numBuckets;
+
+	return hashTable;
+}
 
 // Destroys the hash table
-HashTable *destroyHashTable(HashTable *hashTable);
+void destroyHashTable(HashTable *hashTable) {
+	for (int i = 0; i < hashTable->numBuckets; i++) {
+		listFlush(hashTable->buckets[i]);
+	}
+
+	free(hashTable->buckets);
+	hashTable->buckets = NULL;
+
+	free(hashTable);
+	hashTable = NULL;
+}
 
 // Adds a state to the hash table.  Returns 0 upon success
 int addToHashTable(HashTable *hashTable, State *state);

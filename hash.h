@@ -18,7 +18,7 @@ HASHVALUETYPE koVal;
 ////
 
 typedef struct {
-	Node **buckets;
+	Node ***buckets;
 	int numBuckets;
 } HashTable;
 
@@ -32,7 +32,7 @@ HASHVALUETYPE zobristHash(State *state);
 HashTable *createHashTable(int numBuckets);
 
 // Destroys the hash table
-HashTable *destroyHashTable(HashTable *hashTable);
+void destroyHashTable(HashTable *hashTable);
 
 // Adds a state to the hash table.  Returns 0 upon success
 int addToHashTable(HashTable *hashTable, State *state);
