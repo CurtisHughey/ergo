@@ -12,12 +12,21 @@ State *parseState(char *fileName) {
 		exit(1);
 	}
 
-	char line[BOARD_DIM+1];
+	char line[MAX_BOARD_LINE];
 
 	for (int i = BOARD_DIM-1; i >= 0; i--) {
-		if (fscanf(fp, "%s", line) == EOF) {
-			ERROR_PRINT("Not enough lines");
+		if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+			ERROR_PRINT("Not enough lines: %s", fileName);
 			return NULL;  // Incorrect formatting
+		}
+
+		if (i == BOARD_DIM-1 && line[0] == '#') {  // Detecting comments, but hacky since doesn't allow whitespace
+			do {
+				if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+					ERROR_PRINT("Not enough lines: %s", fileName);
+					return NULL;  // Incorrect formatting
+				}
+			} while (line[0] == '#');
 		}
 
 		for (int j = 0; j < BOARD_DIM; j++) {
@@ -33,50 +42,48 @@ State *parseState(char *fileName) {
 					state->board[point] = STATE_EMPTY;
 					break;
 				case '\0': 
-					ERROR_PRINT("Not enough on a line");
+					ERROR_PRINT("Not enough on a line: %s", fileName);
 					return NULL;  // Error
 				default:
-					ERROR_PRINT("Illegal character: %c at %d", line[j], point);
+					ERROR_PRINT("Illegal character: %c at %d: %s", line[j], point, fileName);
 					return NULL;
 			}
 		}
 	}
 	// Next line should be turn (either W or B)
-	if (fscanf(fp, "%s", line) == EOF) {
-		ERROR_PRINT("Missing turn");
+	if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+		ERROR_PRINT("Missing turn: %s", fileName);
 		return NULL;  // Incorrect formatting		
 	}
 	state->turn = line[0] == 'W' ? STATE_WHITE : STATE_BLACK;
 
 	// White stones captured (number)
-	if (fscanf(fp, "%s", line) == EOF) {
-		ERROR_PRINT("Missing white prisoners");
+	if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+		ERROR_PRINT("Missing white prisoners: %s", fileName);
 		return NULL;  // Incorrect formatting		
 	}
 	state->whitePrisoners = atoi(line);
 
 	// White stones captured (number)
-	if (fscanf(fp, "%s", line) == EOF) {
-		ERROR_PRINT("Missing black prisoners");
+	if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+		ERROR_PRINT("Missing black prisoners: %s", fileName);
 		return NULL;  // Incorrect formatting		
 	}
 	state->blackPrisoners = atoi(line);
 
 	// Ko point (-1 if none)	
-	if (fscanf(fp, "%s", line) == EOF) {
-		ERROR_PRINT("Missing ko point");
+	if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+		ERROR_PRINT("Missing ko point: %s", fileName);
 		return NULL;  // Incorrect formatting		
 	}
 	state->koPoint = atoi(line);
 
 	// Whether black has passed or not (used to help determine end of game)
-	if (fscanf(fp, "%s", line) == EOF) {
-		ERROR_PRINT("Missing black passed");
+	if (fgets(line, MAX_BOARD_LINE, fp) == NULL) {
+		ERROR_PRINT("Missing black passed: %s", fileName);
 		return NULL;  // Incorrect formatting		
 	}
 	state->blackPassed = atoi(line);	
-
-	// Anything afterwards is a comment, and should be ignored
 
 	fclose(fp);	
 

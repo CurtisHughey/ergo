@@ -6,6 +6,7 @@
 #include "state.h"
 #include "dbg.h"
 
+#define MAX_BOARD_LINE 1024  // Allows for comments (really shouldn't be more than this on one line :) )
 #define MAX_MOVE_LEN 7  // Ish
 #define QUIT (-3)
 
