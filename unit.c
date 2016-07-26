@@ -37,6 +37,9 @@ int runAllUnitTests(Config *config) {
 	result |= runTests("state", stateTests, NUM_STATE_TESTS);  // Using | in anticipation of more tests, 0 means success
 	result |= runTests("linkedList", listTests, NUM_LINKEDLIST_TESTS);
 
+	HashTable *h = createHashTable(1000);
+	destroyHashTable(h);
+
 	if (!result) {
 		printf("ALL PASSED :)\n");
 	} else {

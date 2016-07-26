@@ -7,6 +7,7 @@
 
 #include "dbg.h"
 #include "state.h"
+#include "hash.h"
 #include "gameParser.h"
 #include "configParser.h"
 #include "linkedList.h"

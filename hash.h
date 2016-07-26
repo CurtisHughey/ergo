@@ -44,6 +44,6 @@ int deleteFromHashTable(HashTable *hashTable, State *state);
 int containsInHashTable(HashTable *hashTable, State *state);
 
 // Returns the number of hashed values in the hash table
-int sizeOfHashTable(HashTable *hashTable, State *state);
+int sizeOfHashTable(HashTable *hashTable);
 
 #endif

@@ -121,7 +121,7 @@ echo "Unit"
 echo "komiTimes10 75" >> $tempConfig  
 echo "unitRandomMakeUnmakeTests 1" >> $tempConfig  # We'll test this stuff more later
 
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -139,7 +139,7 @@ echo "MCTS Simulation"  # Computer vs computer
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
 
-valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all -v ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"

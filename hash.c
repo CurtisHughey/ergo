@@ -80,17 +80,24 @@ HASHVALUETYPE zobristHash(State *state) {
 
 // Creates a hash table with numBuckets buckets (linked lists)
 HashTable *createHashTable(int numBuckets) {
-	Node ***buckets = calloc(numBuckets, sizeof(Node **));
+	Node ***buckets = calloc(numBuckets, sizeof(Node**));
 	if (buckets == NULL) {
 		ERROR_PRINT("Failed to allocate buckets");
 		exit(1);
 	}
 
-	HashTable *hashTable = malloc(sizeof(hashTable));
-	if (hashTable == NULL) {
-		ERROR_PRINT("Failed to allocate buckets");
-		exit(1);
+	for (int i = 0; i < numBuckets; i++) {
+		Node **bucket = malloc(sizeof(Node*));
+		if (bucket == NULL) {
+			ERROR_PRINT("Failed to allocate bucket");
+			exit(1);
+		}
+		*bucket = NULL;  // Must initialize it to this (maybe logic should be done in linkedList.c)
+
+		buckets[i] = bucket;	
 	}
+
+	HashTable *hashTable = malloc(sizeof(HashTable));
 
 	hashTable->buckets = buckets;
 	hashTable->numBuckets = numBuckets;
@@ -102,6 +109,8 @@ HashTable *createHashTable(int numBuckets) {
 void destroyHashTable(HashTable *hashTable) {
 	for (int i = 0; i < hashTable->numBuckets; i++) {
 		listFlush(hashTable->buckets[i]);
+		free(hashTable->buckets[i]);
+		hashTable->buckets[i] = NULL;
 	}
 
 	free(hashTable->buckets);
@@ -112,13 +121,35 @@ void destroyHashTable(HashTable *hashTable) {
 }
 
 // Adds a state to the hash table.  Returns 0 upon success
-int addToHashTable(HashTable *hashTable, State *state);
+int addToHashTable(HashTable *hashTable, State *state) {
+	HASHVALUETYPE hashValue = zobristHash(state);
+	int bucketIndex = (int)(hashValue % hashTable->numBuckets);  // Casting ^^^
+
+	return listAdd(hashTable->buckets[bucketIndex], hashValue);
+}
 
 // Deletes a state to the hash table.  Returns 0 upon success
-int deleteFromHashTable(HashTable *hashTable, State *state);
+int deleteFromHashTable(HashTable *hashTable, State *state) {
+	HASHVALUETYPE hashValue = zobristHash(state);
+	int bucketIndex = (int)(hashValue % hashTable->numBuckets);
+
+	return listDelete(hashTable->buckets[bucketIndex], hashValue);
+}
 
 // Sees if a state is contained in the hash table.  Returns 1 if true, 0 if not
-int containsInHashTable(HashTable *hashTable, State *state);
+int containsInHashTable(HashTable *hashTable, State *state) {
+	HASHVALUETYPE hashValue = zobristHash(state);
+	int bucketIndex = (int)(hashValue % hashTable->numBuckets);
+
+	return listContains(hashTable->buckets[bucketIndex], hashValue);
+}
 
 // Returns the number of hashed values in the hash table
-int sizeOfHashTable(HashTable *hashTable, State *state);
+int sizeOfHashTable(HashTable *hashTable) {
+	int size = 0;
+	for (int i = 0; i < hashTable->numBuckets; i++) {
+		size += listLength(hashTable->buckets[i]);
+	}
+
+	return size;
+}
