@@ -728,7 +728,7 @@ TestResult runLinkedListContains(void) {
 
 TestResult runLinkedListDelete(void) {
 
-	printf("\t\tlistlistDelete( Tests: \n");
+	printf("\t\tlistDelete Tests: \n");
 
 	int totalPasses = 0;
 	int totalTests = 0;
