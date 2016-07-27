@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "state.h"
 #include "linkedList.h"
 #include "dbg.h"
+#include "stateInfo.h"
 
 #define RANDOM_NUMBER_FILE "zobristData/randomNumbers.txt"
 
@@ -17,11 +17,6 @@ HASHVALUETYPE emptyVals[BOARD_SIZE];
 HASHVALUETYPE koVal;
 ////
 
-typedef struct {
-	Node ***buckets;
-	int numBuckets;
-} HashTable;
-
 // Reads in the random numbers from the file, and then writes them into the global arrays above
 void initHashVals(void);
 
@@ -31,8 +26,11 @@ HASHVALUETYPE zobristHash(State *state);
 // Creates a hash table with numBuckets buckets (linked lists)
 HashTable *createHashTable(int numBuckets);
 
-// Destroys the hash table
+// Destroys the hash table.  Calls clearHashTable below
 void destroyHashTable(HashTable *hashTable);
+
+// Clears the hash table
+void clearHashTable(HashTable *hashTable);
 
 // Adds a state to the hash table.  Returns 0 upon success
 int addToHashTable(HashTable *hashTable, State *state);

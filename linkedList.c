@@ -106,7 +106,7 @@ int listDelete(Node **head, HASHVALUETYPE hashValue) {
 }
 
 // Returns 0 if successful, other if not.  Deletes all entries.
-int listFlush(Node **head) {
+int listClear(Node **head) {
 	Node *current = *head;
 
 	while (current) {

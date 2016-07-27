@@ -19,7 +19,8 @@ typedef struct {
 	int trials;
 	int warmupTrials;
 	int lengthOfGame;
-	int unitRandomMakeUnmakeTests;
+	int superko;
+	int hashBuckets;
 } Config;
 
 // Default configurations

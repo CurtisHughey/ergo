@@ -119,7 +119,6 @@ echo "Unit"
 # echo "rollouts 5" >> $tempConfig  # Doesn't need to be fast
 
 echo "komiTimes10 75" >> $tempConfig  
-echo "unitRandomMakeUnmakeTests 1" >> $tempConfig  # We'll test this stuff more later
 
 valgrind --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
 if ! [[ $? -eq 1 ]]

@@ -3,7 +3,7 @@
 // Parses line by line, each point is either W, B, or space (" ")
 // Then some extra metadata (turn, ko, etc.)
 State *parseState(char *fileName) {
-	State *state = createState();
+	State *state = createState(0);  // No superko!!! (this sort of makes sense since there is no info about previous moves
 
 	FILE *fp = fopen(fileName, "r");
 

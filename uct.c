@@ -87,7 +87,7 @@ int uctSearch(State *state, int rollouts, int lengthOfGame) {
 	UctNode *root = createRootUctNode(state);
 	int rootTurn = state->turn;
 	for (int i = 0; i < rollouts; i++) {
-		State *copy = copyState(state);
+		State *copy = copyState(state);  // Still need to copy the hashBuckets separately ^^^
 		UctNode *v = treePolicy(copy, root, lengthOfGame);
 		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
 		backupNegamax(v, reward);
@@ -119,7 +119,7 @@ UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
 // Chooses a random unexplored child (v')
 UctNode *expand(State *state, UctNode *v) {
 	int numUnvisited = v->childrenCount - v->childrenVisited;
-	assert (numUnvisited > 0);
+	assert (numUnvisited > 0);  // A nice insert to have
 	int untriedIndex = rand() % numUnvisited;
 
 	UctNode *child = NULL;

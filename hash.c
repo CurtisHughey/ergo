@@ -11,6 +11,7 @@ void initHashVals(void) {
 	int bufSize = sizeof(HASHVALUETYPE) * 2 + 2;  // Number of nibbles for 64 bits (and newline and null terminator)
 	char *inBuffer = calloc(bufSize, sizeof(char));
 	
+	// Reads in the string numbers, converts to HASHVALUETYPE's, and stores
 	for (int i = 0; i < BOARD_SIZE; i++) {
 
 		char *blackValString = fgets(inBuffer, bufSize, fp);  // Reads in the appropriate number of hex nibbles
@@ -79,9 +80,8 @@ HASHVALUETYPE zobristHash(State *state) {
 	return result;
 }
 
-// Creates a hash table with numBuckets buckets (linked lists)
 HashTable *createHashTable(int numBuckets) {
-	Node ***buckets = calloc(numBuckets, sizeof(Node**));
+	Node ***buckets = calloc(numBuckets, sizeof(Node**));  // Geez, triple pointers.  First level allows head to be modified, second level allows for allocating bucket on heap, third level allows for array of buckets
 	if (buckets == NULL) {
 		ERROR_PRINT("Failed to allocate buckets");
 		exit(1);
@@ -106,10 +106,9 @@ HashTable *createHashTable(int numBuckets) {
 	return hashTable;
 }
 
-// Destroys the hash table
 void destroyHashTable(HashTable *hashTable) {
 	for (int i = 0; i < hashTable->numBuckets; i++) {
-		listFlush(hashTable->buckets[i]);
+		listClear(hashTable->buckets[i]);
 		free(hashTable->buckets[i]);
 		hashTable->buckets[i] = NULL;
 	}
@@ -121,7 +120,13 @@ void destroyHashTable(HashTable *hashTable) {
 	hashTable = NULL;
 }
 
-// Adds a state to the hash table.  Returns 0 upon success
+void clearHashTable(HashTable *hashTable) {
+	// All we have to do is clear out entries in the buckets
+	for (int i = 0; i < hashTable->numBuckets; i++) {
+		listClear(hashTable->buckets[i]);
+	}
+}
+
 int addToHashTable(HashTable *hashTable, State *state) {
 	HASHVALUETYPE hashValue = zobristHash(state);
 	int bucketIndex = (int)(hashValue % hashTable->numBuckets);  // Casting ^^^
@@ -129,7 +134,6 @@ int addToHashTable(HashTable *hashTable, State *state) {
 	return listAdd(hashTable->buckets[bucketIndex], hashValue);
 }
 
-// Deletes a state to the hash table.  Returns 0 upon success
 int deleteFromHashTable(HashTable *hashTable, State *state) {
 	HASHVALUETYPE hashValue = zobristHash(state);
 	int bucketIndex = (int)(hashValue % hashTable->numBuckets);
@@ -137,7 +141,6 @@ int deleteFromHashTable(HashTable *hashTable, State *state) {
 	return listDelete(hashTable->buckets[bucketIndex], hashValue);
 }
 
-// Sees if a state is contained in the hash table.  Returns 1 if true, 0 if not
 int containsInHashTable(HashTable *hashTable, State *state) {
 	HASHVALUETYPE hashValue = zobristHash(state);
 	int bucketIndex = (int)(hashValue % hashTable->numBuckets);

@@ -372,7 +372,7 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 	srand(time(NULL));
 
 	for (int i = 0; i < RANDOMGAMEITERATIONS; i++) {
-		State *state = createState();
+		State *state = createState(0);
 
 		int passed = 1;
 		for (int j = 0; j < depth; j++) {
@@ -672,7 +672,7 @@ TestResult runListAddTests(void) {
 			totalPasses += 1;
 		}
 
-		listFlush(&head);  // Tears down the list
+		listClear(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -731,7 +731,7 @@ TestResult runListContainsTests(void) {
 			totalPasses += 1;
 		}
 
-		listFlush(&head);  // Tears down the list
+		listClear(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -800,7 +800,7 @@ TestResult runListDeleteTests(void) {
 			totalPasses += 1;
 		}
 
-		listFlush(&head);  // Tears down the list
+		listClear(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -896,7 +896,7 @@ TestResult runListLengthTests(void) {
 			totalPasses += 1;
 		}
 
-		listFlush(&head);  // Tears down the list
+		listClear(&head);  // Tears down the list
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -911,8 +911,8 @@ TestResult runHashAddTests(void) {
 
 	const int numTests = 3;
 
-	State *s1 = createState();
-	State *s2 = createState();
+	State *s1 = createState(0);
+	State *s2 = createState(0);
 	s2->board[0] = STATE_WHITE;  // Just to make it different
 
 	for (int i = 1; i <= numTests; i++) {
@@ -971,12 +971,12 @@ TestResult runHashContainsTests(void) {
 
 	const int numTests = 4;
 
-	State *s1 = createState();
-	State *s2 = createState();
-	State *s3 = createState();
-	State *s4 = createState();
-	State *s5 = createState();
-	State *s6 = createState();
+	State *s1 = createState(0);
+	State *s2 = createState(0);
+	State *s3 = createState(0);
+	State *s4 = createState(0);
+	State *s5 = createState(0);
+	State *s6 = createState(0);
 	s2->board[0] = STATE_WHITE;
 	s3->board[0] = STATE_BLACK;
 	s4->koPoint = 0;
@@ -1081,8 +1081,8 @@ TestResult runHashDeleteTests(void) {
 
 	const int numTests = 4;
 
-	State *s1 = createState();
-	State *s2 = createState();
+	State *s1 = createState(0);
+	State *s2 = createState(0);
 	s2->board[0] = STATE_WHITE;
 
 	for (int i = 1; i <= numTests; i++) {
@@ -1150,8 +1150,8 @@ TestResult runHashSizeTests(void) {
 
 	const int numTests = 5;
 
-	State *s1 = createState();
-	State *s2 = createState();
+	State *s1 = createState(0);
+	State *s2 = createState(0);
 	s2->board[0] = STATE_WHITE;
 
 	for (int i = 1; i <= numTests; i++) {

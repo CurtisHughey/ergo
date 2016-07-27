@@ -1,10 +1,6 @@
 #include "state.h"
 
-/* 
-	Ok, I need to detect superko.  The way I'm going to use this in the MCTS algorithm
-	is to detect superko only in the game tree, and not in the simulations (defaultPolicy)
-	Maybe this is a good compromise
-*/
+// State struct is in stateInfo.h, along with a lot of macros (needed to resolve some circular dependencies)
 
 static double komi_g = 0;  // Global so we don't have to pass it freaking everywhere.  Sucks to do a global variable, though :/
 
@@ -12,27 +8,42 @@ void setKomi(double komi) {
 	komi_g = komi;
 }
 
-State *createState() {
+State *createState(int numBuckets) {  // If numBuckets < 1, it assumes superko not tracked
 	State *state = malloc(sizeof(State));
+
+	if (numBuckets >= 1) {
+		state->hashTable = createHashTable(numBuckets);
+	} else {
+		state->hashTable = createHashTable(0);  // Trivial
+	}
+
 	clearBoard(state);
+
 	return state;
 }
 
-void clearBoard(State *state) {
-	memset(state->board, STATE_EMPTY, sizeof(state->board)); 
+void clearBoard(State *state) {  // This functions is called by createState, also in GTP protocol
+	memset(state->board, STATE_EMPTY, sizeof(state->board));  // Empties it
+	
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
 	state->whitePrisoners = 0;
 	state->blackPrisoners = 0;
 	state->blackPassed = 0;
+
+	clearHashTable(state->hashTable);  // Could be a trivial hashTable
 }
 
 int destroyState(State *state) {
+	destroyHashTable(state->hashTable);
+
 	free(state);
 	state = NULL;
+	
 	return 0;
 }
 
+// This function is a little kooky - it will not copy the hash table (instead creating a trivial (0 bucket), new one.  It is your responsibility to free it and put in your own, if you want)
 State *copyState(State *original) {
 	State *copy = malloc(sizeof(State));
 	memcpy(copy->board, original->board, sizeof(original->board));
@@ -41,6 +52,8 @@ State *copyState(State *original) {
 	copy->whitePrisoners = original->whitePrisoners;
 	copy->blackPrisoners = original->blackPrisoners;
 	copy->blackPassed = original->blackPassed;
+
+	copy->hashTable = createHashTable(0);
 
 	return copy;
 }

@@ -41,7 +41,7 @@ void showResults(State *state) {
 
 // Not really used much now.  config is unused
 void runHumanVsHuman(Config *config) {
-	State *state = createState();
+	State *state = createState(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
 
@@ -68,7 +68,7 @@ void runHumanVsComputer(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState();
+	State *state = createState(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
 
@@ -106,7 +106,7 @@ void runComputerVsComputer(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState();
+	State *state = createState(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
 
@@ -134,7 +134,7 @@ int runComputerVsRandom(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState();
+	State *state = createState(config->hashBuckets);
 
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
 
@@ -209,7 +209,7 @@ void runTrial(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState();
+	State *state = createState(config->hashBuckets);
 
 	int move = uctSearch(state, rollouts, lengthOfGame); 
 	makeMove(state, move);

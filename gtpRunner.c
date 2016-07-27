@@ -27,7 +27,7 @@ int runGtp(Config *config) {
 
 	const char *whitespace = " \t";
 
-	State *state = createState();
+	State *state = createState(config->hashBuckets);
 
 	///////////////
 

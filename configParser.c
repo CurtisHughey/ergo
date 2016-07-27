@@ -6,13 +6,14 @@ Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));
 	
 	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
- 	config->rollouts = 30000;
-	config->threads = 1;
+ 	config->rollouts = 30000;  // Maybe also make this a function of the sizes of the board
+	config->threads = 1;  // Number of threads to do simulations
 	config->testGames = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 2;  // To warm up the cpu for the time trials
-	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know
-  	config->unitRandomMakeUnmakeTests = 1000;  // Wow, this is a long name
+	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know ^^^
+	config->superko = 1;  // By default, we don't allow superko
+	config->hashBuckets = 1000;  // Meh, maybe.  Definitely a tradeoff of memory/speed
 
 	return config;
 }
@@ -95,12 +96,19 @@ int updateConfig(Config *config, char *variableName, int value) {
 		}
 		config->lengthOfGame = value;
 		return 0;
-	} else if (!strcmp(variableName, "unitRandomMakeUnmakeTests")) {
-		if (value < 1) {
-			ERROR_PRINT("Number of random makeUnmakeTests must be greater than 0, got: %d", value);
+	} else if (!strcmp(variableName, "superko")) {
+		if (value != 1 || value != 0) {
+			ERROR_PRINT("Superko must be 1 to not allow it, otherwise 0, got: %d", value);
 			return 1;
 		}
-		config->unitRandomMakeUnmakeTests = value;
+		config->superko = value;
+		return 0;
+	} else if (!strcmp(variableName, "hashBuckets")) {
+		if (value < 1) {
+			ERROR_PRINT("Number of hash buckets must be greater than 0, got: %d", value);
+			return 1;
+		}
+		config->hashBuckets = value;
 		return 0;
 	} else {
 		ERROR_PRINT("Unknown variable name: %s", variableName);
