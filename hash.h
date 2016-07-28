@@ -38,6 +38,9 @@ int addToHashTable(HashTable *hashTable, State *state);
 // Deletes a state to the hash table.  Returns 0 upon success
 int deleteFromHashTable(HashTable *hashTable, State *state);
 
+// Fix!
+int deleteValueFromHashTable(HashTable *hashTable, HASHVALUETYPE hashValue);
+
 // Sees if a state is contained in the hash table.  Returns 1 if true, 0 if not
 int containsInHashTable(HashTable *hashTable, State *state);
 

@@ -1,7 +1,7 @@
 #include "uct.h"
 
 // I want to use AMAF/RAVE^^^
-// I should make it illegal to fill in eyes (when would it ever be good?  And it's messing up endgame evaluation ^^^)
+// I should make it illegal to fill in eyes (when would it ever be good (actually, it's sometimes good))?  And it's messing up endgame evaluation ^^^)
 
 // Creates new root UctNode
 UctNode *createRootUctNode(State *state, HashTable *hashTable) {
@@ -103,16 +103,46 @@ int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable
 }
 
 UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
+	HASHVALUETYPE *hashValues = NULL;
+	int index = -1;
+	int hashValuesLength = 0;
+
+	if (!hashTable) {
+		hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
+		index = 0;
+		hashValuesLength = ESTIMATED_DEPTH;
+	}
+
 	while (!v->terminal) {  // Will stop when it finds a terminal node
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
-			UctNode *added = expand(state, v, hashTable);
-			makeMove(state, added->action, hashTable);
-			return added;
+			v = expand(state, v, hashTable);
+			makeMove(state, v->action, hashTable);
+			if (!hashTable) {
+				hashValues[index++] = zobristHash(state);
+			}
+			break;
 		} else {
 			v = bestChild(v, UCT_CONSTANT);
 			makeMove(state, v->action, hashTable);
+			if (!hashTable) {
+				hashValues[index++] = zobristHash(state);
+			}
+		}
+
+		// Don't need to check hashTable here, will always be false if it's NULL
+		if (index >= hashValuesLength) {
+			hashValuesLength *= 2;
+			hashValues = realloc(hashValues, hashValuesLength * sizeof(HASHVALUETYPE));
 		}
 	}
+
+	// Now deletes the hash values
+	if (!hashTable) {
+		for (int i = 0; i < index; i++) {
+			deleteValueFromHashTable(hashTable, hashValues[i]);
+		}	
+	}
+
 	return v;
 }
 
@@ -155,7 +185,7 @@ UctNode *bestChild(UctNode *v, double c) {
 			bestChildIndex = i;
 		}
 
-		// if (c == 0) {  // REmove ^^^^
+		// if (c == 0) {  // Rmove ^^^^
 		// 	char *x = moveToString(v->children[i]->action, 1); 
 		// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
 		// 	free(x);

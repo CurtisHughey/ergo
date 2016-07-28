@@ -18,6 +18,8 @@
 
 #define UCT_CONSTANT 1.41 // This is the C_p=sqrt(2) term
 
+#define ESTIMATED_DEPTH 16
+
 typedef struct UctNode {
 	int action;  // The move
 	double reward;  // Maybe just float...

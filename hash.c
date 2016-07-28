@@ -164,10 +164,22 @@ int deleteFromHashTable(HashTable *hashTable, State *state) {
 	return listDelete(hashTable->buckets[bucketIndex], hashValue);
 }
 
-int containsInHashTable(HashTable *hashTable, State *state) {
+// This should hook into the previous function
+int deleteValueFromHashTable(HashTable *hashTable, HASHVALUETYPE hashValue) {
 	if (hashTable == NULL) {
 		ERROR_PRINT("Hash Table uninitialized");
 		return 1;
+	}
+
+	int bucketIndex = (int)(hashValue % hashTable->numBuckets);
+
+	return listDelete(hashTable->buckets[bucketIndex], hashValue);
+}
+
+int containsInHashTable(HashTable *hashTable, State *state) {
+	if (hashTable == NULL) {
+		ERROR_PRINT("Hash Table uninitialized");
+		return 0;  // I guess?
 	}
 
 	HASHVALUETYPE hashValue = zobristHash(state);

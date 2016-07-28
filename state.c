@@ -142,7 +142,7 @@ int isLegalMove(State *state, int move, HashTable *hashTable) {
 	state->board[move] = STATE_EMPTY;
 
 	// Superko:
-	if (hashTable != NULL) {  // Then we're tracking superko
+	if (hashTable != NULL) {  // Then we're tracking superko (MOVE_PASS already taken care of)
 		UnmakeMoveInfo unmakeMoveInfo;  // Unfortunate that I have to go through all this
 		makeMoveAndSave(state, move, &unmakeMoveInfo, NULL);  // Pass in NULL to the hash table because we don't want to add this value
 		
@@ -313,7 +313,10 @@ void makeMove(State *state, int move, HashTable *hashTable) {
 	state->turn = OTHER_COLOR(state->turn);
 
 	if (move != MOVE_PASS && hashTable != NULL) {  // If it's equal to MOVE_PASS, then the position had already been stored.  hashTable == NULL means we aren't tracking
-		addToHashTable(hashTable, state);  // The initial position is never stored, probs doesn't matter ^^^
+		int result = addToHashTable(hashTable, state);  // The initial position is never stored, probs doesn't matter ^^^
+		if (result) {
+			ERROR_PRINT("Failed to add");
+		}
 	}
 
 	return;
@@ -345,7 +348,10 @@ void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo, Has
 void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTable) {
 	if (unmakeMoveInfo->move != MOVE_PASS) {
 		if (hashTable != NULL) {
-			deleteFromHashTable(hashTable, state);  // Delete the current state from the hash table (only if not MOVE_PASS, because then the positions are allowed to repeat)
+			int result = deleteFromHashTable(hashTable, state);  // Delete the current state from the hash table (only if not MOVE_PASS, because then the positions are allowed to repeat)
+			if (result) {
+				ERROR_PRINT("Failed to delete");
+			}		
 		}
 
 		// First fills in captured stones
