@@ -107,7 +107,7 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 	int index = -1;
 	int hashValuesLength = 0;
 
-	if (!hashTable) {
+	if (hashTable != NULL) {
 		hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
 		index = 0;
 		hashValuesLength = ESTIMATED_DEPTH;
@@ -117,14 +117,14 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
 			v = expand(state, v, hashTable);
 			makeMove(state, v->action, hashTable);
-			if (!hashTable) {
+			if (hashTable != NULL) {
 				hashValues[index++] = zobristHash(state);
 			}
 			break;
 		} else {
 			v = bestChild(v, UCT_CONSTANT);
 			makeMove(state, v->action, hashTable);
-			if (!hashTable) {
+			if (hashTable != NULL) {
 				hashValues[index++] = zobristHash(state);
 			}
 		}
@@ -137,10 +137,12 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 	}
 
 	// Now deletes the hash values
-	if (!hashTable) {
+	if (hashTable != NULL) {
 		for (int i = 0; i < index; i++) {
 			deleteValueFromHashTable(hashTable, hashValues[i]);
 		}	
+		free(hashValues);
+		hashValues = NULL;
 	}
 
 	return v;
@@ -149,7 +151,7 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 // Chooses a random unexplored child (v')
 UctNode *expand(State *state, UctNode *v, HashTable *hashTable) {
 	int numUnvisited = v->childrenCount - v->childrenVisited;
-	assert (numUnvisited > 0);  // A nice insert to have
+	assert (numUnvisited > 0);  // A nice assert to have
 	int untriedIndex = rand() % numUnvisited;
 
 	UctNode *child = NULL;

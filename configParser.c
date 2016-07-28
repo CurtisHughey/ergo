@@ -6,13 +6,13 @@ Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));
 	
 	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
- 	config->rollouts = 30000;  // Maybe also make this a function of the sizes of the board
+ 	config->rollouts = 20000;  // Maybe also make this a function of the sizes of the board
 	config->threads = 1;  // Number of threads to do simulations
 	config->testGames = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 2;  // To warm up the cpu for the time trials
 	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know ^^^
-	config->superko = 1;  // By default, we don't allow superko
+	config->superko = 1;  // By default, we don't allow superko ^^^^
 	config->hashBuckets = 1000;  // Meh, maybe.  Definitely a tradeoff of memory/speed
 
 	return config;

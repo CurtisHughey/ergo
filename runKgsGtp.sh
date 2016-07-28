@@ -19,6 +19,7 @@ then
 fi
 
 cp ergo "$kgsGtpDir/ergo"  # Copies executable to subdirectory
+cp -r zobristData "$kgsGtpDir/"
 
 # Otherwise, good to go!
 
