@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=GoGui
+GenericName=Go Game GUI
+GenericName[de]=Go-Spiel-GUI
+Comment=Graphical user interface for the board game Go
+Comment[de]=Grafische Benutzeroberfläche für das Brettspiel Go
+Exec=gogui %f
+Icon=gogui
+Type=Application
+Categories=Java;Game;BoardGame;
+MimeType=application/x-go-sgf;application/x-go+xml;
+StartupWMClass=GoGui

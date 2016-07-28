@@ -23,6 +23,7 @@ int runGtp(Config *config) {
 							"kgs-rules",
 							"kgs-time_settings",
 							"kgs-game_over",
+							"reg_genmove",
 						};
 
 	const char *whitespace = " \t";
@@ -229,7 +230,33 @@ int runGtp(Config *config) {
 			quit = 1;
 			finished = 1;
 			// No output
-		}
+		} else if (!strcmp(command, "reg_genmove")) {
+			// Identical to genmove, apart from actually making the move
+			char *colorString = strtok(NULL, whitespace);
+			if (colorString == NULL) {
+				sprintf(errorMessage, "syntax error, vertex not specified");
+				goto ERROR;
+			}
+			
+			int color = stringColorToInt(colorString);
+
+			if (color != STATE_WHITE && color != STATE_BLACK) {
+				sprintf(errorMessage, "syntax error, invalid color");
+				goto ERROR;  // We choose to error out, even against the spec
+			}
+
+			compColor = color;  // Used for scoring			
+			state->turn = color;
+
+			int move = uctSearch(state, rollouts, lengthOfGame, hashTable);
+
+			char *vertex = moveToGtpString(move);  // Can also resign ^^
+
+			sprintf(response, vertex);
+			
+			free(vertex);
+			vertex = NULL;			
+		} 
 		else {
 			sprintf(errorMessage, "unknown command");
 			goto ERROR;

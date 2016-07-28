@@ -1,0 +1,5 @@
+rollouts 1000
+threads 1
+lengthOfGame 350
+superko 1
+hashBuckets 1000

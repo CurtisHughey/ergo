@@ -4,8 +4,11 @@ ergo
 output/*
 log/*
 callgrind*
-kgsGtp/*.jar
 kgsGtp/ergo
 kgsGtp/log/*
-kgsGtp/kgsInfo/*
 kgsGtp/zobristData/*
+regTests/ergo
+regTests/log/*
+regTests/zobristData/*
+regTests/*.html
+regTests/*.dat

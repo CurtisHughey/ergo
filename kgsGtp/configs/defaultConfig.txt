@@ -1,5 +1,5 @@
-rollouts 20000
+rollouts 50000
 threads 1
 lengthOfGame 350
 superko 1
-numBuckets 1000
+hashBuckets 1000
