@@ -12,8 +12,8 @@ Config *getDefaultConfig(void) {
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 2;  // To warm up the cpu for the time trials
 	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know ^^^
-	config->superko = 1;  // By default, we don't allow superko
-	config->hashBuckets = 1000;  // Meh, maybe.  Definitely a tradeoff of memory/speed
+	config->superko = 0;  // By default, we don't allow superko
+	config->hashBuckets = 0;  // Meh, maybe.  Definitely a tradeoff of memory/speed
 
 	return config;
 }

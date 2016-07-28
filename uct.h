@@ -12,6 +12,7 @@
 #include "dbg.h"
 #include "state.h"
 #include "gameParser.h"
+#include "hash.h"
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 
@@ -28,10 +29,10 @@ typedef struct UctNode {
 	struct UctNode *parent;
 } UctNode;
 
-UctNode *createRootUctNode(State *state);
+UctNode *createRootUctNode(State *state, HashTable *hashTable);
 
 // Adds children to UctNode
-void expandUctNode(State *state, UctNode *parent);
+void expandUctNode(State *state, UctNode *parent, HashTable *hashTable);
 
 // Wrapper function for _displayUctTree
 void displayUctTree(UctNode *node);
@@ -46,13 +47,13 @@ void setChildren(UctNode *parent, Moves *moves, State *state);
 void destroyUctNode(UctNode *v);
 
 // Returns the best move
-int uctSearch(State *state, int rollouts, int lengthOfGame);
+int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable);
 
 // Finds non-terminal node
-UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame);
+UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable);
 
 // Creates new child node
-UctNode *expand(State *state, UctNode *v);
+UctNode *expand(State *state, UctNode *v, HashTable *hashTable);
 
 // Returns the best child by the UCB1 algorithm.  c is the constant defined in the paper (either C_p or 0)
 UctNode *bestChild(UctNode *v, double c);

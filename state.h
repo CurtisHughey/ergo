@@ -38,8 +38,7 @@ typedef struct {
 void setKomi(double komi);
 
 // Allocates a new state struct, initially empty (calling clearBoard), black to move
-// numBuckets denotes the number of hash buckets for superko (set to < 1 if you don't want this tracked)
-State *createState(int numBuckets);
+State *createState();
 
 void clearBoard(State *state);
 
@@ -54,7 +53,8 @@ void displayState(State *state);
 
 // Sees if a move is legal given the current state
 // Checks three things: unoccupied, ko kosher, and not suicidal
-int isLegalMove(State *state, int move);
+// Now checks a fourth thing: if it violates superko (if hashTable == NULL, then this is ignored)
+int isLegalMove(State *state, int move, HashTable *hashTable);
 
 // Sees whether the family of stones that the point is connected to the type provided
 // If type==STATE_EMPTY, then this sees if there are liberties
@@ -77,17 +77,17 @@ void getNeighborsOfType(State *state, int point, int type, Neighbors *neighbors)
 
 // Makes the move according to the given state.  Input state will be changed.
 // Assumes valid move
-void makeMove(State *state, int move);
+void makeMove(State *state, int move, HashTable *hashTable);
 
 // Makes the move and saves the previous info
-void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo);
+void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTable);
 
 // Makes move according to the given state, returns info needed to undo move
-void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo);
+void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTable);
 
 // Returns all valid moves (pretty trivial, actually)
 // Pass move is always stored last (as -1)
-Moves *getMoves(State *state);
+Moves *getMoves(State *state, HashTable *hashTable);
 
 // Call this to free moves
 void destroyMoves(Moves *moves);

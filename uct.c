@@ -4,7 +4,7 @@
 // I should make it illegal to fill in eyes (when would it ever be good?  And it's messing up endgame evaluation ^^^)
 
 // Creates new root UctNode
-UctNode *createRootUctNode(State *state) {
+UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	UctNode *root = malloc(sizeof(UctNode));
 	
 	root->action = ROOT_MOVE;
@@ -13,7 +13,7 @@ UctNode *createRootUctNode(State *state) {
 	root->terminal = 0;  // Should never be terminal itself
 	root->parent = NULL;  // No parent
 	
-	Moves *moves = getMoves(state);
+	Moves *moves = getMoves(state, hashTable);
 	setChildren(root, moves, state);
 	destroyMoves(moves);
 
@@ -36,23 +36,23 @@ void _displayUctTree(UctNode *node, int tabs) {
 }
 
 // Adds children to UctNode
-void expandUctNode(State *state, UctNode *parent) {
+void expandUctNode(State *state, UctNode *parent, HashTable *hashTable) {
 	UnmakeMoveInfo unmakeMoveInfo;
 
 	Moves *moves = NULL;
 	if (parent->action != ROOT_MOVE) {
-		makeMoveAndSave(state, parent->action, &unmakeMoveInfo);
-		moves = getMoves(state);  // Maybe should have a second function that returns UctNodes
-		unmakeMove(state, &unmakeMoveInfo);
+		makeMoveAndSave(state, parent->action, &unmakeMoveInfo, hashTable);
+		moves = getMoves(state, hashTable);  // Note that we're only adding children that are superko legal
+		unmakeMove(state, &unmakeMoveInfo, hashTable);
 	} else {
-		moves = getMoves(state);
+		moves = getMoves(state, hashTable);
 	}
 
 	setChildren(parent, moves, state);	
 	destroyMoves(moves);
 }
 
-void setChildren(UctNode *parent, Moves *moves, State *state) {
+void setChildren(UctNode *parent, Moves *moves, State *state) {  // Switch order of arguments at some point  ^^
 	UctNode **children = calloc(moves->count, sizeof(UctNode *));
 	for (int i = 0; i < moves->count; i++) {
 		children[i] = malloc(sizeof(UctNode));
@@ -82,13 +82,13 @@ void destroyUctNode(UctNode *v) {
 	v = NULL;
 }
 
-// Returns the best move
-int uctSearch(State *state, int rollouts, int lengthOfGame) {
-	UctNode *root = createRootUctNode(state);
+// Returns the best move.  Entry point (should make everything else static)
+int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable) {
+	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
 	for (int i = 0; i < rollouts; i++) {
-		State *copy = copyState(state);  // Still need to copy the hashBuckets separately ^^^
-		UctNode *v = treePolicy(copy, root, lengthOfGame);
+		State *copy = copyState(state);  // Still need to copy the hashBuckets separately ^^^^
+		UctNode *v = treePolicy(copy, root, hashTable);
 		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
 		backupNegamax(v, reward);
 		destroyState(copy);
@@ -102,22 +102,22 @@ int uctSearch(State *state, int rollouts, int lengthOfGame) {
 	return move;
 }
 
-UctNode *treePolicy(State *state, UctNode *v, int lengthOfGame) {
+UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 	while (!v->terminal) {  // Will stop when it finds a terminal node
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
-			UctNode *added = expand(state, v);
-			makeMove(state, added->action);
+			UctNode *added = expand(state, v, hashTable);
+			makeMove(state, added->action, hashTable);
 			return added;
 		} else {
 			v = bestChild(v, UCT_CONSTANT);
-			makeMove(state, v->action);
+			makeMove(state, v->action, hashTable);
 		}
 	}
 	return v;
 }
 
 // Chooses a random unexplored child (v')
-UctNode *expand(State *state, UctNode *v) {
+UctNode *expand(State *state, UctNode *v, HashTable *hashTable) {
 	int numUnvisited = v->childrenCount - v->childrenVisited;
 	assert (numUnvisited > 0);  // A nice insert to have
 	int untriedIndex = rand() % numUnvisited;
@@ -137,7 +137,7 @@ UctNode *expand(State *state, UctNode *v) {
 
 	assert(child);
 
-	expandUctNode(state, child);
+	expandUctNode(state, child, hashTable);
 	v->childrenVisited += 1;  // We just visited a new child
 
 	return child;
@@ -179,6 +179,7 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 
 // Simulates rest of game, for lengthOfGame moves
 // state will be mutated, you should save if you want it later
+// For this, we do NOT care about superko ^^^
 double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	int color = state->turn;
 
@@ -190,10 +191,10 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 
 			int randomMove = -2;
 			if (prevNumMoves < 5) {  // Magically hardcoded ^^^, need to adjust for board size.  This is forgiveness prediction.  Also handles initial prevNumMoves=0
-				Moves *moves = getMoves(state);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
+				Moves *moves = getMoves(state, NULL);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
 				int randomIndex = rand() % moves->count;
 				randomMove = moves->array[randomIndex];
-				makeMove(state, randomMove);
+				makeMove(state, randomMove, NULL);
 				prevNumMoves = moves->count;
 				destroyMoves(moves);
 			}
@@ -205,9 +206,9 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 						randomMove = MOVE_PASS;
 					}
 					counter += 1;
-				} while (!isLegalMove(state, randomMove));  // Worth giving up at some time? ^^^
+				} while (!isLegalMove(state, randomMove, NULL));  // Worth giving up at some time? ^^^
 
-				makeMove(state, randomMove);
+				makeMove(state, randomMove, NULL);
 				prevNumMoves = BOARD_SIZE/counter;  // Its best guess
 				if (prevNumMoves < 0) {
 					prevNumMoves = 1;  // You can always pass.  Not really necessary to do this check

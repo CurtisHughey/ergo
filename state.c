@@ -8,53 +8,41 @@ void setKomi(double komi) {
 	komi_g = komi;
 }
 
-State *createState(int numBuckets) {  // If numBuckets < 1, it assumes superko not tracked
-	State *state = malloc(sizeof(State));
-
-	if (numBuckets >= 1) {
-		state->hashTable = createHashTable(numBuckets);
-	} else {
-		state->hashTable = createHashTable(0);  // Trivial
-	}
-
+State *createState() {
+	State *state = malloc(sizeof(State));  // Check for success
 	clearBoard(state);
 
 	return state;
 }
 
 void clearBoard(State *state) {  // This functions is called by createState, also in GTP protocol
-	memset(state->board, STATE_EMPTY, sizeof(state->board));  // Empties it
+	memset(state->board, STATE_EMPTY, sizeof(state->board));  // Empties it.  This requires that STATE_EMPTY is 0, it's kind of bad
 	
 	state->turn = STATE_BLACK;
 	state->koPoint = -1;  // Nowhere to begin with
 	state->whitePrisoners = 0;
 	state->blackPrisoners = 0;
 	state->blackPassed = 0;
-
-	clearHashTable(state->hashTable);  // Could be a trivial hashTable
 }
 
 int destroyState(State *state) {
-	destroyHashTable(state->hashTable);
-
 	free(state);
 	state = NULL;
 	
 	return 0;
 }
 
-// This function is a little kooky - it will not copy the hash table (instead creating a trivial (0 bucket), new one.  It is your responsibility to free it and put in your own, if you want)
+// This function is a little kooky - it will not copy the hash table, only set to NULL.  If you need it, you must set it on your own
 State *copyState(State *original) {
 	State *copy = malloc(sizeof(State));
+
 	memcpy(copy->board, original->board, sizeof(original->board));
 	copy->turn = original->turn;
 	copy->koPoint = original->koPoint;
 	copy->whitePrisoners = original->whitePrisoners;
 	copy->blackPrisoners = original->blackPrisoners;
 	copy->blackPassed = original->blackPassed;
-
-	copy->hashTable = createHashTable(0);
-
+	
 	return copy;
 }
 
@@ -106,11 +94,13 @@ void displayState(State *state) {
 	printf("\n\n");
 }
 
-int isLegalMove(State *state, int move) {
+// Should specify how it's illegal
+int isLegalMove(State *state, int move, HashTable *hashTable) {
 	if (move == MOVE_PASS) {
 		return 1;  // Always legal
 	}
 
+	// Bound checking
 	if (move < 0 || move >= BOARD_SIZE) {  // Could be < -1 if parsed as INVALID_MOVE.  MOVE_PASS already covered above, which is also negative
 		return 0;  // Duh
 	}
@@ -148,8 +138,21 @@ int isLegalMove(State *state, int move) {
 		}
 	}
 
-	// If we're out, reset and return true
+	// If we're out, reset
 	state->board[move] = STATE_EMPTY;
+
+	// Superko:
+	if (hashTable != NULL) {  // Then we're tracking superko
+		UnmakeMoveInfo unmakeMoveInfo;  // Unfortunate that I have to go through all this
+		makeMoveAndSave(state, move, &unmakeMoveInfo, NULL);  // Pass in NULL to the hash table because we don't want to add this value
+		
+		int legal = !containsInHashTable(hashTable, state);
+		unmakeMove(state, &unmakeMoveInfo, NULL);
+
+		if (!legal) {  // Then the position would repeat a previous position
+			return 0;
+		}
+	}
 
 	return 1;
 }
@@ -260,7 +263,7 @@ int setTerritory(State *state, int point, int color) {
 	}
 }
 
-void makeMove(State *state, int move) {
+void makeMove(State *state, int move, HashTable *hashTable) {
 	if (move != MOVE_PASS) {  // Not passing (otherwise, don't do anything)
 
 		// Now make the move
@@ -301,7 +304,7 @@ void makeMove(State *state, int move) {
 
 		state->blackPassed = 0;
 	} else if (state->turn == STATE_BLACK) {  // This is to help record the end of the game
-		state->blackPassed = 1;
+		state->blackPassed = 1;  // Make this one liner
 	} else {
 		state->blackPassed = 0;
 	}
@@ -309,10 +312,14 @@ void makeMove(State *state, int move) {
 	// Now sets turn (also needs to happen for pass)
 	state->turn = OTHER_COLOR(state->turn);
 
+	if (move != MOVE_PASS && hashTable != NULL) {  // If it's equal to MOVE_PASS, then the position had already been stored.  hashTable == NULL means we aren't tracking
+		addToHashTable(hashTable, state);  // The initial position is never stored, probs doesn't matter ^^^
+	}
+
 	return;
 }
 
-void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
+void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTable) {
 	unmakeMoveInfo->move = move;
 	unmakeMoveInfo->koPoint = state->koPoint;
 
@@ -322,7 +329,7 @@ void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
 
 	unmakeMoveInfo->blackPassed = state->blackPassed;
 
-	makeMove(state, move);
+	makeMove(state, move, hashTable);
 
 	int count = 0;
 	for (int i = 0; i < enemyNeighbors.count; i++) {
@@ -335,8 +342,12 @@ void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo) {
 	return;
 }
 
-void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
+void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTable) {
 	if (unmakeMoveInfo->move != MOVE_PASS) {
+		if (hashTable != NULL) {
+			deleteFromHashTable(hashTable, state);  // Delete the current state from the hash table (only if not MOVE_PASS, because then the positions are allowed to repeat)
+		}
+
 		// First fills in captured stones
 		int total = 0;
 		for (int i = 0; i < unmakeMoveInfo->needToFill.count; i++) {
@@ -361,12 +372,12 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo) {
 
 // Should optimize, right now it's O(n^2) calling isLegalMove every time could be rough
 // Should keep track of how many liberties each stone is directly and indirectly connected to. edit: (hmm, maybe)
-Moves *getMoves(State *state) {
+Moves *getMoves(State *state, HashTable *hashTable) {
 	Moves *moves = malloc(sizeof(Moves));
 	int count = 0;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
-		if (isLegalMove(state, i)) {  // This is another linear op
+		if (isLegalMove(state, i, hashTable)) {  // This is another linear op
 			moves->array[count++] = i;
 		}
 	}

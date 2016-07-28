@@ -37,6 +37,10 @@ int listAdd(Node **head, HASHVALUETYPE hashValue) {
 
 // Returns 1 if exists, 0 if not
 int listContains(Node **head, HASHVALUETYPE hashValue) {
+	if (!head) {  // Empty list, doesn't contain
+		return 0;
+	}
+
 	Node *current = *head;
 	while (current) {
 		if (current->hashValue == hashValue) {
@@ -67,7 +71,7 @@ int listLength(Node **head) {
 // Deletes the first occurence
 int listDelete(Node **head, HASHVALUETYPE hashValue) {
 	if (!head) {  // This would be pretty bad
-		DEBUG_PRINT("Failed to delete node");
+		ERROR_PRINT("Failed to delete node");
 		return 1;
 	}
 

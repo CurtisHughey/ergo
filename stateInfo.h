@@ -45,8 +45,6 @@ typedef struct {
 	int whitePrisoners;  // The number of white stones that have been captured (by black)
 	int blackPrisoners;  // Vice versa
 	int blackPassed;  // non-zero if the turn is white and black just passed
-
-	HashTable *hashTable;  // Hash table to track superko (set numBuckets < 1 if you don't want this)
 } State;
 //////
 

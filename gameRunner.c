@@ -1,7 +1,7 @@
 #include "gameRunner.h"
 
 // At this stage, not really used much
-int promptHuman(State *state, char *color) {
+int promptHuman(State *state, char *color, HashTable *hashTable) {
 	int gameFinishes = 0;
 	do {
 		printf("%s to move: ", color);
@@ -9,9 +9,9 @@ int promptHuman(State *state, char *color) {
 		if (move == QUIT) {
 			return QUIT;
 		}
-		if (isLegalMove(state, move)) {
+		if (isLegalMove(state, move, hashTable)) {
 			gameFinishes = state->blackPassed && move == MOVE_PASS; // i.e. both sides are passing, game finishes
-			makeMove(state, move);
+			makeMove(state, move, hashTable);
 			break;
 		} else {
 			printf("Illegal move!\n");
@@ -41,7 +41,8 @@ void showResults(State *state) {
 
 // Not really used much now.  config is unused
 void runHumanVsHuman(Config *config) {
-	State *state = createState(config->hashBuckets);
+	State *state = createState();
+	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
 
@@ -49,7 +50,7 @@ void runHumanVsHuman(Config *config) {
 	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
-			status = promptHuman(state, colors[i]);
+			status = promptHuman(state, colors[i], hashTable);
 			if (status == QUIT) {
 				break;
 			}
@@ -68,7 +69,8 @@ void runHumanVsComputer(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState(config->hashBuckets);
+	State *state = createState();
+	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
 
@@ -79,15 +81,15 @@ void runHumanVsComputer(Config *config) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
-				int move = uctSearch(state, rollouts, lengthOfGame); 
+				int move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
 				char *moveString = moveToString(move, state->turn);
 				printf("%s chooses move: %s\n", colors[i], moveString);
 				free(moveString);
 				moveString = NULL;
 				status = state->blackPassed && move == MOVE_PASS;
-				makeMove(state, move);
+				makeMove(state, move, hashTable);
 			} else {
-				status = promptHuman(state, colors[i]);
+				status = promptHuman(state, colors[i], hashTable);
 				if (status == QUIT) {
 					break;
 				}
@@ -97,6 +99,7 @@ void runHumanVsComputer(Config *config) {
 
 	showResults(state);
 
+	destroyHashTable(hashTable);
 	destroyState(state);
 }
 
@@ -106,7 +109,8 @@ void runComputerVsComputer(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState(config->hashBuckets);
+	State *state = createState();
+	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
 
@@ -114,18 +118,19 @@ void runComputerVsComputer(Config *config) {
 	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
-			int move = uctSearch(state, rollouts, lengthOfGame); 
+			int move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
 			char *moveString = moveToString(move, state->turn);
 			printf("%s chooses move: %s\n", colors[i], moveString);
 			free(moveString);
 			moveString = NULL;			
 			status = state->blackPassed && move == MOVE_PASS;
-			makeMove(state, move);
+			makeMove(state, move, hashTable);
 		}
 	}
 
 	showResults(state);
 
+	destroyHashTable(hashTable);
 	destroyState(state);	
 }
 
@@ -134,7 +139,8 @@ int runComputerVsRandom(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState(config->hashBuckets);
+	State *state = createState();
+	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
 
@@ -143,18 +149,21 @@ int runComputerVsRandom(Config *config) {
 		for (int i = 0; i < 2; i++) {
 			int move;
 			if (i == compTurn) {  // AI move
-				move = uctSearch(state, rollouts, lengthOfGame); 
+				move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
 			} else {  // Random move
-				Moves *moves = getMoves(state);
+				Moves *moves = getMoves(state, hashTable);
 				move = moves->array[rand() % moves->count];
 			}
 
 			status = state->blackPassed && move == MOVE_PASS;
-			makeMove(state, move);
+			makeMove(state, move, hashTable);
 		}
 	}
 
 	int color = compTurn == 0 ? STATE_BLACK : STATE_WHITE;  // Converts
+
+	destroyHashTable(hashTable);
+	destroyState(state);
 
 	return getResult(state, color);
 }
@@ -209,11 +218,13 @@ void runTrial(Config *config) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 
-	State *state = createState(config->hashBuckets);
+	State *state = createState();
+	HashTable *hashTable = createHashTable(config->hashBuckets);  // Potentially a lot of startup cost.  Worth using a hashTable?
 
-	int move = uctSearch(state, rollouts, lengthOfGame); 
-	makeMove(state, move);
+	int move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
+	makeMove(state, move, hashTable);
 
+	destroyHashTable(hashTable);
 	destroyState(state);	
 }
 

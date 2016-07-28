@@ -27,7 +27,8 @@ int runGtp(Config *config) {
 
 	const char *whitespace = " \t";
 
-	State *state = createState(config->hashBuckets);
+	State *state = createState();
+	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	///////////////
 
@@ -179,14 +180,14 @@ int runGtp(Config *config) {
 				goto ERROR;
 			}
 
-			if (!isLegalMove(state, move)) {
+			if (!isLegalMove(state, move, hashTable)) {  // Not sure how much we insist it's an illegal move if superko is involved, might be better to just defer ^^^
 				sprintf(errorMessage, "illegal move");
 				goto ERROR;
 			}
 			////////////////
 
 			state->turn = color;  // Potentially changes it (I guess if we were setting up positions).  This is done at the end in case there were prior errors
-			makeMove(state, move);  // At some stage, will want to be able to unmake
+			makeMove(state, move, hashTable);  // At some stage, will want to be able to unmake
 			// No output
 		} else if (!strcmp(command, "genmove")) {
 			char *colorString = strtok(NULL, whitespace);
@@ -205,8 +206,8 @@ int runGtp(Config *config) {
 			compColor = color;  // Used for scoring			
 			state->turn = color;
 
-			int move = uctSearch(state, rollouts, lengthOfGame);
-			makeMove(state, move);  // Again, give ability to unmake ^^^
+			int move = uctSearch(state, rollouts, lengthOfGame, hashTable);
+			makeMove(state, move, hashTable);  // Again, give ability to unmake ^^^
 
 			char *vertex = moveToGtpString(move);  // Can also resign ^^
 
@@ -242,6 +243,7 @@ int runGtp(Config *config) {
 
 
 		if (quit) {  // quitting early, whatever
+			destroyHashTable(hashTable);
 			destroyState(state);
 			fclose(fp);
 

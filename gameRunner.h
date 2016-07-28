@@ -9,6 +9,7 @@
 #include "timer.h"
 #include "dbg.h"
 #include "configParser.h"
+#include "hash.h"
 
 // This was a bit hacky, would be nice to configure ^^^
 #define PERFORMANCE_FILE "perf/rawPerformance.txt"
@@ -17,7 +18,7 @@
 void showResults(State *state);
 
 // Prompts human for valid move and does it, returns 1 if the game has finished
-int promptHuman(State *state, char *color);
+int promptHuman(State *state, char *color, HashTable *hashTable);
 
 // Runs human vs human game
 void runHumanVsHuman(Config *config);

@@ -279,7 +279,7 @@ TestResult runStateMakeMoveTests(void) {
 				int move = parseMoveFromFile(moveFile);
 				State* expectedState = parseState(expectedFile);
 
-				makeMove(initialState, move);
+				makeMove(initialState, move, NULL);
 
 				if (!statesAreEqual(initialState, expectedState)) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
@@ -334,8 +334,8 @@ TestResult runStateMakeUnmakeTests(void) {
 
 				State *copy = copyState(initialState);
 				UnmakeMoveInfo unmakeMoveInfo;
-				makeMoveAndSave(initialState, move, &unmakeMoveInfo);
-				unmakeMove(initialState, &unmakeMoveInfo);
+				makeMoveAndSave(initialState, move, &unmakeMoveInfo, NULL);
+				unmakeMove(initialState, &unmakeMoveInfo, NULL);
 
 				if (!statesAreEqual(initialState, copy)) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
@@ -372,16 +372,16 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 	srand(time(NULL));
 
 	for (int i = 0; i < RANDOMGAMEITERATIONS; i++) {
-		State *state = createState(0);
+		State *state = createState();
 
 		int passed = 1;
 		for (int j = 0; j < depth; j++) {
 			State *copy = copyState(state);
-			Moves *moves = getMoves(copy);
+			Moves *moves = getMoves(copy, NULL);
 			int randIndex = rand() % moves->count;
 			UnmakeMoveInfo unmakeMoveInfo;
-			makeMoveAndSave(copy, moves->array[randIndex], &unmakeMoveInfo);
-			unmakeMove(copy, &unmakeMoveInfo);
+			makeMoveAndSave(copy, moves->array[randIndex], &unmakeMoveInfo, NULL);
+			unmakeMove(copy, &unmakeMoveInfo, NULL);
 
 			// Maybe should write this to a file if there's an error, rather than print to terminal ^^^
 			if (!statesAreEqual(state, copy)) {
@@ -397,7 +397,7 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 				passed = 0;
 				break;
 			} else {
-				makeMove(state, moves->array[randIndex]);  // Now makes move for realsies
+				makeMove(state, moves->array[randIndex], NULL);  // Now makes move for realsies
 			}
 			destroyState(copy);
 			destroyMoves(moves);
@@ -451,7 +451,7 @@ TestResult runStateGetMovesTests(void) {
 				int numMoves = atoi(line);
 				fclose(fp);
 
-				Moves *moves = getMoves(initialState);
+				Moves *moves = getMoves(initialState, NULL);
 
 				int passes = 1;
 				if (moves->count != numMoves) {
@@ -461,7 +461,7 @@ TestResult runStateGetMovesTests(void) {
 				}
 
 				for (int i = 0; i < moves->count; i++) {
-					if (!isLegalMove(initialState, moves->array[i])) {
+					if (!isLegalMove(initialState, moves->array[i], NULL)) {
 						printf("\t\tFailure for individual move %d, test: %s\n", moves->array[i], dir->d_name);
 						passes = 0;
 						break;
@@ -530,7 +530,7 @@ TestResult runStateIsLegalMoveTests(void) {
 				int expected = atoi(line);	
 				fclose(fp);
 
-				if (isLegalMove(initialState, move) != expected) {
+				if (isLegalMove(initialState, move, NULL) != expected) {
 					printf("\t\tFailure for test: %s\n", dir->d_name);
 				} else {
 					totalPasses += 1;
@@ -685,7 +685,7 @@ TestResult runListContainsTests(void) {
 	int totalPasses = 0;
 	int totalTests = 0;
 
-	const int numTests = 4;
+	const int numTests = 5;
 
 	for (int i = 1; i <= numTests; i++) {
 		totalTests += 1;
@@ -715,6 +715,11 @@ TestResult runListContainsTests(void) {
 				listAdd(&head, 2);
 
 				passed = !listContains(&head, 3);
+				break;
+
+			case 5:
+				passed = !listContains(NULL, 3);  // Making sure NULL is handled correctly
+
 				break;
 
 			default:
@@ -911,8 +916,8 @@ TestResult runHashAddTests(void) {
 
 	const int numTests = 3;
 
-	State *s1 = createState(0);
-	State *s2 = createState(0);
+	State *s1 = createState();
+	State *s2 = createState();
 	s2->board[0] = STATE_WHITE;  // Just to make it different
 
 	for (int i = 1; i <= numTests; i++) {
@@ -971,12 +976,12 @@ TestResult runHashContainsTests(void) {
 
 	const int numTests = 4;
 
-	State *s1 = createState(0);
-	State *s2 = createState(0);
-	State *s3 = createState(0);
-	State *s4 = createState(0);
-	State *s5 = createState(0);
-	State *s6 = createState(0);
+	State *s1 = createState();
+	State *s2 = createState();
+	State *s3 = createState();
+	State *s4 = createState();
+	State *s5 = createState();
+	State *s6 = createState();
 	s2->board[0] = STATE_WHITE;
 	s3->board[0] = STATE_BLACK;
 	s4->koPoint = 0;
@@ -1081,8 +1086,8 @@ TestResult runHashDeleteTests(void) {
 
 	const int numTests = 4;
 
-	State *s1 = createState(0);
-	State *s2 = createState(0);
+	State *s1 = createState();
+	State *s2 = createState();
 	s2->board[0] = STATE_WHITE;
 
 	for (int i = 1; i <= numTests; i++) {
@@ -1150,8 +1155,8 @@ TestResult runHashSizeTests(void) {
 
 	const int numTests = 5;
 
-	State *s1 = createState(0);
-	State *s2 = createState(0);
+	State *s1 = createState();
+	State *s2 = createState();
 	s2->board[0] = STATE_WHITE;
 
 	for (int i = 1; i <= numTests; i++) {

@@ -1,5 +1,7 @@
 #include "hash.h"
 
+// ^^^ Consider storing the hash value of a position in state, and then when we make a move figure out what things need to get xored 
+
 // This function uses strtoull
 void initHashVals(void) {
 	FILE *fp = fopen(RANDOM_NUMBER_FILE, "r");
@@ -80,7 +82,12 @@ HASHVALUETYPE zobristHash(State *state) {
 	return result;
 }
 
+// Should do a check to make sure initHashValues was called ^^^
 HashTable *createHashTable(int numBuckets) {
+	if (numBuckets < 1) {
+		return NULL;  // Not keeping track of superko
+	}
+
 	Node ***buckets = calloc(numBuckets, sizeof(Node**));  // Geez, triple pointers.  First level allows head to be modified, second level allows for allocating bucket on heap, third level allows for array of buckets
 	if (buckets == NULL) {
 		ERROR_PRINT("Failed to allocate buckets");
@@ -93,7 +100,7 @@ HashTable *createHashTable(int numBuckets) {
 			ERROR_PRINT("Failed to allocate bucket");
 			exit(1);
 		}
-		*bucket = NULL;  // Must initialize it to this (maybe logic should be done in linkedList.c)
+		*bucket = NULL;  // Must initialize it to this (maybe logic should be done in linkedList.c)  (should this be done?)
 
 		buckets[i] = bucket;	
 	}
@@ -107,20 +114,26 @@ HashTable *createHashTable(int numBuckets) {
 }
 
 void destroyHashTable(HashTable *hashTable) {
-	for (int i = 0; i < hashTable->numBuckets; i++) {
-		listClear(hashTable->buckets[i]);
-		free(hashTable->buckets[i]);
-		hashTable->buckets[i] = NULL;
+	if (hashTable != NULL) {  // Might be NULL if we weren't keeping track of superko
+		for (int i = 0; i < hashTable->numBuckets; i++) {
+			listClear(hashTable->buckets[i]);
+			free(hashTable->buckets[i]);
+			hashTable->buckets[i] = NULL;
+		}
+
+		free(hashTable->buckets);
+		hashTable->buckets = NULL;
+
+		free(hashTable);
+		hashTable = NULL;
 	}
-
-	free(hashTable->buckets);
-	hashTable->buckets = NULL;
-
-	free(hashTable);
-	hashTable = NULL;
 }
 
 void clearHashTable(HashTable *hashTable) {
+	if (hashTable == NULL) {
+		return;
+	}
+
 	// All we have to do is clear out entries in the buckets
 	for (int i = 0; i < hashTable->numBuckets; i++) {
 		listClear(hashTable->buckets[i]);
@@ -128,6 +141,11 @@ void clearHashTable(HashTable *hashTable) {
 }
 
 int addToHashTable(HashTable *hashTable, State *state) {
+	if (hashTable == NULL) {
+		ERROR_PRINT("Hash Table uninitialized");
+		return 1;
+	}
+
 	HASHVALUETYPE hashValue = zobristHash(state);
 	int bucketIndex = (int)(hashValue % hashTable->numBuckets);  // Casting ^^^
 
@@ -135,6 +153,11 @@ int addToHashTable(HashTable *hashTable, State *state) {
 }
 
 int deleteFromHashTable(HashTable *hashTable, State *state) {
+	if (hashTable == NULL) {
+		ERROR_PRINT("Hash Table uninitialized");
+		return 1;
+	}
+
 	HASHVALUETYPE hashValue = zobristHash(state);
 	int bucketIndex = (int)(hashValue % hashTable->numBuckets);
 
@@ -142,6 +165,11 @@ int deleteFromHashTable(HashTable *hashTable, State *state) {
 }
 
 int containsInHashTable(HashTable *hashTable, State *state) {
+	if (hashTable == NULL) {
+		ERROR_PRINT("Hash Table uninitialized");
+		return 1;
+	}
+
 	HASHVALUETYPE hashValue = zobristHash(state);
 	int bucketIndex = (int)(hashValue % hashTable->numBuckets);
 
@@ -150,6 +178,11 @@ int containsInHashTable(HashTable *hashTable, State *state) {
 
 // Returns the number of hashed values in the hash table
 int sizeOfHashTable(HashTable *hashTable) {
+	if (hashTable == NULL) {
+		ERROR_PRINT("Hash Table uninitialized");
+		return 1;
+	}
+
 	int size = 0;
 	for (int i = 0; i < hashTable->numBuckets; i++) {
 		size += listLength(hashTable->buckets[i]);

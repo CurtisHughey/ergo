@@ -8,7 +8,7 @@
 #include "dbg.h"
 
 // If you change this, you should also change linkedList.c's listPrint function to match format, and strtoull in hash.c's initHashVals function
-typedef int64_t HASHVALUETYPE;
+typedef uint64_t HASHVALUETYPE;  // Wow, this really needed to be uint64_t, rather than int64_t (was messing with modulus op stuff)
 
 // Note that *head MUST point to NULL on an initial call to a function
 
