@@ -49,30 +49,13 @@ echo "--------------------------------------------------------------------------
 # Correct AI tests (ish)
 echo "--------------------"
 echo "MCTS Correctness Tests"
-echo "3x3 Wins"
-./build.sh -d 3 &>/dev/null  # 19 is way too big
-
-# Now need to give custom configurations
-echo "komiTimes10 0" >> $tempConfig
-echo "rollouts 1000" >> $tempConfig
-
-./ergo -y -C $tempConfig &>> $testLog
-if [[ $? -eq 1 ]]
-then
-	echo "Passed :)"
-	numPassed=$((numPassed+1))
-else
-	echo "Failed :("
-fi
-numTests=$((numTests+1))
-rm $tempConfig
-echo "---"
 
 echo "3x3 Loses"
 ./build.sh -d 3 &>/dev/null
 
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 1" >> $tempConfig  # Sanity check to make sure we suck if the number of rollouts is low
+echo "superko 0" >> $tempConfig  # Turn off superko for these tests
 
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 0 ]]  # Wants to fail now
@@ -91,6 +74,7 @@ echo "---"
 # Now need to give custom configurations
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 500" >> $tempConfig
+echo "superko 0" >> $tempConfig  # Turn off superko for these tests
 
 echo "6x6"
 ./ergo -y -C $tempConfig &>> $testLog
@@ -137,6 +121,7 @@ echo "MCTS Simulation"  # Computer vs computer
 
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
+# Superko detection is on
 
 valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]

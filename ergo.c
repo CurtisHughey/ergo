@@ -98,6 +98,10 @@ int main(int argc, char **argv) {
 		config->komiTimes10 = komiTimes10;
 	}
 
+	if (!config->superko) {
+		config->hashBuckets = 0;  // Overwrites this to prevent hash table
+	}
+
 	// Necessary configurations (setting komi and setting up zobrist hashing:
 	double komi = config->komiTimes10/10.0;
 	setKomi(komi);  // Sets global variable in state.c
