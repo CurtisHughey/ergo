@@ -8,7 +8,6 @@ kgsGtp/ergo
 kgsGtp/log/*
 kgsGtp/zobristData/*
 regTests/ergo
-regTests/log/*
 regTests/zobristData/*
-regTests/*.html
-regTests/*.dat
+regTests/results
+regTests/cgtc/log/*

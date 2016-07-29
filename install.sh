@@ -4,11 +4,12 @@
 # UNTESTED.  Will also want to add kgs stuff ^^^
 
 kgsGtpDir="kgsGtp"
+regTestsDir="regTests"
 
-mkdir configs
 mkdir output
 mkdir log
 mkdir "$kgsGtpDir/log" 
+mkdir "$regTests/log"
 
 chmod u+x build.sh  # Might not need
 ./build.sh  # Default

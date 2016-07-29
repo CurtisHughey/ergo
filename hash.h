@@ -8,7 +8,7 @@
 #include "dbg.h"
 #include "stateInfo.h"
 
-#define RANDOM_NUMBER_FILE "zobristData/randomNumbers.txt"
+#define DEFAULT_RANDOM_NUMBER_FILE "zobristData/randomNumbers.txt"
 
 // The random numbers
 HASHVALUETYPE blackVals[BOARD_SIZE];
@@ -18,7 +18,8 @@ HASHVALUETYPE koVal;
 ////
 
 // Reads in the random numbers from the file, and then writes them into the global arrays above
-void initHashVals(void);
+// If fileName == NULL, uses DEFAULT_RANDOM_NUMBER_FILE, otherwise uses the fileName
+void initHashVals(char *fileName);
 
 // Calculates the Zobrist hash of a given position
 HASHVALUETYPE zobristHash(State *state);

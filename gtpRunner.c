@@ -178,6 +178,7 @@ int runGtp(Config *config) {
 
 			if (move == INVALID_MOVE) {
 				sprintf(errorMessage, "syntax error, invalid move");
+
 				goto ERROR;
 			}
 
@@ -308,7 +309,7 @@ int parseGtpMove(char *vertex) {
 	// First parse column
 	int column;
 
-	const char highestColumnUpperCase = BOARD_DIM > 'I'-'A' ? 'A'+BOARD_DIM-1 : 'A'+BOARD_DIM;
+	const char highestColumnUpperCase = BOARD_DIM > 'I'-'A' ? 'A'+BOARD_DIM : 'A'+BOARD_DIM;
 	const char highestColumnLowerCase = BOARD_DIM > 'i'-'a' ? 'a'+BOARD_DIM : 'a'+BOARD_DIM;
 
 	char columnChar = vertex[0];

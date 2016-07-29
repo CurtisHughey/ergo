@@ -1,5 +1,7 @@
 #include "ergo.h"
 
+// Allow zobrist file to be input ^^^
+
 int main(int argc, char **argv) {
 	if (argc <= 1) {
 		ERROR_PRINT("Must provide command line arguments (-h for help)");
@@ -9,11 +11,12 @@ int main(int argc, char **argv) {
 	int customConfig = 0;
 	int rollouts = -1;
 	int komiTimes10 = INT_MIN;  // Unlikely we would set it to this :)
-	char *configFileName;
+	char *configFileName = NULL;
+	char *zobristDataFileName = NULL;
 	functions function = NONE;
 
 	int opt = 0;
-	while ((opt = getopt(argc, argv, "C:r:k:upcxytgh")) != -1) {  // Add more options later
+	while ((opt = getopt(argc, argv, "C:r:k:z:upcxytgh")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'C':
 				customConfig = 1;
@@ -28,6 +31,9 @@ int main(int argc, char **argv) {
 					ERROR_PRINT("You specified a 10*komi of %d, must end in 5 or 0.  Exiting.", komiTimes10);
 					return 1;
 				}
+				break;
+			case 'z':
+				zobristDataFileName = optarg;  // Trusting the argument...
 				break;
 			case 'u':
 				function = UNIT;
@@ -106,8 +112,8 @@ int main(int argc, char **argv) {
 	double komi = config->komiTimes10/10.0;
 	setKomi(komi);  // Sets global variable in state.c
 
-	initHashVals();
-
+	initHashVals(zobristDataFileName);	
+	
 	int result = 0;
 	switch (function) {
 		case UNIT:

@@ -3,10 +3,10 @@
 // ^^^ Consider storing the hash value of a position in state, and then when we make a move figure out what things need to get xored 
 
 // This function uses strtoull
-void initHashVals(void) {
-	FILE *fp = fopen(RANDOM_NUMBER_FILE, "r");
+void initHashVals(char *fileName) {
+	FILE *fp = fopen(fileName, "r");
 	if (fp == NULL) {
-		ERROR_PRINT("Failed to open random number file: %s", RANDOM_NUMBER_FILE);
+		ERROR_PRINT("Failed to open random number file: %s", fileName);
 		exit(1);
 	}
 

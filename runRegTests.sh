@@ -17,6 +17,14 @@ cp -r zobristData "$regTestsDir/"
 
 cd "$regTestsDir"
 
-java -jar gogui/lib/gogui-regress.jar -verbose ./runTranslator.sh *.tst
+java -jar gogui/lib/gogui-regress.jar ./runTranslator.sh cgtc/*.tst  # Can include verbose
+
+# Moves results
+for htmlFile in *.html
+do
+	mv "$htmlFile" "results/$htmlFile"
+done
+
+mv "summary.dat" "results/$summary.dat"
 
 cd ..
