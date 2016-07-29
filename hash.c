@@ -4,6 +4,10 @@
 
 // This function uses strtoull
 void initHashVals(char *fileName) {
+	if (fileName == NULL) {
+		fileName = DEFAULT_RANDOM_NUMBER_FILE;
+	}
+
 	FILE *fp = fopen(fileName, "r");
 	if (fp == NULL) {
 		ERROR_PRINT("Failed to open random number file: %s", fileName);
