@@ -66,9 +66,6 @@ void runHumanVsHuman(Config *config) {
 void runHumanVsComputer(Config *config) {
 	srand(time(NULL));
 
-	int rollouts = config->rollouts;
-	int lengthOfGame = config->lengthOfGame;
-
 	State *state = createState();
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
@@ -81,7 +78,7 @@ void runHumanVsComputer(Config *config) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			if (i == compTurn) {  // Could also put this body into function
-				int move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
+				int move = uctSearch(state, config, hashTable); 
 				char *moveString = moveToString(move, state->turn);
 				printf("%s chooses move: %s\n", colors[i], moveString);
 				free(moveString);
@@ -106,9 +103,6 @@ void runHumanVsComputer(Config *config) {
 void runComputerVsComputer(Config *config) {
 	srand(time(NULL)); 
 
-	int rollouts = config->rollouts;
-	int lengthOfGame = config->lengthOfGame;
-
 	State *state = createState();
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
@@ -118,7 +112,7 @@ void runComputerVsComputer(Config *config) {
 	while (!status) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
-			int move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
+			int move = uctSearch(state, config, hashTable); 
 			char *moveString = moveToString(move, state->turn);
 			printf("%s chooses move: %s\n", colors[i], moveString);
 			free(moveString);
@@ -136,9 +130,6 @@ void runComputerVsComputer(Config *config) {
 
 // Rand must already be initialized
 int runComputerVsRandom(Config *config) {
-	int rollouts = config->rollouts;
-	int lengthOfGame = config->lengthOfGame;
-
 	State *state = createState();
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
@@ -149,7 +140,7 @@ int runComputerVsRandom(Config *config) {
 		for (int i = 0; i < 2; i++) {
 			int move;
 			if (i == compTurn) {  // AI move
-				move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
+				move = uctSearch(state, config, hashTable); 
 			} else {  // Random move
 				Moves *moves = getMoves(state, hashTable);
 				move = moves->array[rand() % moves->count];
@@ -215,13 +206,10 @@ int testComputer(Config *config) {
 
 // Finds a single move, measures how long
 void runTrial(Config *config) {	
-	int rollouts = config->rollouts;
-	int lengthOfGame = config->lengthOfGame;
-
 	State *state = createState();
 	HashTable *hashTable = createHashTable(config->hashBuckets);  // Potentially a lot of startup cost.  Worth using a hashTable?
 
-	int move = uctSearch(state, rollouts, lengthOfGame, hashTable); 
+	int move = uctSearch(state, config, hashTable); 
 	makeMove(state, move, hashTable);
 
 	destroyHashTable(hashTable);

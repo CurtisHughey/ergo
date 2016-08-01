@@ -83,7 +83,11 @@ void destroyUctNode(UctNode *v) {
 }
 
 // Returns the best move.  Entry point (should make everything else static)
-int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable) {
+int uctSearch(State *state, Config *config, HashTable *hashTable) {
+	int rollouts = config->rollouts;
+	int lengthOfGame = config->rollouts;
+	int threads = config->threads;
+
 	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
 	for (int i = 0; i < rollouts; i++) {
@@ -96,7 +100,7 @@ int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable
 			v = treePolicyNoHashing(copy, root);
 		}
 
-		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
+		double reward = defaultPolicy(rootTurn, copy, v, lengthOfGame, threads);
 		backupNegamax(v, reward);
 		destroyState(copy);
 	}
@@ -110,13 +114,11 @@ int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable
 }
 
 UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
-	HASHVALUETYPE *hashValues = NULL;
-	int index = -1;
-	int hashValuesLength = 0;
+	assert(hashTable != NULL);  // Good check to have, I guess
 
-	hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
-	index = 0;
-	hashValuesLength = ESTIMATED_DEPTH;
+	HASHVALUETYPE *hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
+	int index = 0;
+	int hashValuesLength = ESTIMATED_DEPTH;
 
 	while (!v->terminal) {  // Will stop when it finds a terminal node
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
@@ -201,7 +203,7 @@ UctNode *bestChild(UctNode *v, double c) {
 			bestChildIndex = i;
 		}
 
-		// if (c == 0) {  // Rmove ^^^^
+		// if (c == 0) {  // Remove ^^^^
 		// 	char *x = moveToString(v->children[i]->action, 1); 
 		// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
 		// 	free(x);
@@ -224,11 +226,40 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 }
 
 // Simulates rest of game, for lengthOfGame moves
-// state will be mutated, you should save if you want it later
+// state will (probably) be mutated, you should save if you want it later
 // For this, we do NOT care about superko ^^^
-double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
-	int color = state->turn;
+double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, int threads) {
+	assert(threads >= 1);  // Otherwise, this is bad
 
+	double reward = -1;
+
+	if (threads == 1) {  // Then no need to do pthread stuff
+		DefaultPolicyWorkerInput *dpwi = malloc(sizeof(DefaultPolicyWorkerInput));
+		dpwi->rootTurn = rootTurn;
+		dpwi->state = state;  // No need to copy
+		dpwi->lengthOfGame = lengthOfGame;
+		dpwi->v = v;
+
+		DefaultPolicyWorkerOutput *dpwo = defaultPolicyWorker((void *)dpwi);
+		reward = dpwo->reward;
+
+		free(dpwo);
+		dpwo = NULL;
+		free(dpwi);
+		dpwi = NULL;
+	}
+
+	return reward;
+}
+
+void *defaultPolicyWorker(void *args) {
+	DefaultPolicyWorkerInput *dpwi = (DefaultPolicyWorkerInput *)args;
+	int rootTurn = dpwi->rootTurn;
+	State *state = dpwi->state;
+	int lengthOfGame = dpwi->lengthOfGame;
+	UctNode *v = dpwi->v;
+
+	int color = state->turn;
 	int prevNumMoves = 0;  // Maybe we could guess based on how many moves have happened
 
 	if (!v->terminal) {
@@ -247,7 +278,7 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 			else {  // Better to do it first and ask forgiveness later.
 				int counter = 0;
 				do {
-					randomMove = rand() % (BOARD_SIZE+1);
+					randomMove = rand() % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel
 					if (randomMove == BOARD_SIZE) {  // This represented a pass
 						randomMove = MOVE_PASS;
 					}
@@ -288,7 +319,10 @@ double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 		reward = -1*reward;  // To work with negamax
 	}
 
-	return reward;
+	DefaultPolicyWorkerOutput *dpwo = malloc(sizeof(DefaultPolicyWorkerOutput));
+	dpwo->reward = reward;
+
+	return (void *)dpwo;
 }
 
 // Propagates new score back to root

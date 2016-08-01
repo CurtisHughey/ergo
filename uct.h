@@ -13,6 +13,7 @@
 #include "state.h"
 #include "gameParser.h"
 #include "hash.h"
+#include "configParser.h"
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 
@@ -30,6 +31,17 @@ typedef struct UctNode {
 	int childrenVisited;
 	struct UctNode *parent;
 } UctNode;
+
+typedef struct {
+	int rootTurn;  // Whose turn it is at the root node
+	State *state;  // Current state
+	int lengthOfGame;  // Max number of iterations in case we don't have a double pass
+	UctNode *v;  // Current UCT node;
+} DefaultPolicyWorkerInput;
+
+typedef struct {
+	double reward;  // Reward (0, 0.5, 1)
+} DefaultPolicyWorkerOutput;
 
 UctNode *createRootUctNode(State *state, HashTable *hashTable);
 
@@ -49,7 +61,7 @@ void setChildren(UctNode *parent, Moves *moves, State *state);
 void destroyUctNode(UctNode *v);
 
 // Returns the best move
-int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable);
+int uctSearch(State *state, Config *config, HashTable *hashTable);
 
 // Finds non-terminal node, with hashing
 UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable);
@@ -67,7 +79,12 @@ UctNode *bestChild(UctNode *v, double c);
 double calcReward(UctNode *parent, UctNode *child, double c);
 
 // Simulates rest of game, for lengthOfGame moves
-double defaultPolicy(int rootTurn, State *state, int lengthOfGame, UctNode *v);
+// numThreads specifies number of worker threads.  If 1, then it won't make another thread
+double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, int threads);
+
+// Single worker for defaultPolicy.  args will be cast to DefaulPolicyWorkerInput
+// It is the responsibility of the caller to free args
+void *defaultPolicyWorker(void *args);
 
 // Propagates new score back to root
 void backupNegamax(UctNode *v, double reward);

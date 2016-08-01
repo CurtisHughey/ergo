@@ -1,10 +1,6 @@
 #include "gtpRunner.h"
 
 int runGtp(Config *config) {
-	int rollouts = config->rollouts;
-	int lengthOfGame = config->lengthOfGame;
-	// First set up go board
-
 	srand(time(NULL));	
 
 	// Add undo, kgs-game_over, time ^^
@@ -28,6 +24,7 @@ int runGtp(Config *config) {
 
 	const char *whitespace = " \t";
 
+	//  Set up go board
 	State *state = createState();
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
@@ -208,7 +205,7 @@ int runGtp(Config *config) {
 			compColor = color;  // Used for scoring			
 			state->turn = color;
 
-			int move = uctSearch(state, rollouts, lengthOfGame, hashTable);
+			int move = uctSearch(state, config, hashTable);
 			makeMove(state, move, hashTable);  // Again, give ability to unmake ^^^
 
 			char *vertex = moveToGtpString(move);  // Can also resign ^^
@@ -249,9 +246,8 @@ int runGtp(Config *config) {
 			compColor = color;  // Used for scoring			
 			state->turn = color;
 
-			int move = uctSearch(state, rollouts, lengthOfGame, hashTable);
-
-			char *vertex = moveToGtpString(move);  // Can also resign ^^
+			int move = uctSearch(state, config, hashTable);
+			char *vertex = moveToGtpString(move);  // Should also resign ^^
 
 			sprintf(response, vertex);
 			
