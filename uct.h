@@ -16,7 +16,7 @@
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 
-#define UCT_CONSTANT 1.41 // This is the C_p=sqrt(2) term
+#define UCT_CONSTANT 0.707106781 // This is the C_p=1/sqrt(2) term
 
 #define ESTIMATED_DEPTH 16
 
@@ -51,8 +51,11 @@ void destroyUctNode(UctNode *v);
 // Returns the best move
 int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable);
 
-// Finds non-terminal node
+// Finds non-terminal node, with hashing
 UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable);
+
+// Finds non-terminal node, no hashing
+UctNode *treePolicyNoHashing(State *state, UctNode *v);
 
 // Creates new child node
 UctNode *expand(State *state, UctNode *v, HashTable *hashTable);

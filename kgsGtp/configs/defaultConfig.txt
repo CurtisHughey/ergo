@@ -1,4 +1,4 @@
-rollouts 50000
+rollouts 100000
 threads 1
 lengthOfGame 350
 superko 1

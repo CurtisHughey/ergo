@@ -1,7 +1,5 @@
 #include "ergo.h"
 
-// Allow zobrist file to be input ^^^
-
 int main(int argc, char **argv) {
 	if (argc <= 1) {
 		ERROR_PRINT("Must provide command line arguments (-h for help)");

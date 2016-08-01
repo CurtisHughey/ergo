@@ -13,7 +13,7 @@ UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	root->terminal = 0;  // Should never be terminal itself
 	root->parent = NULL;  // No parent
 	
-	Moves *moves = getMoves(state, hashTable);
+	Moves *moves = getMoves(state, hashTable);  // If hashTable is NULL, getMoves will ignore
 	setChildren(root, moves, state);
 	destroyMoves(moves);
 
@@ -87,8 +87,15 @@ int uctSearch(State *state, int rollouts, int lengthOfGame, HashTable *hashTable
 	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
 	for (int i = 0; i < rollouts; i++) {
-		State *copy = copyState(state);  // Still need to copy the hashBuckets separately ^^^^
-		UctNode *v = treePolicy(copy, root, hashTable);
+		State *copy = copyState(state);
+
+		UctNode *v = NULL;
+		if (hashTable != NULL) {
+			v = treePolicy(copy, root, hashTable);
+		} else {
+			v = treePolicyNoHashing(copy, root);
+		}
+
 		double reward = defaultPolicy(rootTurn, copy, lengthOfGame, v);
 		backupNegamax(v, reward);
 		destroyState(copy);
@@ -107,29 +114,22 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 	int index = -1;
 	int hashValuesLength = 0;
 
-	if (hashTable != NULL) {
-		hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
-		index = 0;
-		hashValuesLength = ESTIMATED_DEPTH;
-	}
+	hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
+	index = 0;
+	hashValuesLength = ESTIMATED_DEPTH;
 
 	while (!v->terminal) {  // Will stop when it finds a terminal node
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
 			v = expand(state, v, hashTable);
 			makeMove(state, v->action, hashTable);
-			if (hashTable != NULL) {
-				hashValues[index++] = zobristHash(state);
-			}
+			hashValues[index++] = zobristHash(state);
 			break;
 		} else {
 			v = bestChild(v, UCT_CONSTANT);
 			makeMove(state, v->action, hashTable);
-			if (hashTable != NULL) {
-				hashValues[index++] = zobristHash(state);
-			}
+			hashValues[index++] = zobristHash(state);
 		}
 
-		// Don't need to check hashTable here, will always be false if it's NULL
 		if (index >= hashValuesLength) {
 			hashValuesLength *= 2;
 			hashValues = realloc(hashValues, hashValuesLength * sizeof(HASHVALUETYPE));
@@ -137,12 +137,26 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 	}
 
 	// Now deletes the hash values
-	if (hashTable != NULL) {
-		for (int i = 0; i < index; i++) {
-			deleteValueFromHashTable(hashTable, hashValues[i]);
-		}	
-		free(hashValues);
-		hashValues = NULL;
+	for (int i = 0; i < index; i++) {
+		deleteValueFromHashTable(hashTable, hashValues[i]);
+	}	
+	free(hashValues);
+	hashValues = NULL;
+
+	return v;
+}
+
+
+UctNode *treePolicyNoHashing(State *state, UctNode *v) {
+	while (!v->terminal) {  // Will stop when it finds a terminal node
+		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
+			v = expand(state, v, NULL);
+			makeMove(state, v->action, NULL);
+			break;
+		} else {
+			v = bestChild(v, UCT_CONSTANT);
+			makeMove(state, v->action, NULL);
+		}
 	}
 
 	return v;
@@ -202,7 +216,7 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 	double reward = 0;
 	if (child->visitCount > 0) {  // I.e. if visited.
 		reward = ((double)(child->reward))/child->visitCount 
-					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
+					+ c*sqrt(2*log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
 	} else {
 		reward = INT_MIN;
 	}
