@@ -39,7 +39,7 @@ To run basic correctness tests (unit test suite, memory tests, some regression t
 To run a full suite of regression tests, courtesy of CGTC and GoGui (see regTests/cgtc/README and regTests/gogui/README.html) respectively:
   > ./runRegTests.sh
   
-The main output is regTests/results/index.html
+The main output is regTests/results/index.html.
 
 ---
 
@@ -49,6 +49,11 @@ To run this program on the KGS server:
 This will run the bot, called Xantos, on the KGS Computer Go room, with a 19x19 board (again, can specify from 1 to 19, although if there is no argument it will default to 19).  You can kill it with ctrl-c.
 
 ---
+
+Three separate instances of ergo can be run at one time: on the KGS server, regression tests, and interactive/unit tests/etc.  For the first two, the ergo executable is copied to kgsGtp or regTests respectively, and for the last one it is just in the main directory.  In each of those directories, there is a configs directory.  Passing in the -C flag to ergo allows you to specify a configuration file (you can specify number of rollouts, threads, number of hash buckets, etc).  Refer to configParser.c's getDefaultConfig for all the options.  To specify an option in a config file, for example number of rollouts:
+  > rollouts 50000
+
+Command line arguments will override the value given in a configuration file, if provided.
 
 To run performance tests (basically, times a UCT iteration):
   > ./runPerfTests
