@@ -55,6 +55,8 @@ Three separate instances of ergo can be run at one time: on the KGS server, regr
 
 Command line arguments will override the value given in a configuration file, if provided.
 
+---
+
 To run performance tests (basically, times a UCT iteration):
   > ./runPerfTests
   
