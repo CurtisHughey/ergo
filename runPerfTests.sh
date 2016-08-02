@@ -33,6 +33,7 @@ echo "trials 20" >> $tempPerfConfig
 echo "warmupTrials 3" >> $tempPerfConfig
 echo "superko 1" >> $tempPerfConfig
 echo "hashBuckets 1000" >> $tempPerfConfig
+echo "threads 2" >> $tempPerfConfig
 
 ./ergo -t -C $tempPerfConfig
 

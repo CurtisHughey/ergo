@@ -106,6 +106,27 @@ else
 fi
 numTests=$((numTests+1))
 rm $tempConfig
+echo "---"
+
+./build.sh -d 3 &>/dev/null  # Parallel
+
+# Now need to give custom configurations
+echo "komiTimes10 0" >> $tempConfig
+echo "rollouts 1000" >> $tempConfig
+echo "superko 0" >> $tempConfig  # Turn off superko for these tests
+echo "threads 2" >> $tempConfig
+
+echo "3x3 parallel"
+./ergo -y -C $tempConfig &>> $testLog
+if [[ $? -eq 1 ]]
+then
+	echo "Passed :)"
+	numPassed=$((numPassed+1))
+else
+	echo "Failed :("
+fi
+numTests=$((numTests+1))
+rm $tempConfig
 echo "--------------------"
 
 echo "--------------------------------------------------------------------------------" >> $testLog
@@ -135,11 +156,33 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-echo "MCTS Simulation"  # Computer vs computer
+echo "MCTS Serial Simulation"  # Computer vs computer, serial
 ./build.sh -d 3 -v &>/dev/null
 
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
+# Superko detection is on
+
+valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+if ! [[ $? -eq 1 ]]
+then
+	echo "Passed :)"
+	numPassed=$((numPassed+1))
+else
+	echo "Failed :("
+fi
+numTests=$((numTests+1))
+rm $tempConfig
+echo "--------------------"
+
+echo "---"
+
+echo "MCTS Parallel Simulation"  # Computer vs computer
+./build.sh -d 3 -v &>/dev/null
+
+echo "komiTimes10 0" >> $tempConfig
+echo "rollouts 100" >> $tempConfig 
+echo "threads 2" >> $tempConfig
 # Superko detection is on
 
 valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill

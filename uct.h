@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include "dbg.h"
 #include "state.h"
@@ -87,6 +88,6 @@ double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, i
 void *defaultPolicyWorker(void *args);
 
 // Propagates new score back to root
-void backupNegamax(UctNode *v, double reward);
+void backupNegamax(UctNode *v, double reward, int threads);
 
 #endif

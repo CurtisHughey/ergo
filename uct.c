@@ -1,8 +1,5 @@
 #include "uct.h"
 
-// I want to use AMAF/RAVE^^^
-// I should make it illegal to fill in eyes (when would it ever be good (actually, it's sometimes good))?  And it's messing up endgame evaluation ^^^)
-
 // Creates new root UctNode
 UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	UctNode *root = malloc(sizeof(UctNode));
@@ -87,10 +84,13 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 	int threads = config->threads;
+	assert(threads >= 1);  // Making this check again
+
+	int numIterations = rollouts/threads;
 
 	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
-	for (int i = 0; i < rollouts; i++) {
+	for (int i = 0; i < numIterations; i++) {
 		State *copy = copyState(state);
 
 		UctNode *v = NULL;
@@ -101,7 +101,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 		}
 
 		double reward = defaultPolicy(rootTurn, copy, v, lengthOfGame, threads);
-		backupNegamax(v, reward);
+		backupNegamax(v, reward, threads);  // threads needs to get passed so the visit count can be properly updated
 		destroyState(copy);
 	}
 
@@ -247,6 +247,42 @@ double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, i
 		dpwo = NULL;
 		free(dpwi);
 		dpwi = NULL;
+	} else {  // Then we need to kick off some threads
+		DefaultPolicyWorkerInput **dpwis = calloc(threads, sizeof(DefaultPolicyWorkerInput *));  // Could probably also do this on the stack
+		pthread_t *workers = calloc(threads, sizeof(pthread_t));
+
+		for (int i = 0; i < threads; i++) {
+			// Set up input
+			dpwis[i] = malloc(sizeof(DefaultPolicyWorkerInput));
+			dpwis[i]->rootTurn = rootTurn;
+			dpwis[i]->state = copyState(state);
+			dpwis[i]->lengthOfGame = lengthOfGame;
+			dpwis[i]->v = v;
+
+			// Kick off the threads
+			pthread_create(&workers[i], NULL, defaultPolicyWorker, (void *)dpwis[i]);
+		}
+
+		// Wait for threads to finish
+		for (int i = 0; i < threads; i++) {
+			DefaultPolicyWorkerOutput *dpwo = NULL;
+			if (pthread_join(workers[i], (void **)&dpwo)) {
+				ERROR_PRINT("Failed to join thread %d correctly", i);  // Guess we'll continue
+			} else {
+				reward += dpwo->reward;
+			}
+
+			destroyState(dpwis[i]->state);  // This was a copy
+			free(dpwis[i]);
+			dpwis[i] = NULL;
+			free(dpwo);
+			dpwo = NULL;
+		}	
+
+		free(workers);
+		workers = NULL;
+		free(dpwis);
+		dpwis = NULL;
 	}
 
 	return reward;
@@ -326,9 +362,9 @@ void *defaultPolicyWorker(void *args) {
 }
 
 // Propagates new score back to root
-void backupNegamax(UctNode *v, double reward) {
+void backupNegamax(UctNode *v, double reward, int threads) {
 	while (v != NULL) {
-		v->visitCount += 1;
+		v->visitCount += threads;
 		v->reward += reward;
 		reward = -1*reward;
 		v = v->parent;
