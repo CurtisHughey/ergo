@@ -85,7 +85,7 @@ void destroyUctNode(UctNode *v) {
 // Returns the best move.  Entry point (should make everything else static)
 int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	int rollouts = config->rollouts;
-	int lengthOfGame = config->rollouts;
+	int lengthOfGame = config->lengthOfGame;
 	int threads = config->threads;
 
 	UctNode *root = createRootUctNode(state, hashTable);
