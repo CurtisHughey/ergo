@@ -10,7 +10,7 @@ Config *getDefaultConfig(void) {
 	config->threads = 1;  // Number of threads to do simulations
 	config->testGames = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
-	config->warmupTrials = 2;  // To warm up the cpu for the time trials
+	config->warmupTrials = 3;  // To warm up the cpu for the time trials
 	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know ^^^
 	config->superko = 1;  // By default, we don't allow superko
 	config->hashBuckets = 1000;  // Meh, maybe.  Definitely a tradeoff of memory/speed

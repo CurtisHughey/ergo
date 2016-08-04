@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <unistd.h>  // Will eventually use this to time the threads for logging
+#include <sched.h>
 
 #include "dbg.h"
 #include "state.h"

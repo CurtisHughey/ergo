@@ -161,7 +161,8 @@ echo "MCTS Serial Simulation"  # Computer vs computer, serial
 
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
-# Superko detection is on
+echo "threads 1" >> $tempConfig
+echo "superko 1" >> $tempConfig
 
 valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
@@ -181,9 +182,9 @@ echo "MCTS Parallel Simulation"  # Computer vs computer
 ./build.sh -d 3 -v &>/dev/null
 
 echo "komiTimes10 0" >> $tempConfig
-echo "rollouts 10" >> $tempConfig  # Very low, otherwise Valgrind takes forever with the thread stuff, I guess
+echo "rollouts 2" >> $tempConfig  # Very low, otherwise Valgrind takes forever with the thread stuff, I guess (I think because Valgrind runs only on 1 core)
 echo "threads 2" >> $tempConfig
-# Superko detection is on
+echo "superko 1" >> $tempConfig
 
 valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]

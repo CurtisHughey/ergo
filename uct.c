@@ -367,7 +367,6 @@ double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 
 void *defaultPolicyWorker(void *args) {
 	DefaultPolicyWorkerInput *dpwi = (DefaultPolicyWorkerInput *)args;
-	int i = 0;
 	while (!dpwi->shouldDie) {
 		if (dpwi->shouldProcess) {
 			int rootTurn = dpwi->rootTurn;
@@ -379,7 +378,8 @@ void *defaultPolicyWorker(void *args) {
 
 			dpwi->shouldProcess = 0;  // Must wait for the caller to set this
 			dpwi->workerFinished = 1;  // Worker finished, caller can now give another dpwi
-			i += 1;
+		} else {
+			sched_yield();  // Might as well
 		}
 	}
 
