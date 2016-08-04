@@ -46,7 +46,7 @@ then
 	echo "$1,$average" >> $perfFile
 fi
 
-python perf/processPerf.py perf/performance.txt
+python perf/processPerf.py perf/performance.txt  # Makes the image
 
 rm $rawPerfFile
 rm $tempPerfConfig

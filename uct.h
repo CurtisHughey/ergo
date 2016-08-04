@@ -9,6 +9,7 @@
 #include <math.h>
 #include <assert.h>
 #include <pthread.h>
+#include <unistd.h>  // Will eventually use this to time the threads for logging
 
 #include "dbg.h"
 #include "state.h"
@@ -38,11 +39,12 @@ typedef struct {
 	State *state;  // Current state
 	int lengthOfGame;  // Max number of iterations in case we don't have a double pass
 	UctNode *v;  // Current UCT node;
+	int tid;  // Unique identifier, for debugging
+	volatile int shouldProcess;  // If non-zero, means the worker thread can work on it
+	volatile int workerFinished;  // Means that the worker has set the reward and is finished
+	double reward;  // This is what gets output by the worker thread.
+	volatile int shouldDie;  // Non zero if the worker thread should kill itself
 } DefaultPolicyWorkerInput;
-
-typedef struct {
-	double reward;  // Reward (0, 0.5, 1)
-} DefaultPolicyWorkerOutput;
 
 UctNode *createRootUctNode(State *state, HashTable *hashTable);
 
@@ -81,7 +83,10 @@ double calcReward(UctNode *parent, UctNode *child, double c);
 
 // Simulates rest of game, for lengthOfGame moves
 // numThreads specifies number of worker threads.  If 1, then it won't make another thread
-double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, int threads);
+double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads);
+
+// Simulates the rest of game (the original defaultPolicy in the paper.  Either called serially or in parallel)
+double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v);
 
 // Single worker for defaultPolicy.  args will be cast to DefaulPolicyWorkerInput
 // It is the responsibility of the caller to free args

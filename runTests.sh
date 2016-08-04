@@ -181,7 +181,7 @@ echo "MCTS Parallel Simulation"  # Computer vs computer
 ./build.sh -d 3 -v &>/dev/null
 
 echo "komiTimes10 0" >> $tempConfig
-echo "rollouts 100" >> $tempConfig 
+echo "rollouts 10" >> $tempConfig  # Very low, otherwise Valgrind takes forever with the thread stuff, I guess
 echo "threads 2" >> $tempConfig
 # Superko detection is on
 

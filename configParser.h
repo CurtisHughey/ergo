@@ -24,7 +24,7 @@ typedef struct {
 } Config;
 
 // Default configurations
-Config *getDefaultConfig(void );
+Config *getDefaultConfig(void);
 
 // Parses configuration file, returns Config struct.  If variable not specified, default is used
 Config *parseConfigFile(char *configFileName);

@@ -88,9 +88,29 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 
 	int numIterations = rollouts/threads;
 
+	DefaultPolicyWorkerInput **dpwis = NULL;
+	pthread_t *workers = NULL;
+	// Kicks off the worker threads for simulations
+	if (threads > 1) {  // Then need to allocate for workers and their input
+		dpwis = calloc(threads, sizeof(DefaultPolicyWorkerInput *));  // Could probably also do this on the stack
+		workers = calloc(threads, sizeof(pthread_t));
+
+		for (int i = 0; i < threads; i++) {  
+			// Set up input
+			dpwis[i] = malloc(sizeof(DefaultPolicyWorkerInput));
+			dpwis[i]->tid = i;
+			dpwis[i]->workerFinished = 0;  // Obviously hasn't finished an iteration yet
+			dpwis[i]->shouldProcess = 0;  // Not ready yet
+			dpwis[i]->shouldDie = 0;  // Shouldn't die yet, obviously
+
+			// Kick off the threads
+			pthread_create(&workers[i], NULL, defaultPolicyWorker, (void *)dpwis[i]);  // The ith worker is responsible for the ith dpwi
+		}	
+	}
+
 	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
-	for (int i = 0; i < numIterations; i++) {
+	for (int i = 0; i <= numIterations; i++) {  // <= to make sure we get at least one iteration, in case rollouts<threads (unlikely)
 		State *copy = copyState(state);
 
 		UctNode *v = NULL;
@@ -100,13 +120,33 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 			v = treePolicyNoHashing(copy, root);
 		}
 
-		double reward = defaultPolicy(rootTurn, copy, v, lengthOfGame, threads);
+		double reward = defaultPolicy(rootTurn, copy, v, lengthOfGame, workers, dpwis, threads);
 		backupNegamax(v, reward, threads);  // threads needs to get passed so the visit count can be properly updated
 		destroyState(copy);
 	}
 
 	UctNode *bestNode = bestChild(root, 0);
 	int move = bestNode->action;
+
+	// End the threads, if they exist
+	if (threads > 1) {
+		for (int i = 0; i < threads; i++) {
+			dpwis[i]->shouldDie = 1;
+		}
+
+		for (int i = 0; i < threads; i++) {
+			if (pthread_join(workers[i], NULL)) {
+				ERROR_PRINT("Failed to join thread %d correctly", i);
+			}
+			free(dpwis[i]);
+			dpwis[i] = NULL;		
+		}
+
+		free(dpwis);
+		dpwis = NULL;
+		free(workers);
+		workers = NULL;
+	}
 
 	destroyUctNode(root);
 
@@ -228,73 +268,40 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 // Simulates rest of game, for lengthOfGame moves
 // state will (probably) be mutated, you should save if you want it later
 // For this, we do NOT care about superko ^^^
-double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, int threads) {
+double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads) {
 	assert(threads >= 1);  // Otherwise, this is bad
 
 	double reward = -1;
 
 	if (threads == 1) {  // Then no need to do pthread stuff
-		DefaultPolicyWorkerInput *dpwi = malloc(sizeof(DefaultPolicyWorkerInput));
-		dpwi->rootTurn = rootTurn;
-		dpwi->state = state;  // No need to copy
-		dpwi->lengthOfGame = lengthOfGame;
-		dpwi->v = v;
-
-		DefaultPolicyWorkerOutput *dpwo = defaultPolicyWorker((void *)dpwi);
-		reward = dpwo->reward;
-
-		free(dpwo);
-		dpwo = NULL;
-		free(dpwi);
-		dpwi = NULL;
-	} else {  // Then we need to kick off some threads
-		DefaultPolicyWorkerInput **dpwis = calloc(threads, sizeof(DefaultPolicyWorkerInput *));  // Could probably also do this on the stack
-		pthread_t *workers = calloc(threads, sizeof(pthread_t));
-
+		reward = simulate(rootTurn, state, lengthOfGame, v);
+	} else {  // Then we need to pass info to the worker threads
 		for (int i = 0; i < threads; i++) {
 			// Set up input
-			dpwis[i] = malloc(sizeof(DefaultPolicyWorkerInput));
 			dpwis[i]->rootTurn = rootTurn;
 			dpwis[i]->state = copyState(state);
 			dpwis[i]->lengthOfGame = lengthOfGame;
 			dpwis[i]->v = v;
 
-			// Kick off the threads
-			pthread_create(&workers[i], NULL, defaultPolicyWorker, (void *)dpwis[i]);
+			// Indicate that the threads can process
+			dpwis[i]->shouldProcess = 1;
 		}
 
-		// Wait for threads to finish
+		// Wait for threads to finish processing
 		for (int i = 0; i < threads; i++) {
-			DefaultPolicyWorkerOutput *dpwo = NULL;
-			if (pthread_join(workers[i], (void **)&dpwo)) {
-				ERROR_PRINT("Failed to join thread %d correctly", i);  // Guess we'll continue
-			} else {
-				reward += dpwo->reward;
-			}
+			while (!dpwis[i]->workerFinished) {}  // Spins - is there a synchronize thing going on (is the compiler going to eliminate this? ^^^)
+			dpwis[i]->workerFinished = 0;  // For next time
+
+			reward += dpwis[i]->reward;
 
 			destroyState(dpwis[i]->state);  // This was a copy
-			free(dpwis[i]);
-			dpwis[i] = NULL;
-			free(dpwo);
-			dpwo = NULL;
 		}	
-
-		free(workers);
-		workers = NULL;
-		free(dpwis);
-		dpwis = NULL;
 	}
 
 	return reward;
 }
 
-void *defaultPolicyWorker(void *args) {
-	DefaultPolicyWorkerInput *dpwi = (DefaultPolicyWorkerInput *)args;
-	int rootTurn = dpwi->rootTurn;
-	State *state = dpwi->state;
-	int lengthOfGame = dpwi->lengthOfGame;
-	UctNode *v = dpwi->v;
-
+double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	int color = state->turn;
 	int prevNumMoves = 0;  // Maybe we could guess based on how many moves have happened
 
@@ -355,10 +362,28 @@ void *defaultPolicyWorker(void *args) {
 		reward = -1*reward;  // To work with negamax
 	}
 
-	DefaultPolicyWorkerOutput *dpwo = malloc(sizeof(DefaultPolicyWorkerOutput));
-	dpwo->reward = reward;
+	return reward;	
+}
 
-	return (void *)dpwo;
+void *defaultPolicyWorker(void *args) {
+	DefaultPolicyWorkerInput *dpwi = (DefaultPolicyWorkerInput *)args;
+	int i = 0;
+	while (!dpwi->shouldDie) {
+		if (dpwi->shouldProcess) {
+			int rootTurn = dpwi->rootTurn;
+			State *state = dpwi->state;
+			int lengthOfGame = dpwi->lengthOfGame;
+			UctNode *v = dpwi->v;
+
+			dpwi->reward = simulate(rootTurn, state, lengthOfGame, v);
+
+			dpwi->shouldProcess = 0;  // Must wait for the caller to set this
+			dpwi->workerFinished = 1;  // Worker finished, caller can now give another dpwi
+			i += 1;
+		}
+	}
+
+	return NULL;  // Maybe could return stats?
 }
 
 // Propagates new score back to root
