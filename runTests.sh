@@ -49,12 +49,13 @@ echo "--------------------------------------------------------------------------
 # Correct AI tests (ish)
 echo "--------------------"
 echo "MCTS Correctness Tests"
-echo "3x3 wins"
-./build.sh -d 3 &>/dev/null  # 19 is way too big
+
+echo "6x6 wins"
+./build.sh -d 6 &>/dev/null  # Bigger for more variation
 
 # Now need to give custom configurations
 echo "komiTimes10 0" >> $tempConfig
-echo "rollouts 1000" >> $tempConfig
+echo "rollouts 500" >> $tempConfig
 echo "superko 0" >> $tempConfig  # Turn off superko for these tests
 
 ./ergo -y -C $tempConfig &>> $testLog
@@ -69,7 +70,7 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-echo "3x3 Loses"
+echo "6x6 Loses"
 ./build.sh -d 3 &>/dev/null
 
 echo "komiTimes10 0" >> $tempConfig
@@ -88,26 +89,6 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-./build.sh -d 6 &>/dev/null  # Bigger for more variation
-
-# Now need to give custom configurations
-echo "komiTimes10 0" >> $tempConfig
-echo "rollouts 500" >> $tempConfig
-echo "superko 0" >> $tempConfig  # Turn off superko for these tests
-
-echo "6x6"
-./ergo -y -C $tempConfig &>> $testLog
-if [[ $? -eq 1 ]]
-then
-	echo "Passed :)"
-	numPassed=$((numPassed+1))
-else
-	echo "Failed :("
-fi
-numTests=$((numTests+1))
-rm $tempConfig
-echo "---"
-
 ./build.sh -d 3 &>/dev/null  # Parallel
 
 # Now need to give custom configurations
@@ -116,7 +97,7 @@ echo "rollouts 1000" >> $tempConfig
 echo "superko 0" >> $tempConfig  # Turn off superko for these tests
 echo "threads 2" >> $tempConfig
 
-echo "3x3 parallel"
+echo "6x6 Parallel Wins"
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]
 then

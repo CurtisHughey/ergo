@@ -199,9 +199,9 @@ int testComputer(Config *config) {
 	printf("Other won:    %d\n", otherWon);
 	printf("Draws:        %d\n", draws);
 
-	double totalScore = compWon + draws*0.5;  // Really rudimentary for now ^^
+	double totalScore = compWon + draws*0.5;
 
-	return totalScore >= 0.75*iterations;  // Means it won most games (especially against 3x3, could lose even with perfect play)
+	return totalScore >= 0.8*iterations;  // Means it won most games (especially against 3x3, could lose even with perfect play)
 }
 
 // Finds a single move, measures how long

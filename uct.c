@@ -289,7 +289,10 @@ double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, p
 
 		// Wait for threads to finish processing
 		for (int i = 0; i < threads; i++) {
-			while (!dpwis[i]->workerFinished) {}  // Spins - is there a synchronize thing going on (is the compiler going to eliminate this? ^^^)
+			while (!dpwis[i]->workerFinished) {  // Spins - is there a synchronize thing going on (is the compiler going to eliminate this? ^^^)
+				usleep(1);  // I think this helps, lol
+				sched_yield();
+			}
 			dpwis[i]->workerFinished = 0;  // For next time
 
 			reward += dpwis[i]->reward;

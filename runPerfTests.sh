@@ -30,7 +30,7 @@ fi
 
 echo "rollouts 1000" >> $tempPerfConfig
 echo "trials 20" >> $tempPerfConfig
-echo "warmupTrials 3" >> $tempPerfConfig
+echo "warmupTrials 5" >> $tempPerfConfig
 echo "superko 1" >> $tempPerfConfig
 echo "hashBuckets 1000" >> $tempPerfConfig
 echo "threads 2" >> $tempPerfConfig
