@@ -25,7 +25,8 @@
 #define STATE_ALL (-2)
 
 #define MOVE_PASS (-1)
-#define INVALID_MOVE (-2)  // Moved this from gameParser.h
+#define MOVE_INVALID (-2)
+#define MOVE_RESIGN (-3)
 
 #define OTHER_COLOR(x) ((-1)*(x))
 

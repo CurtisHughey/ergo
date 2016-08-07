@@ -8,7 +8,6 @@
 
 #define MAX_BOARD_LINE 1024  // Allows for comments (really shouldn't be more than this on one line :) )
 #define MAX_MOVE_LEN 7  // Ish
-#define QUIT (-3)
 
 // Parses a custom board in a file into a State
 // Returns NULL if incorrectly formatted

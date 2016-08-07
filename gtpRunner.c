@@ -173,7 +173,7 @@ int runGtp(Config *config) {
 
 			move = parseGtpMove(vertexString);
 
-			if (move == INVALID_MOVE) {
+			if (move == MOVE_INVALID) {
 				sprintf(errorMessage, "syntax error, invalid move");
 
 				goto ERROR;
@@ -206,7 +206,9 @@ int runGtp(Config *config) {
 			state->turn = color;
 
 			int move = uctSearch(state, config, hashTable);
-			makeMove(state, move, hashTable);  // Again, give ability to unmake ^^^
+			if (move != MOVE_RESIGN) {
+				makeMove(state, move, hashTable);  // Again, give ability to unmake ^^^
+			}
 
 			char *vertex = moveToGtpString(move);  // Can also resign ^^
 
@@ -247,7 +249,7 @@ int runGtp(Config *config) {
 			state->turn = color;
 
 			int move = uctSearch(state, config, hashTable);
-			char *vertex = moveToGtpString(move);  // Should also resign ^^
+			char *vertex = moveToGtpString(move);  // Could be resignation
 
 			sprintf(response, vertex);
 			
@@ -299,7 +301,7 @@ int parseGtpMove(char *vertex) {
 	}
 
 	if (strlen(vertex) < 2) {  // Too small, must either be length 3 or 4
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	// First parse column
@@ -322,7 +324,7 @@ int parseGtpMove(char *vertex) {
 			column -= 1;  // Correcting the skipped j
 		}
 	} else {
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	////////
@@ -334,24 +336,24 @@ int parseGtpMove(char *vertex) {
 	int ones = 0;  // ones digit
 
 	if (!isdigit(vertex[1])) {
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	} else {
 		tens = vertex[1]-'0';  // Initally guess that this is the tens index
 
 		if (tens < 0 || tens > 9) {
-			return INVALID_MOVE;
+			return MOVE_INVALID;
 		}
 	}
 
 	// Same thing with ones
 	if (vertex[2] != '\0') {
 		if (!isdigit(vertex[2])) {
-			return INVALID_MOVE;
+			return MOVE_INVALID;
 		} else {
 			ones = vertex[2]-'0';
 
 			if (ones < 0 || ones > 9) {
-				return INVALID_MOVE;
+				return MOVE_INVALID;
 			}
 		}
 	} else {  // Switches it
@@ -362,7 +364,7 @@ int parseGtpMove(char *vertex) {
 	row = ones+10*tens;
 
 	if (row < 0 || row > BOARD_DIM) {
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	////////
@@ -378,6 +380,8 @@ char *moveToGtpString(int move) {
 
 	if (move == MOVE_PASS) {
 		sprintf(moveString, "pass");
+	} else if (move == MOVE_RESIGN) {
+		sprintf(moveString, "resign");
 	} else {
 		char columnChar = 'A'+ move % BOARD_DIM;
 		if (columnChar >= 'I') {

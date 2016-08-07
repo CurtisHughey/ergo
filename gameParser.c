@@ -145,7 +145,7 @@ int parseMoveFromFile(char *fileName) {
 
 	if (fgets(line, MAX_MOVE_LEN, fp) == NULL) {
 		ERROR_PRINT("Move is missing");
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	fclose(fp);
@@ -161,18 +161,18 @@ int parseMoveFromTerminal(void) {
 }
 
 int parseMove(char *line) {
-	if (line[0] == 'q') {  // Special quit command
-		return QUIT;
+	if (line[0] == 'R') {  // Special resign command
+		return MOVE_RESIGN;
 	}
 
 	if (line[0] != 'B' && line[0] != 'W') {
 		ERROR_PRINT("Failed to specify player to move");
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	if (line[1] != '[') {
 		ERROR_PRINT("Missing opening square bracket");
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	if (line[2] == ']') {
@@ -184,12 +184,12 @@ int parseMove(char *line) {
 
 	if (colChar == '\0' || rowChar == '\0') {
 		ERROR_PRINT("Failed to specify row or column");
-		return INVALID_MOVE;		
+		return MOVE_INVALID;		
 	}
 
 	if (line[4] != ']') {
 		ERROR_PRINT("Missing closing square bracket");
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	if (rowChar == 't' && colChar == 't') {
@@ -198,12 +198,12 @@ int parseMove(char *line) {
 
 	if (rowChar < 'a' || rowChar >= 'a'+BOARD_DIM) {
 		ERROR_PRINT("Invalid row entry");
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	if (colChar < 'a' || colChar >= 'a'+BOARD_DIM) {
 		ERROR_PRINT("Invalid column entry");
-		return INVALID_MOVE;
+		return MOVE_INVALID;
 	}
 
 	int point = BOARD_DIM*(rowChar-'a') + colChar-'a';
@@ -218,6 +218,8 @@ char *moveToString(int move, int color) {
 
 	if (move == MOVE_PASS) {
 		sprintf(moveString, "%c[]", colorChar);
+	} else if (move == MOVE_RESIGN) {
+		sprintf(moveString,  "RESIGN");  // I guess
 	} else if (move >= 0 && move < BOARD_SIZE) {
 		int column = move % BOARD_DIM;
 		int row = move / BOARD_DIM;
@@ -227,8 +229,8 @@ char *moveToString(int move, int color) {
 
 		sprintf(moveString, "%c[%c%c]", colorChar, columnChar, rowChar);
 	} else {
-		ERROR_PRINT("Invalid move, continuing");  // Could potentially be because of resignation
-		sprintf(moveString, "INVALID");
+		ERROR_PRINT("Invalid move, continuing");
+		sprintf(moveString, "BAD");
 	}
 
 	return moveString;

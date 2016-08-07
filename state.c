@@ -101,7 +101,7 @@ int isLegalMove(State *state, int move, HashTable *hashTable) {
 	}
 
 	// Bound checking
-	if (move < 0 || move >= BOARD_SIZE) {  // Could be < -1 if parsed as INVALID_MOVE.  MOVE_PASS already covered above, which is also negative
+	if (move < 0 || move >= BOARD_SIZE) {  // Could be < -1 if parsed as MOVE_INVALID, or MOVE_RESIGN.  MOVE_PASS already covered above, which is also negative
 		return 0;  // Duh
 	}
 
@@ -263,7 +263,13 @@ int setTerritory(State *state, int point, int color) {
 	}
 }
 
+// Assumes legal move!
 void makeMove(State *state, int move, HashTable *hashTable) {
+	if (move == MOVE_RESIGN || move == MOVE_INVALID) {  // Might as well check
+		ERROR_PRINT("Move: %d\n passed to makeMove", move);
+		return;  // Do nothing
+	}
+
 	if (move != MOVE_PASS) {  // Not passing (otherwise, don't do anything)
 
 		// Now make the move

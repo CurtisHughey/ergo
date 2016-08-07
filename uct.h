@@ -20,13 +20,13 @@
 
 #define ROOT_MOVE -2  // The move that the rootmove has
 
-#define UCT_CONSTANT 0.707106781 // This is the C_p=1/sqrt(2) term
+#define UCT_CONSTANT 1.41421356237 // This is the C_p=sqrt(2) term
 
 #define ESTIMATED_DEPTH 16
 
 typedef struct UctNode {
 	int action;  // The move
-	double reward;  // Maybe just float...
+	double reward;  // Maybe just float...  This is sort of a misnomer, should be like expected value
 	int visitCount;
 	int terminal;  // Whether it's terminal or not (i.e. it's a white passing move, black passed last turn)
 	struct UctNode **children;
@@ -77,7 +77,8 @@ UctNode *treePolicyNoHashing(State *state, UctNode *v);
 UctNode *expand(State *state, UctNode *v, HashTable *hashTable);
 
 // Returns the best child by the UCB1 algorithm.  c is the constant defined in the paper (either C_p or 0)
-UctNode *bestChild(UctNode *v, double c);
+// if respect == -1, resign will never be returned.  If atRoot == 1 (meaning we intend to return a move to the user) the reward*100 <= respect (0<=reward<=1.0 by definition), then NULL will be returned, meaning it should resign
+UctNode *bestChild(UctNode *v, double c, int respect, int atRoot);
 
 // Calculates the reward by the UCT algorithm
 double calcReward(UctNode *parent, UctNode *child, double c);

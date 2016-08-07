@@ -84,8 +84,9 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	int rollouts = config->rollouts;
 	int lengthOfGame = config->lengthOfGame;
 	int threads = config->threads;
-	assert(threads >= 1);  // Making this check again
+	int respect = config->respect;
 
+	assert(threads >= 1);  // Making this check again
 	int numIterations = rollouts/threads;
 
 	DefaultPolicyWorkerInput **dpwis = NULL;
@@ -125,8 +126,8 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 		destroyState(copy);
 	}
 
-	UctNode *bestNode = bestChild(root, 0);
-	int move = bestNode->action;
+	UctNode *bestNode = bestChild(root, 0, respect, 1);  // 1 because we intend to make the move on the user end
+	int move = bestNode == NULL ? MOVE_RESIGN : bestNode->action;  // Resigns if bestNode is NULL
 
 	// End the threads, if they exist
 	if (threads > 1) {
@@ -167,7 +168,7 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 			hashValues[index++] = zobristHash(state);
 			break;
 		} else {
-			v = bestChild(v, UCT_CONSTANT);
+			v = bestChild(v, UCT_CONSTANT, -1, 0);  // -1 for never resigning, 0 because we don't intend to return this to user
 			makeMove(state, v->action, hashTable);
 			hashValues[index++] = zobristHash(state);
 		}
@@ -196,7 +197,7 @@ UctNode *treePolicyNoHashing(State *state, UctNode *v) {
 			makeMove(state, v->action, NULL);
 			break;
 		} else {
-			v = bestChild(v, UCT_CONSTANT);
+			v = bestChild(v, UCT_CONSTANT, -1, 0);  // -1 for never resigning
 			makeMove(state, v->action, NULL);
 		}
 	}
@@ -232,7 +233,7 @@ UctNode *expand(State *state, UctNode *v, HashTable *hashTable) {
 }
 
 // Returns the best child by the UCB1 algorithm
-UctNode *bestChild(UctNode *v, double c) {
+UctNode *bestChild(UctNode *v, double c, int respect, int atRoot) {
 	double bestReward = INT_MIN;
 	int bestChildIndex = 0;  // There is always at least 1 child, so this will be filled
 	for (int i = 0; i < v->childrenCount; i++) {
@@ -249,16 +250,38 @@ UctNode *bestChild(UctNode *v, double c) {
 		// 	free(x);
 		// }
 	}
-	assert(bestChildIndex != -1);
 
-	return v->children[bestChildIndex];
+	if (atRoot && bestReward < 0) {
+		printf("ASDFasdasdfasdasdfasdfasdfadsdfadfASDASF: %lf\n", bestReward);
+		for (int i = 0; i < v->childrenCount; i++) {
+			UctNode *child = v->children[i];
+			double reward = calcReward(v, child, c);
+			printf("%d, %lf\n", i, reward);
+
+			// if (c == 0) {  // Remove ^^^^
+			// 	char *x = moveToString(v->children[i]->action, 1); 
+			// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
+			// 	free(x);
+			// }
+		}
+		assert (0);
+	}
+
+	if (atRoot && bestReward*100 < (double)respect) {  // Then resign
+		printf("ADFASDFASDFSDASDFSADF: %lf\n", bestReward);
+		exit(1);
+		return NULL;  // NULL means resignation
+	} else {
+		return v->children[bestChildIndex];
+	}
 }
 
+// Not sure I'm handling this correcly with negatives ^^^
 double calcReward(UctNode *parent, UctNode *child, double c) {
 	double reward = 0;
 	if (child->visitCount > 0) {  // I.e. if visited.
-		reward = ((double)(child->reward))/child->visitCount 
-					+ c*sqrt(2*log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
+		reward = (double)child->reward/child->visitCount 
+					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
 	} else {
 		reward = INT_MIN;
 	}

@@ -50,13 +50,13 @@ echo "--------------------------------------------------------------------------
 echo "--------------------"
 echo "MCTS Correctness Tests"
 
-echo "6x6 wins"
-./build.sh -d 6 &>/dev/null  # Bigger for more variation
+echo "5x5 wins"
+./build.sh -d 5 &>/dev/null  # Bigger for more variation
 
 # Now need to give custom configurations
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 500" >> $tempConfig
-echo "superko 0" >> $tempConfig  # Turn off superko for these tests
+echo "superko 0" >> $tempConfig  # Turn off superko for these tests ^^^ (should I really be doing this?)
 
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]
@@ -70,8 +70,8 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-echo "6x6 Loses"
-./build.sh -d 3 &>/dev/null
+echo "5x5 Loses"
+./build.sh -d 5 &>/dev/null
 
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 1" >> $tempConfig  # Sanity check to make sure we suck if the number of rollouts is low
@@ -89,15 +89,14 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-./build.sh -d 3 &>/dev/null  # Parallel
+echo "5x5 Parallel Wins"
+./build.sh -d 5 &>/dev/null  # Parallel
 
-# Now need to give custom configurations
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 1000" >> $tempConfig
 echo "superko 0" >> $tempConfig  # Turn off superko for these tests
 echo "threads 2" >> $tempConfig
 
-echo "6x6 Parallel Wins"
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]
 then

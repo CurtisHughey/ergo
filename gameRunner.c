@@ -6,8 +6,8 @@ int promptHuman(State *state, char *color, HashTable *hashTable) {
 	do {
 		printf("%s to move: ", color);
 		int move = parseMoveFromTerminal();
-		if (move == QUIT) {
-			return QUIT;
+		if (move == MOVE_RESIGN) {
+			return MOVE_RESIGN;
 		}
 		if (isLegalMove(state, move, hashTable)) {
 			gameFinishes = state->blackPassed && move == MOVE_PASS; // i.e. both sides are passing, game finishes
@@ -51,7 +51,7 @@ void runHumanVsHuman(Config *config) {
 		for (int i = 0; i < 2; i++) {
 			displayState(state);
 			status = promptHuman(state, colors[i], hashTable);
-			if (status == QUIT) {
+			if (status == MOVE_RESIGN) {
 				break;
 			}
 		}
@@ -83,11 +83,17 @@ void runHumanVsComputer(Config *config) {
 				printf("%s chooses move: %s\n", colors[i], moveString);
 				free(moveString);
 				moveString = NULL;
+
+				// Checks if resignation, otherwise it makes the move
+				if (move == MOVE_RESIGN) {
+					status = 1;
+					break;
+				}	
 				status = state->blackPassed && move == MOVE_PASS;
 				makeMove(state, move, hashTable);
 			} else {
 				status = promptHuman(state, colors[i], hashTable);
-				if (status == QUIT) {
+				if (status == MOVE_RESIGN) {
 					break;
 				}
 			}
@@ -116,7 +122,13 @@ void runComputerVsComputer(Config *config) {
 			char *moveString = moveToString(move, state->turn);
 			printf("%s chooses move: %s\n", colors[i], moveString);
 			free(moveString);
-			moveString = NULL;			
+			moveString = NULL;	
+
+			// Checks if resignation, otherwise it makes the move
+			if (move == MOVE_RESIGN) {
+				status = 1;
+				break;
+			}		
 			status = state->blackPassed && move == MOVE_PASS;
 			makeMove(state, move, hashTable);
 		}
@@ -141,9 +153,17 @@ int runComputerVsRandom(Config *config) {
 			int move;
 			if (i == compTurn) {  // AI move
 				move = uctSearch(state, config, hashTable); 
+				// Checks if resignation, otherwise it makes the move
+				if (move == MOVE_RESIGN) {
+					status = 1;
+					break;
+				}	
 			} else {  // Random move
 				Moves *moves = getMoves(state, hashTable);
 				move = moves->array[rand() % moves->count];
+				
+				free(moves);
+				moves = NULL;
 			}
 
 			status = state->blackPassed && move == MOVE_PASS;

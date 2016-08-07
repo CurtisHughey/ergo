@@ -21,6 +21,7 @@ typedef struct {
 	int lengthOfGame;
 	int superko;
 	int hashBuckets;
+	int respect;
 } Config;
 
 // Default configurations

@@ -5,7 +5,7 @@
 Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));
 	
-	config->komiTimes10 = 0;  // Default to 75 (7.5) is a good guess
+	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
  	config->rollouts = 20000;  // Maybe also make this a function of the sizes of the board
 	config->threads = 1;  // Number of threads to do simulations
 	config->testGames = 25;  // The random vs cpu tests
@@ -14,6 +14,7 @@ Config *getDefaultConfig(void) {
 	config->lengthOfGame = (int)(BOARD_SIZE * 1.1);  // This is a big problem, I don't really know ^^^
 	config->superko = 1;  // By default, we don't allow superko
 	config->hashBuckets = 1000;  // Meh, maybe.  Definitely a tradeoff of memory/speed
+	config->respect = -1;  // By default, will never resign (otherwise, give number 0-100, with higher meaning less likely to resign (see bestChild in uct.h))
 
 	return config;
 }
@@ -109,6 +110,13 @@ int updateConfig(Config *config, char *variableName, int value) {
 			return 1;
 		}
 		config->hashBuckets = value;
+		return 0;
+	} else if (!strcmp(variableName, "resign")) {
+		if (value > 100) {
+			ERROR_PRINT("Number of hash buckets must be less than or equal to 100, got: %d", value);
+			return 1;
+		}
+		config->respect = value;
 		return 0;
 	} else {
 		ERROR_PRINT("Unknown variable name: %s", variableName);

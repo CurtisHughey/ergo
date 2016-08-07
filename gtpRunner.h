@@ -27,7 +27,7 @@ extern const char *commands[];  // Defined in gameRunner.c, function runGtp
 // Runs GTP to connect with KGS.  Returns 1 if computer wins, -1 if loses, 0 if draw.  -2 if quit
 int runGtp(Config *config);
 
-// Returns INVALID_MOVE if invalid.  Parses according to GTP specification
+// Returns MOVE_INVALID if invalid.  Parses according to GTP specification
 int parseGtpMove(char *vertex);
 
 // Converts an internal integer move into a GTP string vertex, or pass.  Must free string
