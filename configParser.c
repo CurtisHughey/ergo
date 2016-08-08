@@ -6,8 +6,8 @@ Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));
 	
 	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
- 	config->rollouts = 20000;  // Maybe also make this a function of the sizes of the board
-	config->threads = 1;  // Number of threads to do simulations
+ 	config->rollouts = 100;  // Maybe also make this a function of the sizes of the board
+	config->threads = 2;  // Number of threads to do simulations
 	config->testGames = 25;  // The random vs cpu tests
 	config->trials = 5;  // The time trials
 	config->warmupTrials = 3;  // To warm up the cpu for the time trials

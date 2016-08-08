@@ -173,7 +173,7 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 			hashValues[index++] = zobristHash(state);
 		}
 
-		if (index >= hashValuesLength) {
+		if (index >= hashValuesLength) {  // Then need to expand
 			hashValuesLength *= 2;
 			hashValues = realloc(hashValues, hashValuesLength * sizeof(HASHVALUETYPE));
 		}
@@ -244,32 +244,14 @@ UctNode *bestChild(UctNode *v, double c, int respect, int atRoot) {
 			bestChildIndex = i;
 		}
 
-		// if (c == 0) {  // Remove ^^^^
+		// if (c == 0) {  // Remove ^^^
 		// 	char *x = moveToString(v->children[i]->action, 1); 
 		// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
 		// 	free(x);
 		// }
 	}
 
-	if (atRoot && bestReward < 0) {
-		printf("ASDFasdasdfasdasdfasdfasdfadsdfadfASDASF: %lf\n", bestReward);
-		for (int i = 0; i < v->childrenCount; i++) {
-			UctNode *child = v->children[i];
-			double reward = calcReward(v, child, c);
-			printf("%d, %lf\n", i, reward);
-
-			// if (c == 0) {  // Remove ^^^^
-			// 	char *x = moveToString(v->children[i]->action, 1); 
-			// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
-			// 	free(x);
-			// }
-		}
-		assert (0);
-	}
-
 	if (atRoot && bestReward*100 < (double)respect) {  // Then resign
-		printf("ADFASDFASDFSDASDFSADF: %lf\n", bestReward);
-		exit(1);
 		return NULL;  // NULL means resignation
 	} else {
 		return v->children[bestChildIndex];
@@ -294,7 +276,7 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads) {
 	assert(threads >= 1);  // Otherwise, this is bad
 
-	double reward = -1;
+	double reward = 0;
 
 	if (threads == 1) {  // Then no need to do pthread stuff
 		reward = simulate(rootTurn, state, lengthOfGame, v);
@@ -379,13 +361,13 @@ double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	} else {
 		reward = 0.5;
 	}
-	// Reverses reward if necessary
+	// Reverses reward if white
 	if (rootTurn == STATE_WHITE) {
 		reward = 1-reward;
 	}
 
 	if (color == rootTurn) {
-		reward = -1*reward;  // To work with negamax
+		reward = -1*reward;  // To work with negamax, needs to reverse if there would be an uneven amount of *-1 applied in the backup function
 	}
 
 	return reward;	
