@@ -221,7 +221,7 @@ int testComputer(Config *config) {
 
 	double totalScore = compWon + draws*0.5;
 
-	return totalScore >= 0.9*iterations;  // Means it won most games (especially against 3x3, could lose even with perfect play)
+	return totalScore >= 0.8*iterations;  // Means it won most games (especially against 3x3, could lose even with perfect play)
 }
 
 // Finds a single move, measures how long

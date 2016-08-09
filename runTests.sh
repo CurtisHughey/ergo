@@ -70,25 +70,6 @@ numTests=$((numTests+1))
 rm $tempConfig
 echo "---"
 
-echo "5x5 Loses"
-./build.sh -d 5 &>/dev/null
-
-echo "komiTimes10 0" >> $tempConfig
-echo "rollouts 1" >> $tempConfig  # Sanity check to make sure we suck if the number of rollouts is low
-echo "superko 0" >> $tempConfig  # Turn off superko for these tests
-
-./ergo -y -C $tempConfig &>> $testLog
-if [[ $? -eq 0 ]]  # Wants to fail now
-then
-	echo "Passed :)"
-	numPassed=$((numPassed+1))
-else
-	echo "Failed :("
-fi
-numTests=$((numTests+1))
-rm $tempConfig
-echo "---"
-
 echo "5x5 Parallel Wins"
 ./build.sh -d 5 &>/dev/null  # Parallel
 

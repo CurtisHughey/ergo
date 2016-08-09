@@ -12,7 +12,7 @@
 #include "configParser.h"
 #include "linkedList.h"
 
-#define NUM_STATE_TESTS 9
+#define NUM_STATE_TESTS 10
 #define NUM_LINKEDLIST_TESTS 4
 #define NUM_HASHTABLE_TESTS 4
 
@@ -33,6 +33,8 @@ int runTests(char *testName, TestResult (**tests)(void), int numTests);
 
 //////////
 // State tests
+TestResult runStateGetNeighborsOfType(void);
+
 TestResult runStateFillWithTests(void);
 
 TestResult runStateGroupBordersTypeAndResetTests(void);
@@ -73,5 +75,13 @@ TestResult runHashContainsTests(void);
 TestResult runHashDeleteTests(void);
 
 TestResult runHashSizeTests(void);
+
+
+//////////
+// Utility functions
+
+int compareInts(const void *a, const void *b);
+
+//////////
 
 #endif

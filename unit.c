@@ -16,6 +16,7 @@ int runAllUnitTests(Config *config) {
 	int result = 0;
 
 	TestResult (*stateTests[NUM_STATE_TESTS])(void) = { 
+									&runStateGetNeighborsOfType,
 									&runStateMakeMoveTests,
 									&runStateMakeUnmakeTests,
 									&runStateGroupBordersTypeAndResetTests,
@@ -108,6 +109,103 @@ int runTests(char *testName, TestResult (**tests)(void), int numTests) {
 	return result;
 }
 
+TestResult runStateGetNeighborsOfType(void) {
+	printf("\t\tgetNeighborsOfType Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	char filePath[] = "./test/state/getNeighborsOfType/"; 
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(filePath);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			if (dir->d_name[0] == 'i') {  
+				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(initialFile, filePath, strlen(filePath));
+				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+
+				char *modFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(modFile, filePath, strlen(filePath));
+				strncpy(modFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+				modFile[strlen(filePath)] = 'm';  // Makes it the move one
+
+				State* initialState = parseState(initialFile);
+
+				// Now parses the getNeighborsOfType details
+				// line 1: point
+				// line 2: type
+				// line 3,4,5,6: The points that should get returned in getNeighborsOfType (if fewer, then lines are blank)
+				FILE *fp = fopen(modFile, "r");
+				if (fp == NULL) {
+					ERROR_PRINT("Couldn't find file: %s", modFile);
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
+				}
+
+				char line[10];  // Way extra space than we need
+				fscanf(fp, "%s", line);
+				int point = atoi(line);
+				fscanf(fp, "%s", line);
+				int type = atoi(line);
+
+				int expectedNeighbors[4];
+				int expectedCount = 0;
+				while (fscanf(fp, "%s", line) != EOF && expectedCount < 4) {
+					expectedNeighbors[expectedCount++] = atoi(line); 
+				} 
+
+				fclose(fp);
+
+				Neighbors actualNeighbors;
+				getNeighborsOfType(initialState, point, type, &actualNeighbors);
+
+				// First compares the sizes
+				if (actualNeighbors.count != expectedCount) {
+					printf("\t\tFailure for test: %s\n", dir->d_name);
+					printf("\t\tGot count of %d\n", actualNeighbors.count);
+				} else {
+					// Now sort arrays and then compare
+					qsort(expectedNeighbors, expectedCount, sizeof(int), compareInts);
+					qsort(actualNeighbors.array, actualNeighbors.count, sizeof(int), compareInts);
+				
+					int passed = 1;
+					for (int i = 0; i < expectedCount; i++) {
+						if (actualNeighbors.array[i] != expectedNeighbors[i]) {
+							printf("\t\tFailure for test: %s\n", dir->d_name);
+							passed = 0;
+
+							printf("\t\tGot: ");
+							for (int j = 0; j < actualNeighbors.count; j++) {
+								printf("%d, ", actualNeighbors.array[j]);
+							}
+							printf("\n");
+							break;
+						}				
+					}
+					
+					if (passed) {
+						totalPasses += 1;
+					}
+				}
+
+				totalTests += 1;
+
+				free(initialFile);
+				free(modFile);
+				destroyState(initialState);
+			}
+		}
+	} else {
+		ERROR_PRINT("Couldn't find directory for getNeighborsOfType");;
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
+	}
+	free(d);
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
 TestResult runStateFillWithTests(void) {
 	printf("\t\tfillWith Tests: \n");
 
@@ -173,7 +271,7 @@ TestResult runStateFillWithTests(void) {
 			}
 		}
 	} else {
-		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
+		ERROR_PRINT("Couldn't find directory for fillWith");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
 	free(d);
@@ -1210,11 +1308,18 @@ TestResult runHashSizeTests(void) {
 			totalPasses += 1;
 		}
 
-		destroyHashTable(hashTable);  // Tears it doesn
+		destroyHashTable(hashTable);  // Tears it down
 	}
 
 	destroyState(s1);
 	destroyState(s2);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+int compareInts(const void *a, const void *b) {
+	const int *aVal = (const int *)a;
+	const int *bVal = (const int *)b;
+
+	return (*aVal)-(*bVal);
 }
