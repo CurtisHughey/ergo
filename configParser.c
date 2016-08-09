@@ -111,7 +111,7 @@ int updateConfig(Config *config, char *variableName, int value) {
 		}
 		config->hashBuckets = value;
 		return 0;
-	} else if (!strcmp(variableName, "resign")) {
+	} else if (!strcmp(variableName, "respect")) {
 		if (value > 100) {
 			ERROR_PRINT("Number of hash buckets must be less than or equal to 100, got: %d", value);
 			return 1;

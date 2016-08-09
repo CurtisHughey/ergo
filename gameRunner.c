@@ -86,7 +86,7 @@ void runHumanVsComputer(Config *config) {
 
 				// Checks if resignation, otherwise it makes the move
 				if (move == MOVE_RESIGN) {
-					status = 1;
+					status = 1;  // This is kind of wrong, technically we also need to record the loss ^^^
 					break;
 				}	
 				status = state->blackPassed && move == MOVE_PASS;

@@ -258,14 +258,13 @@ UctNode *bestChild(UctNode *v, double c, int respect, int atRoot) {
 	}
 }
 
-// Not sure I'm handling this correctly with negatives ^^^
 double calcReward(UctNode *parent, UctNode *child, double c) {
 	double reward = 0;
 	if (child->visitCount > 0) {  // I.e. if visited.
 		reward = (double)child->reward/child->visitCount 
 					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
 	} else {
-		reward = INT_MIN;
+		reward = INT_MIN;  // This is arguably bad (maybe we need to require that the vistcount is greater than 0)
 	}
 	return reward;
 }
