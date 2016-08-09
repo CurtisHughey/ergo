@@ -308,6 +308,8 @@ double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, p
 	return reward;
 }
 
+
+// Maybe rename to rollout ^^^
 double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 	int color = state->turn;
 	int prevNumMoves = 0;  // Maybe we could guess based on how many moves have happened
@@ -317,7 +319,7 @@ double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 			int blackPassed = state->blackPassed;
 
 			int randomMove = -2;
-			if (prevNumMoves < 5) {  // Magically hardcoded ^^^, need to adjust for board size.  This is forgiveness prediction.  Also handles initial prevNumMoves=0
+			if (0) {  // Honestly, I'm not sure this is ever worth it
 				Moves *moves = getMoves(state, NULL);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
 				int randomIndex = rand() % moves->count;
 				randomMove = moves->array[randomIndex];

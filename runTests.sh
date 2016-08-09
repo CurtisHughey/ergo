@@ -95,7 +95,7 @@ echo "5x5 Parallel Wins"
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 1000" >> $tempConfig
 echo "superko 0" >> $tempConfig  # Turn off superko for these tests
-echo "threads 2" >> $tempConfig
+echo "threads 2" >> $tempConfig  # Multi threads
 
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]

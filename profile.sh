@@ -11,12 +11,13 @@ fi
 
 echo "rollouts 1000" >> $tempConfig  # Not too much
 echo "superko 1" >> $tempConfig
+echo "threads 1" >> $tempConfig  # Callgrind melts down if we're multithreaded :(
 
 valgrind --tool=callgrind ./ergo -x -C $tempConfig &>/dev/null
 
 callgrindFile="$(ls -t callgrind* | head -1)"  # Gets most recent
 
-kcachegrind $callgrindFile  # Opens it
+kcachegrind $callgrindFile &>/dev/null  # Opens it
 
 rm $tempConfig
 rm $callgrindFile  # I guess?  Maybe give option to save in a separate directory

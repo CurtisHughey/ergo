@@ -58,9 +58,14 @@ Command line arguments will override the value given in a configuration file, if
 ---
 
 To run performance tests (basically, times a UCT iteration):
-  > ./runPerfTests
+  > ./runPerfTests.sh
   
 Passing in a -s flag will save the average runtime to perf/performance.txt.  You can view a graph of performance over the commits at perf/performance.png.
+
+---
+
+To profile the program with callgrind, and see it on kcachegrind:
+  > ./profile.sh
 
 ---
 
