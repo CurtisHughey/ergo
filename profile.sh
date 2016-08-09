@@ -2,7 +2,7 @@
 
 tempConfig="configs/tempConfig.txt"
 
-./build.sh -v -d 3 &>/dev/null  # -v so it can be tracked on valgrind, 3x3 so it's fast
+./build.sh -v -d 3 -n &>/dev/null  # -v so it can be tracked on valgrind, 3x3 so it's fast, -n for no optimization
 if [[ $? -ne 0 ]]
 then
 	echo "Failed to compile"

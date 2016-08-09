@@ -4,6 +4,7 @@
 
 dim=19  # The default dimension
 valgrind="VALGRIND="  # Nothing by default
+optlevel="OPTLEVEL=-O3"  # By default, the highest
 
 while [[ $# -gt 0 ]]
 do
@@ -35,6 +36,9 @@ do
 	    -v)
 			valgrind="VALGRIND=-g"
 		    ;;
+		-n)   # No optimization (used in profiling)
+			optlevel="OPTLEVEL="
+			;;
 	    *)
 	    	echo "ERROR: Unknown command line option: $1, exiting"
 	    	exit
@@ -48,7 +52,7 @@ make clean
 echo ""
 echo "COMPILING"
 echo "Board dimension: $dim"
-make DIM=-DBOARD_DIM=$dim $valgrind
+make DIM=-DBOARD_DIM=$dim $valgrind $optlevel
 if [ $? -eq 0 ]
 then 
 	echo ""
