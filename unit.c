@@ -571,7 +571,7 @@ TestResult runStateGetMovesTests(void) {
 				}
 
 				totalTests += 1;
-				free(moves);
+				destroyMoves(moves);
 				free(initialFile);
 				free(movesFile);
 				destroyState(initialState);

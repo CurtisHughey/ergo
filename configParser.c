@@ -15,6 +15,7 @@ Config *getDefaultConfig(void) {
 	config->superko = 1;  // By default, we don't allow superko
 	config->hashBuckets = 1000;  // Meh, maybe.  Definitely a tradeoff of memory/speed
 	config->respect = -1;  // By default, will never resign (otherwise, give number 0-100, with higher meaning less likely to resign (see bestChild in uct.h))
+	config->raveV = 0;  // RAVE constant, 0 means no rave, positive means rave
 
 	return config;
 }
@@ -113,10 +114,17 @@ int updateConfig(Config *config, char *variableName, int value) {
 		return 0;
 	} else if (!strcmp(variableName, "respect")) {
 		if (value > 100) {
-			ERROR_PRINT("Number of hash buckets must be less than or equal to 100, got: %d", value);
+			ERROR_PRINT("Respect must be less than or equal to 100, got: %d", value);
 			return 1;
 		}
 		config->respect = value;
+		return 0;
+	} else if (!strcmp(variableName, "raveV")) {
+		if (value < 0) {
+			ERROR_PRINT("RAVE constant must be non-negative, got: %d", value);
+			return 1;
+		}
+		config->raveV = value;
 		return 0;
 	} else {
 		ERROR_PRINT("Unknown variable name: %s", variableName);

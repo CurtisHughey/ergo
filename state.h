@@ -16,8 +16,9 @@ typedef struct {
 
 // The array of valid moves
 typedef struct {
-	int array[BOARD_SIZE+1];  // +1 for MOVE_PASS
-	int count;
+	int *array;
+	int count;  // The current number
+	int size;   // THe number allocated
 } Moves;
 
 // THe info needed to undo a move
@@ -84,6 +85,9 @@ void makeMoveAndSave(State *state, int move, UnmakeMoveInfo *unmakeMoveInfo, Has
 
 // Makes move according to the given state, returns info needed to undo move
 void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTable);
+
+// Creates an empty Moves pointer
+Moves *createMoves(void);
 
 // Returns all valid moves (pretty trivial, actually)
 // Pass move is always stored last (as -1)

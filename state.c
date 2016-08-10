@@ -382,26 +382,41 @@ void unmakeMove(State *state, UnmakeMoveInfo *unmakeMoveInfo, HashTable *hashTab
 	return;
 }
 
+// We created this function in case we wanna make the array on the heap instead of the stack
+Moves *createMoves(void) {
+	Moves *moves = malloc(sizeof(Moves));
+	moves->size = BOARD_SIZE/2;  // Kind of magic, guess for the number of moves.  May have to realloc
+	moves->array = calloc(moves->size, sizeof(int));
+	moves->count = 0;  // Nothing added yet
+
+	return moves;	
+}
+
 // Should optimize, right now it's O(n^2) calling isLegalMove every time could be rough
 // Should keep track of how many liberties each stone is directly and indirectly connected to. edit: (hmm, maybe)
 Moves *getMoves(State *state, HashTable *hashTable) {
-	Moves *moves = malloc(sizeof(Moves));
-	int count = 0;
+	Moves *moves = createMoves();
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		if (isLegalMove(state, i, hashTable)) {  // This is another linear op
-			moves->array[count++] = i;
+			moves->array[moves->count++] = i;
+			
+			if (moves->count == moves->size-1) {  // Then need to realloc.  -1 to allow the MOVE_PASS to always be successfully added
+				moves->size *= 2;  // Doubles it
+				moves->array = realloc(moves->array, moves->size*sizeof(int));
+			}
 		}
 	}
 
-	moves->array[count++] = MOVE_PASS;  // Passing, always legal
-
-	moves->count = count;
+	moves->array[moves->count++] = MOVE_PASS;  // Passing, always legal
 
 	return moves;
 }
 
 void destroyMoves(Moves *moves) {
+	free(moves->array);
+	moves->array = NULL;
+
 	free(moves);
 	moves = NULL;
 }

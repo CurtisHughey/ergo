@@ -162,8 +162,7 @@ int runComputerVsRandom(Config *config) {
 				Moves *moves = getMoves(state, hashTable);
 				move = moves->array[rand() % moves->count];
 				
-				free(moves);
-				moves = NULL;
+				destroyMoves(moves);
 			}
 
 			status = state->blackPassed && move == MOVE_PASS;

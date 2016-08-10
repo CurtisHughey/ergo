@@ -24,6 +24,11 @@
 
 #define ESTIMATED_DEPTH 16
 
+typedef struct {
+	double reward;  // The reward to backpropagate to all the moves
+	Moves *moves;    // The moves that the reward must get backpropagated.  NULL if no AMAF
+} RewardData;
+
 typedef struct UctNode {
 	int action;  // The move
 	double reward;  // Maybe just float...  This is sort of a misnomer, should be like expected value
@@ -40,10 +45,11 @@ typedef struct {
 	State *state;  // Current state
 	int lengthOfGame;  // Max number of iterations in case we don't have a double pass
 	UctNode *v;  // Current UCT node;
+	int raveV;   // RAVE constant, 0 if no AMAF/RAVE
 	int tid;  // Unique identifier, for debugging
 	volatile int shouldProcess;  // If non-zero, means the worker thread can work on it
 	volatile int workerFinished;  // Means that the worker has set the reward and is finished
-	double reward;  // This is what gets output by the worker thread.
+	RewardData *rewardData;  // This is what gets output by the worker thread.
 	volatile int shouldDie;  // Non zero if the worker thread should kill itself
 } DefaultPolicyWorkerInput;
 
@@ -85,10 +91,13 @@ double calcReward(UctNode *parent, UctNode *child, double c);
 
 // Simulates rest of game, for lengthOfGame moves
 // numThreads specifies number of worker threads.  If 1, then it won't make another thread
-double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads);
+// If raveV is greater than 0, AMAF/RAVE is used
+// Also calls rewardBackup at the end
+void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads, int raveV);
 
 // Simulates the rest of game (the original defaultPolicy in the paper.  Either called serially or in parallel)
-double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v);
+// If raveV != 0, then RewardData will contain the moves in the rollout for RAVE calculation
+RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, int raveV);
 
 // Single worker for defaultPolicy.  args will be cast to DefaulPolicyWorkerInput
 // It is the responsibility of the caller to free args
@@ -96,5 +105,14 @@ void *defaultPolicyWorker(void *args);
 
 // Propagates new score back to root
 void backupNegamax(UctNode *v, double reward, int threads);
+
+// calls backupNegamax on all the moves in amafData
+void rewardBackup(UctNode *v, RewardData *rewardData);
+
+// Creates reward data
+RewardData *createRewardData(void);  // Note that createRewardData only requires your left hand to type!
+
+// Destroys AMAF data
+void destroyRewardData(RewardData *rewardData);
 
 #endif

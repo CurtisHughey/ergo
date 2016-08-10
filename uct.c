@@ -85,6 +85,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	int lengthOfGame = config->lengthOfGame;
 	int threads = config->threads;
 	int respect = config->respect;
+	int raveV = config->raveV;
 
 	assert(threads >= 1);  // Making this check again
 	int numIterations = rollouts/threads;
@@ -109,6 +110,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 		}	
 	}
 
+	// The meat of the algorithm, for each rollout finds the best node to explore, simulates the game, and then propagates it back to the root
 	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
 	for (int i = 0; i <= numIterations; i++) {  // <= to make sure we get at least one iteration, in case rollouts<threads (unlikely)
@@ -121,11 +123,12 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 			v = treePolicyNoHashing(copy, root);
 		}
 
-		double reward = defaultPolicy(rootTurn, copy, v, lengthOfGame, workers, dpwis, threads);
-		backupNegamax(v, reward, threads);  // threads needs to get passed so the visit count can be properly updated
+		defaultPolicyAndBackup(rootTurn, copy, v, lengthOfGame, workers, dpwis, threads, raveV);
+
 		destroyState(copy);
 	}
 
+	// Finally extracts the best move
 	UctNode *bestNode = bestChild(root, 0, respect, 1);  // 1 because we intend to make the move on the user end
 	int move = bestNode == NULL ? MOVE_RESIGN : bestNode->action;  // Resigns if bestNode is NULL
 
@@ -272,13 +275,13 @@ double calcReward(UctNode *parent, UctNode *child, double c) {
 // Simulates rest of game, for lengthOfGame moves
 // state will (probably) be mutated, you should save if you want it later
 // For this, we do NOT care about superko ^^^
-double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads) {
+void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOfGame, pthread_t *workers, DefaultPolicyWorkerInput **dpwis, int threads, int raveV) {
 	assert(threads >= 1);  // Otherwise, this is bad
 
-	double reward = 0;
-
 	if (threads == 1) {  // Then no need to do pthread stuff
-		reward = simulate(rootTurn, state, lengthOfGame, v);
+		RewardData *rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV);
+		rewardBackup(v, rewardData);  // Backs up on all the moves in rewardData->moves (NULL if no AMAF)
+		destroyRewardData(rewardData);  // rewardData->moves = NULL if no RAVE
 	} else {  // Then we need to pass info to the worker threads
 		for (int i = 0; i < threads; i++) {
 			// Set up input
@@ -286,6 +289,7 @@ double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, p
 			dpwis[i]->state = copyState(state);
 			dpwis[i]->lengthOfGame = lengthOfGame;
 			dpwis[i]->v = v;
+			dpwis[i]->raveV = raveV;
 
 			// Indicate that the threads can process
 			dpwis[i]->shouldProcess = 1;
@@ -299,48 +303,44 @@ double defaultPolicy(int rootTurn, State *state, UctNode *v, int lengthOfGame, p
 			}
 			dpwis[i]->workerFinished = 0;  // For next time
 
-			reward += dpwis[i]->reward;
+			RewardData *workerRewardData = dpwis[i]->rewardData;  // The data that the worker produced
 
+			rewardBackup(v, workerRewardData);  // Will call backupNegamax on v and all the distinct moves in workerRewardData
+
+			destroyRewardData(workerRewardData);
 			destroyState(dpwis[i]->state);  // This was a copy
 		}	
 	}
-
-	return reward;
 }
 
 
 // Maybe rename to rollout ^^^
-double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
+RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, int raveV) {
 	int color = state->turn;
-	int prevNumMoves = 0;  // Maybe we could guess based on how many moves have happened
+
+	RewardData *rewardData = createRewardData();
+	Moves *moves = rewardData->moves;  // Just to save some typing later
 
 	if (!v->terminal) {
 		for (int i = 0; i < lengthOfGame; i++) {  // At some point, this is going to have to be dynamic
 			int blackPassed = state->blackPassed;
 
-			int randomMove = -2;
-			if (0) {  // Honestly, I'm not sure this is ever worth it
-				Moves *moves = getMoves(state, NULL);  // It sucks that I have to keep calling getMoves, maybe there's a way to speed it up by passing in moves? ^^^
-				int randomIndex = rand() % moves->count;
-				randomMove = moves->array[randomIndex];
-				makeMove(state, randomMove, NULL);
-				prevNumMoves = moves->count;
-				destroyMoves(moves);
-			}
-			else {  // Better to do it first and ask forgiveness later.
-				int counter = 0;
-				do {
-					randomMove = rand() % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel
-					if (randomMove == BOARD_SIZE) {  // This represented a pass
-						randomMove = MOVE_PASS;
-					}
-					counter += 1;
-				} while (!isLegalMove(state, randomMove, NULL));  // Worth giving up at some time? ^^^
+			int randomMove = -3;  // Initializing to something bad
+			// Now keeps guessing until finds legal move.  Might be bad...
+			do {
+				randomMove = rand() % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel
+				if (randomMove == BOARD_SIZE) {  // This represented a pass
+					randomMove = MOVE_PASS;
+				}
+			} while (!isLegalMove(state, randomMove, NULL));  // Worth giving up at some time? ^^^
 
-				makeMove(state, randomMove, NULL);
-				prevNumMoves = BOARD_SIZE/counter;  // Its best guess
-				if (prevNumMoves < 0) {
-					prevNumMoves = 1;  // You can always pass.  Not really necessary to do this check
+			makeMove(state, randomMove, NULL);
+
+			if (raveV != 0) {  // Means we're doing RAVE
+				moves->array[moves->count++] = randomMove;  // Adds it
+				if (moves->count >= moves->size) {
+					moves->size *= 2;
+					moves = realloc(moves, moves->size*sizeof(int));
 				}
 			}
 
@@ -350,6 +350,8 @@ double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 			}
 		}
 	}
+
+	rewardData->moves = moves;
 	
 	Score scores = calcScores(state);
 	
@@ -371,7 +373,9 @@ double simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v) {
 		reward = -1*reward;  // To work with negamax, needs to reverse if there would be an uneven amount of *-1 applied in the backup function
 	}
 
-	return reward;	
+	rewardData->reward = reward;
+
+	return rewardData;	
 }
 
 void *defaultPolicyWorker(void *args) {
@@ -382,8 +386,9 @@ void *defaultPolicyWorker(void *args) {
 			State *state = dpwi->state;
 			int lengthOfGame = dpwi->lengthOfGame;
 			UctNode *v = dpwi->v;
+			int raveV = dpwi->raveV;
 
-			dpwi->reward = simulate(rootTurn, state, lengthOfGame, v);
+			dpwi->rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV);
 
 			dpwi->shouldProcess = 0;  // Must wait for the caller to set this
 			dpwi->workerFinished = 1;  // Worker finished, caller can now give another dpwi
@@ -403,4 +408,51 @@ void backupNegamax(UctNode *v, double reward, int threads) {
 		reward = -1*reward;
 		v = v->parent;
 	}
+}
+
+// Backs up, single thread, all the moves in amafData
+void rewardBackup(UctNode *v, RewardData *rewardData) {
+	if (rewardData->moves != NULL) {  // Doing RAVE!  Now needs to search through UCT nodes and update them appropriately
+		UctNode *parent = v->parent;  // Needs to look through all the parent's children
+
+		// Note that we ignore MOVE_PASS
+		int pointRecorded[BOARD_SIZE] = {0};  // Makes sure we don't back propagate multiple times
+
+		if (v->action != MOVE_PASS) {
+			pointRecorded[v->action] = 1;  // This is taken care of at the end of the function
+		}
+
+		for (int i = 0; i < rewardData->moves->count; i++) {
+			int move = rewardData->moves->array[i];
+			if (move != MOVE_PASS && !pointRecorded[move]) {  // Then not recorded, and need to find UCT node
+				// Actually, could probably do a binary search? ^^^
+				for (int j = 0; j < parent->childrenCount; j++) {
+					if (move == parent->children[j]->action) {  // Then we found our UCT node!
+						backupNegamax(parent->children[j], rewardData->reward, 1);  // Assuming only one thread
+						break;
+					}
+				}  // Maybe should make sure we found it? ^^^
+				pointRecorded[move] = 1;  // Ignore if we see it another time
+			}
+		}
+	}
+
+	backupNegamax(v, rewardData->reward, 1);
+}
+
+RewardData *createRewardData(void) {
+	RewardData *rewardData = malloc(sizeof(RewardData));
+	rewardData->moves = createMoves();
+	rewardData->reward = 0;  // Nothing yet
+
+	return rewardData;
+}
+
+void destroyRewardData(RewardData *rewardData) {
+	if (rewardData->moves != NULL) {  // NULL if not using RAVE/AMAF
+		destroyMoves(rewardData->moves);
+	}
+
+	free(rewardData);
+	rewardData = NULL;
 }

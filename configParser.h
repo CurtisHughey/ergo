@@ -11,8 +11,9 @@
 #define MAX_VAR 128
 
 // All options to run the program
+// See configParser.c for explanation of each variable
 typedef struct {
-	int komiTimes10;   // E.g. komiTimes10=75 means komi of 7.5
+	int komiTimes10;
 	int rollouts;
 	int threads;
 	int testGames;
@@ -22,6 +23,7 @@ typedef struct {
 	int superko;
 	int hashBuckets;
 	int respect;
+	int raveV;
 } Config;
 
 // Default configurations

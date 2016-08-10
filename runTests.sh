@@ -50,7 +50,7 @@ echo "--------------------------------------------------------------------------
 echo "--------------------"
 echo "MCTS Correctness Tests"
 
-echo "5x5 wins"
+echo "5x5 Serial Wins"
 ./build.sh -d 5 &>/dev/null  # Bigger for more variation
 
 # Now need to give custom configurations
