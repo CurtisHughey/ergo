@@ -1,5 +1,4 @@
-rollouts 10
+rollouts 20000  # Increase ^^^
 threads 1
-lengthOfGame 350
-superko 0
+superko 0  # Ignored since we're loading positions, i guess
 hashBuckets 1000

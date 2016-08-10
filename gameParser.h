@@ -13,8 +13,8 @@
 // Returns NULL if incorrectly formatted
 State *parseState(char *fileName);
 
-// Writes state to file.  Inverse of parseState
-void serializeState(State *state, char *fileName);
+// Writes state to file.  Inverse of parseState if append==0.  If append==1, then the game is added to end of file
+void serializeState(State *state, char *fileName, int append);
 
 // Parses a move from a file
 int parseMoveFromFile(char *fileName);

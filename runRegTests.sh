@@ -25,6 +25,6 @@ do
 	mv "$htmlFile" "results/$htmlFile"
 done
 
-mv "summary.dat" "results/$summary.dat"
+mv "summary.dat" "results/summary.dat"
 
 cd ..

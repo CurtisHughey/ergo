@@ -90,8 +90,14 @@ State *parseState(char *fileName) {
 	return state;
 }
 
-void serializeState(State *state, char *fileName) {
-	FILE *fp = fopen(fileName, "w");
+void serializeState(State *state, char *fileName, int append) {
+	FILE *fp = NULL;
+	if (append) {
+		fp = fopen(fileName, "a");
+		fprintf(fp, "------------------------------\n");
+	} else {
+		fp = fopen(fileName, "w");
+	}
 
 	if (fp == NULL) {
 		ERROR_PRINT("Couldn't find file: %s", fileName);

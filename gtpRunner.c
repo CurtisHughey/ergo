@@ -147,7 +147,6 @@ int runGtp(Config *config) {
 			// No output
 		} else if (!strcmp(command, "play")) {
 			// Color
-
 			char *colorString = strtok(NULL, whitespace);
 			if (colorString == NULL) {
 				sprintf(errorMessage, "syntax error, color not specified");
@@ -179,13 +178,15 @@ int runGtp(Config *config) {
 				goto ERROR;
 			}
 
+			int prevColor = state->turn;
+			state->turn = color;  // Potentially changes the color (usually if setting up board)
 			if (!isLegalMove(state, move, hashTable)) {  // Not sure how much we insist it's an illegal move if superko is involved, might be better to just defer ^^^
 				sprintf(errorMessage, "illegal move");
+				state->turn = prevColor;  // Resets
 				goto ERROR;
 			}
 			////////////////
 
-			state->turn = color;  // Potentially changes it (I guess if we were setting up positions).  This is done at the end in case there were prior errors
 			makeMove(state, move, hashTable);  // At some stage, will want to be able to unmake
 			// No output
 		} else if (!strcmp(command, "genmove")) {
@@ -203,7 +204,7 @@ int runGtp(Config *config) {
 			}
 
 			compColor = color;  // Used for scoring			
-			state->turn = color;
+			state->turn = color;  // Might change, if loading position
 
 			int move = uctSearch(state, config, hashTable);
 			if (move != MOVE_RESIGN) {
