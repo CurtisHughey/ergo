@@ -9,6 +9,9 @@ UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	root->visitCount = 0;
 	root->terminal = 0;  // Should never be terminal itself
 	root->parent = NULL;  // No parent
+
+	root->amafVisits = 0;
+	root->amafReward = 0;
 	
 	Moves *moves = getMoves(state, hashTable);  // If hashTable is NULL, getMoves will ignore
 	setChildren(root, moves, state);
@@ -62,6 +65,9 @@ void setChildren(UctNode *parent, Moves *moves, State *state) {  // Switch order
 		children[i]->childrenCount = 0;
 		children[i]->childrenVisited = 0;
 		children[i]->parent = parent;
+
+		children[i]->amafVisits = 0;
+		children[i]->amafReward = 0;
 	}
 	parent->children = children;
 	parent->childrenCount = moves->count;
@@ -118,9 +124,9 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 
 		UctNode *v = NULL;
 		if (hashTable != NULL) {
-			v = treePolicy(copy, root, hashTable);
+			v = treePolicy(copy, root, hashTable, raveV);
 		} else {
-			v = treePolicyNoHashing(copy, root);
+			v = treePolicyNoHashing(copy, root, raveV);
 		}
 
 		defaultPolicyAndBackup(rootTurn, copy, v, lengthOfGame, workers, dpwis, threads, raveV);
@@ -129,7 +135,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	}
 
 	// Finally extracts the best move
-	UctNode *bestNode = bestChild(root, 0, respect, 1);  // 1 because we intend to make the move on the user end
+	UctNode *bestNode = bestChild(root, 0, respect, raveV, 1);  // 1 because we intend to make the move on the user end
 	int move = bestNode == NULL ? MOVE_RESIGN : bestNode->action;  // Resigns if bestNode is NULL
 
 	// End the threads, if they exist
@@ -157,7 +163,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	return move;
 }
 
-UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
+UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable, int raveV) {
 	assert(hashTable != NULL);  // Good check to have, I guess
 
 	HASHVALUETYPE *hashValues = calloc(ESTIMATED_DEPTH, sizeof(HASHVALUETYPE));  // These are the hash values we'll need to delete
@@ -171,7 +177,7 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 			hashValues[index++] = zobristHash(state);
 			break;
 		} else {
-			v = bestChild(v, UCT_CONSTANT, -1, 0);  // -1 for never resigning, 0 because we don't intend to return this to user
+			v = bestChild(v, UCT_CONSTANT, -1, raveV, 0);  // -1 for never resigning, 0 because we don't intend to return this to user
 			makeMove(state, v->action, hashTable);
 			hashValues[index++] = zobristHash(state);
 		}
@@ -193,14 +199,14 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable) {
 }
 
 
-UctNode *treePolicyNoHashing(State *state, UctNode *v) {
+UctNode *treePolicyNoHashing(State *state, UctNode *v, int raveV) {
 	while (!v->terminal) {  // Will stop when it finds a terminal node
 		if (v->childrenVisited < v->childrenCount) {  // I.e. not fully expanded
 			v = expand(state, v, NULL);
 			makeMove(state, v->action, NULL);
 			break;
 		} else {
-			v = bestChild(v, UCT_CONSTANT, -1, 0);  // -1 for never resigning
+			v = bestChild(v, UCT_CONSTANT, -1, raveV, 0);  // -1 for never resigning
 			makeMove(state, v->action, NULL);
 		}
 	}
@@ -236,12 +242,12 @@ UctNode *expand(State *state, UctNode *v, HashTable *hashTable) {
 }
 
 // Returns the best child by the UCB1 algorithm
-UctNode *bestChild(UctNode *v, double c, int respect, int atRoot) {
+UctNode *bestChild(UctNode *v, double c, int respect, int raveV, int atRoot) {
 	double bestReward = INT_MIN;
 	int bestChildIndex = 0;  // There is always at least 1 child, so this will be filled
 	for (int i = 0; i < v->childrenCount; i++) {
 		UctNode *child = v->children[i];
-		double reward = calcReward(v, child, c);
+		double reward = calcReward(v, child, c, raveV);
 		if (reward > bestReward) {
 			bestReward = reward;
 			bestChildIndex = i;
@@ -261,15 +267,32 @@ UctNode *bestChild(UctNode *v, double c, int respect, int atRoot) {
 	}
 }
 
-double calcReward(UctNode *parent, UctNode *child, double c) {
-	double reward = 0;
+double calcReward(UctNode *parent, UctNode *child, double c, int raveV) {
+	double totalReward = 0;
+
+	// First calculates uctReward
+	double uctScore = 0;
 	if (child->visitCount > 0) {  // I.e. if visited.
-		reward = (double)child->reward/child->visitCount 
+		uctScore = (double)child->reward/child->visitCount 
 					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
 	} else {
-		reward = INT_MIN;  // This is arguably bad (maybe we need to require that the vistcount is greater than 0)
+		uctScore = INT_MIN;  // This is arguably bad (maybe we need to require that the vistcount is greater than 0)
 	}
-	return reward;
+
+	if (raveV != 0) {  // Then need to calculate AMAF/RAVE reward
+		double alpha = ((double)(raveV - child->visitCount)) / raveV;  // I believe this is correct or should it be child->amafVists? ^^^
+		if (alpha < 0) {
+			alpha = 0;
+		}
+
+		double amafScore = child->amafReward/child->amafVisits;
+
+		totalReward = alpha*amafScore + (1-alpha)*uctScore;
+	} else {
+		totalReward = uctScore;  // No AMAF/RAVE
+	}
+
+	return totalReward;
 }
 
 // Simulates rest of game, for lengthOfGame moves
@@ -340,7 +363,7 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 				moves->array[moves->count++] = randomMove;  // Adds it
 				if (moves->count >= moves->size) {
 					moves->size *= 2;
-					moves = realloc(moves, moves->size*sizeof(int));
+					moves->array = realloc(moves->array, moves->size*sizeof(int));
 				}
 			}
 
@@ -351,7 +374,7 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 		}
 	}
 
-	rewardData->moves = moves;
+	rewardData->moves = moves;  // Need to reassign because of potential reallocs
 	
 	Score scores = calcScores(state);
 	
@@ -400,11 +423,21 @@ void *defaultPolicyWorker(void *args) {
 	return NULL;  // Maybe could return stats?
 }
 
-// Propagates new score back to root
-void backupNegamax(UctNode *v, double reward, int threads) {
+// Propagates new UCT score back to root
+void backupNegamaxUCT(UctNode *v, double reward, int threads) {
 	while (v != NULL) {
 		v->visitCount += threads;
 		v->reward += reward;
+		reward = -1*reward;
+		v = v->parent;
+	}
+}
+
+// Propagates new AMAF score back to root
+void backupNegamaxAMAF(UctNode *v, double reward, int threads) {
+	while (v != NULL) {
+		v->amafVisits += threads;
+		v->amafReward += reward;
 		reward = -1*reward;
 		v = v->parent;
 	}
@@ -427,8 +460,10 @@ void rewardBackup(UctNode *v, RewardData *rewardData) {
 			if (move != MOVE_PASS && !pointRecorded[move]) {  // Then not recorded, and need to find UCT node
 				// Actually, could probably do a binary search? ^^^
 				for (int j = 0; j < parent->childrenCount; j++) {
-					if (move == parent->children[j]->action) {  // Then we found our UCT node!
-						backupNegamax(parent->children[j], rewardData->reward, 1);  // Assuming only one thread
+					UctNode *uctNode = parent->children[j];
+					if (move == uctNode->action) {  // Then we found our UCT node!
+						// Need to update AMAF values
+						backupNegamaxAMAF(uctNode, rewardData->reward, 1);  // Assuming only one thread
 						break;
 					}
 				}  // Maybe should make sure we found it? ^^^
@@ -437,7 +472,7 @@ void rewardBackup(UctNode *v, RewardData *rewardData) {
 		}
 	}
 
-	backupNegamax(v, rewardData->reward, 1);
+	backupNegamaxUCT(v, rewardData->reward, 1);  // Update uct reward values
 }
 
 RewardData *createRewardData(void) {

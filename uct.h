@@ -38,6 +38,10 @@ typedef struct UctNode {
 	int childrenCount;
 	int childrenVisited;
 	struct UctNode *parent;
+
+	// AMAF data
+	int amafVisits;
+	double amafReward;
 } UctNode;
 
 typedef struct {
@@ -74,20 +78,20 @@ void destroyUctNode(UctNode *v);
 int uctSearch(State *state, Config *config, HashTable *hashTable);
 
 // Finds non-terminal node, with hashing
-UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable);
+UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable, int raveV);
 
 // Finds non-terminal node, no hashing
-UctNode *treePolicyNoHashing(State *state, UctNode *v);
+UctNode *treePolicyNoHashing(State *state, UctNode *v, int raveV);
 
 // Creates new child node
 UctNode *expand(State *state, UctNode *v, HashTable *hashTable);
 
 // Returns the best child by the UCB1 algorithm.  c is the constant defined in the paper (either C_p or 0)
 // if respect == -1, resign will never be returned.  If atRoot == 1 (meaning we intend to return a move to the user) the reward*100 <= respect (0<=reward<=1.0 by definition), then NULL will be returned, meaning it should resign
-UctNode *bestChild(UctNode *v, double c, int respect, int atRoot);
+UctNode *bestChild(UctNode *v, double c, int respect, int raveV, int atRoot);
 
 // Calculates the reward by the UCT algorithm
-double calcReward(UctNode *parent, UctNode *child, double c);
+double calcReward(UctNode *parent, UctNode *child, double c, int raveV);
 
 // Simulates rest of game, for lengthOfGame moves
 // numThreads specifies number of worker threads.  If 1, then it won't make another thread
@@ -103,10 +107,13 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 // It is the responsibility of the caller to free args
 void *defaultPolicyWorker(void *args);
 
-// Propagates new score back to root
-void backupNegamax(UctNode *v, double reward, int threads);
+// Propagates new UCT score back to root
+void backupNegamaxUCT(UctNode *v, double reward, int threads);
 
-// calls backupNegamax on all the moves in amafData
+// Propagates new AMAF score back to root
+void backupNegamaxAMAF(UctNode *v, double reward, int threads);
+
+// calls backupNegamaxAMAF on all the moves in amafData
 void rewardBackup(UctNode *v, RewardData *rewardData);
 
 // Creates reward data
