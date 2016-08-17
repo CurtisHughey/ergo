@@ -4,3 +4,4 @@ lengthOfGame 350
 superko 1
 hashBuckets 1000
 respect 8
+raveV 20  # No idea

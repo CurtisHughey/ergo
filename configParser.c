@@ -53,83 +53,76 @@ Config *parseConfigFile(char *configFileName) {
 int updateConfig(Config *config, char *variableName, int value) {
 	// Huge long ugly if else chain.  Definitely could automatically generate
 	if (!strcmp(variableName, "komiTimes10")) {
-		// No bounds on komi (allowed to be negative).  Well, I guess you could exceed int bounds, but why?
+		if (value % 10 != 0 && value % 5 != 0) {
+			ERROR_PRINT("10*komi must end in a 5 or a 0, got: %d", value);
+			return 1;
+		}		
 		config->komiTimes10 = value;
-		return 0;
 	} else if (!strcmp(variableName, "rollouts")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of rollouts must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->rollouts = value;
-		return 0;
 	} else if (!strcmp(variableName, "threads")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of threads must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->threads = value;
-		return 0;
 	} else if (!strcmp(variableName, "testGames")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of tests must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->testGames = value;
-		return 0;
 	} else if (!strcmp(variableName, "trials")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of trials must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->trials = value;
-		return 0;
 	} else if (!strcmp(variableName, "warmupTrials")) {
 		if (value < 0) {
 			ERROR_PRINT("Number of warmup trials must be greater than or equal to 0, got: %d", value);
 			return 1;
 		}
 		config->warmupTrials = value;
-		return 0;
 	} else if (!strcmp(variableName, "lengthOfGame")) {
 		if (value < 1) {
 			ERROR_PRINT("Average length of game must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->lengthOfGame = value;
-		return 0;
 	} else if (!strcmp(variableName, "superko")) {
 		if (value != 1 && value != 0) {
 			ERROR_PRINT("Superko must be 1 to not allow it, otherwise 0, got: %d", value);
 			return 1;
 		}
 		config->superko = value;
-		return 0;
 	} else if (!strcmp(variableName, "hashBuckets")) {
 		if (value < 1) {
 			ERROR_PRINT("Number of hash buckets must be greater than 0, got: %d", value);
 			return 1;
 		}
 		config->hashBuckets = value;
-		return 0;
 	} else if (!strcmp(variableName, "respect")) {
 		if (value > 100) {
 			ERROR_PRINT("Respect must be less than or equal to 100, got: %d", value);
 			return 1;
 		}
 		config->respect = value;
-		return 0;
 	} else if (!strcmp(variableName, "raveV")) {
 		if (value < 0) {
 			ERROR_PRINT("RAVE constant must be non-negative, got: %d", value);
 			return 1;
 		}
 		config->raveV = value;
-		return 0;
 	} else {
 		ERROR_PRINT("Unknown variable name: %s", variableName);
 		return 1;
 	}
+	return 0;  // Successfully parsed
 }
 
 void destroyConfig(Config *config) {

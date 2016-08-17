@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 				break;
 			case 'k':
 				komiTimes10 = atoi(optarg);
-				if (komiTimes10 % 10 != 0 || komiTimes10 % 5 != 0) {
+				if (komiTimes10 % 10 != 0 && komiTimes10 % 5 != 0) {
 					ERROR_PRINT("You specified a 10*komi of %d, must end in 5 or 0.  Exiting.", komiTimes10);
 					return 1;
 				}
