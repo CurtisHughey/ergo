@@ -147,6 +147,7 @@ int main(int argc, char **argv) {
 	}
 
 	destroyConfig(config);
+	config = NULL;
 
 	return result;
 }

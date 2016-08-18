@@ -56,6 +56,7 @@ void initHashVals(char *fileName) {
 
 	free(inBuffer);
 	inBuffer = NULL;
+	
 	fclose(fp);
 }
 

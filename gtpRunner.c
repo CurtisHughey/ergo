@@ -271,7 +271,10 @@ int runGtp(Config *config) {
 
 		if (quit) {  // quitting early, whatever
 			destroyHashTable(hashTable);
+			hashTable = NULL;
 			destroyState(state);
+			state = NULL;
+			
 			fclose(fp);
 
 			if (finished) {

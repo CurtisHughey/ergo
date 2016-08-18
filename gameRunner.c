@@ -60,6 +60,7 @@ void runHumanVsHuman(Config *config) {
 	showResults(state);
 
 	destroyState(state);
+	state = NULL;
 }
 
 // Not really used much now
@@ -103,7 +104,9 @@ void runHumanVsComputer(Config *config) {
 	showResults(state);
 
 	destroyHashTable(hashTable);
+	hashTable = NULL;
 	destroyState(state);
+	state = NULL;
 }
 
 void runComputerVsComputer(Config *config) {
@@ -137,7 +140,9 @@ void runComputerVsComputer(Config *config) {
 	showResults(state);
 
 	destroyHashTable(hashTable);
-	destroyState(state);	
+	hashTable = NULL;
+	destroyState(state);
+	state = NULL;
 }
 
 // Rand must already be initialized
@@ -174,7 +179,9 @@ int runComputerVsRandom(Config *config) {
 	int result = getResult(state, color);
 
 	destroyHashTable(hashTable);
+	hashTable = NULL;
 	destroyState(state);
+	state = NULL;
 
 	return result;
 }
@@ -233,7 +240,9 @@ void runTrial(Config *config) {
 	makeMove(state, move, hashTable);
 
 	destroyHashTable(hashTable);
-	destroyState(state);	
+	hashTable = NULL;
+	destroyState(state);
+	state = NULL;
 }
 
 void timeTrials(Config *config) {

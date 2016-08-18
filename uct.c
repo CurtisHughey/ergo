@@ -15,7 +15,9 @@ UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	
 	Moves *moves = getMoves(state, hashTable);  // If hashTable is NULL, getMoves will ignore
 	setChildren(root, moves, state);
+	
 	destroyMoves(moves);
+	moves = NULL;
 
 	return root;
 }
@@ -49,7 +51,9 @@ void expandUctNode(State *state, UctNode *parent, HashTable *hashTable) {
 	}
 
 	setChildren(parent, moves, state);	
+
 	destroyMoves(moves);
+	moves = NULL;
 }
 
 void setChildren(UctNode *parent, Moves *moves, State *state) {  // Switch order of arguments at some point  ^^
@@ -78,6 +82,7 @@ void setChildren(UctNode *parent, Moves *moves, State *state) {  // Switch order
 void destroyUctNode(UctNode *v) {
 	for (int i = 0; i < v->childrenCount; i++) {
 		destroyUctNode(v->children[i]);
+		v->children[i] = NULL;
 	}
 	free(v->children);
 	v->children = NULL;
@@ -132,6 +137,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 		defaultPolicyAndBackup(rootTurn, copy, v, lengthOfGame, workers, dpwis, threads, raveV);
 
 		destroyState(copy);
+		copy = NULL;
 	}
 
 	// Finally extracts the best move
@@ -159,6 +165,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	}
 
 	destroyUctNode(root);
+	root = NULL;
 
 	return move;
 }
@@ -305,6 +312,7 @@ void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOf
 		RewardData *rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV);
 		rewardBackup(v, rewardData);  // Backs up on all the moves in rewardData->moves (NULL if no AMAF)
 		destroyRewardData(rewardData);  // rewardData->moves = NULL if no RAVE
+		rewardData = NULL;
 	} else {  // Then we need to pass info to the worker threads
 		for (int i = 0; i < threads; i++) {
 			// Set up input
@@ -331,7 +339,9 @@ void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOf
 			rewardBackup(v, workerRewardData);  // Will call backupNegamax on v and all the distinct moves in workerRewardData
 
 			destroyRewardData(workerRewardData);
+			workerRewardData = NULL;
 			destroyState(dpwis[i]->state);  // This was a copy
+			dpwis[i]->state = NULL;
 		}	
 	}
 }
@@ -486,6 +496,7 @@ RewardData *createRewardData(void) {
 void destroyRewardData(RewardData *rewardData) {
 	if (rewardData->moves != NULL) {  // NULL if not using RAVE/AMAF
 		destroyMoves(rewardData->moves);
+		rewardData->moves = NULL;
 	}
 
 	free(rewardData);

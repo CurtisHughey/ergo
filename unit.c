@@ -46,9 +46,6 @@ int runAllUnitTests(Config *config) {
 	result |= runTests("linkedList", listTests, NUM_LINKEDLIST_TESTS);
 	result |= runTests("hash", hashTests, NUM_HASHTABLE_TESTS);
 
-	HashTable *h = createHashTable(1000);
-	destroyHashTable(h);
-
 	if (!result) {
 		printf("ALL PASSED :)\n");
 	} else {
@@ -194,14 +191,16 @@ TestResult runStateGetNeighborsOfType(void) {
 
 				free(initialFile);
 				free(modFile);
+
 				destroyState(initialState);
+				initialState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for getNeighborsOfType");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -266,15 +265,18 @@ TestResult runStateFillWithTests(void) {
 				free(initialFile);
 				free(modFile);
 				free(expectedFile);
+				
 				destroyState(initialState);
+				initialState = NULL;
 				destroyState(expectedState);
+				expectedState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for fillWith");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }	
@@ -333,14 +335,16 @@ TestResult runStateGroupBordersTypeAndResetTests(void) {
 
 				free(initialFile);
 				free(modFile);
+
 				destroyState(initialState);
+				initialState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for groupBordersTypeAndReset");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -391,15 +395,18 @@ TestResult runStateMakeMoveTests(void) {
 				free(initialFile);
 				free(moveFile);
 				free(expectedFile);
+
 				destroyState(initialState);
+				initialState = NULL;
 				destroyState(expectedState);
+				expectedState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for makeMove");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -446,15 +453,18 @@ TestResult runStateMakeUnmakeTests(void) {
 				totalTests += 1;
 				free(initialFile);
 				free(moveFile);
+
 				destroyState(initialState);
-				destroyState(copy);
+				initialState = NULL;
+				destroyState(copyState);
+				copyState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for makeUnmakeMove");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -491,14 +501,19 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 				printf("\t\tMove: %d\n", moves->array[randIndex]);
 
 				destroyState(copy);
+				copy = NULL;
 				destroyMoves(moves);
+				moves = NULL;
 				passed = 0;
 				break;
 			} else {
 				makeMove(state, moves->array[randIndex], NULL);  // Now makes move for realsies
 			}
+
 			destroyState(copy);
+			copy = NULL;
 			destroyMoves(moves);
+			moves = NULL;
 		}
 		if (!passed) {
 			printf("\t\tFailure for test: %d\n", i);
@@ -508,6 +523,7 @@ TestResult runStateRandomMakeUnmakeTests(void) {
 		totalTests += 1;
 
 		destroyState(state);
+		state = NULL;
 	}
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
@@ -571,17 +587,22 @@ TestResult runStateGetMovesTests(void) {
 				}
 
 				totalTests += 1;
+
 				destroyMoves(moves);
+				moves = NULL;
+
 				free(initialFile);
 				free(movesFile);
+
 				destroyState(initialState);
+				initialState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for getMoves");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -637,14 +658,16 @@ TestResult runStateIsLegalMoveTests(void) {
 
 				free(initialFile);
 				free(moveFile);
+
 				destroyState(initialState);
+				initialState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for isLegalMove");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -703,14 +726,16 @@ TestResult runStateCalcScoresTests(void) {
 
 				free(initialFile);
 				free(scoreFile);
+
 				destroyState(initialState);
+				initialState = NULL;
 			}
 		}
 	} else {
 		ERROR_PRINT("Couldn't find directory for calcScores");;
 		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 	}
-	free(d);
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -1057,11 +1082,14 @@ TestResult runHashAddTests(void) {
 			totalPasses += 1;
 		}
 
-		destroyHashTable(hashTable);  // Tears it doesn
+		destroyHashTable(hashTable);  // Tears it down
+		hashTable = NULL;
 	}
 
 	destroyState(s1);
+	s1 = NULL;
 	destroyState(s2);
+	s2 = NULL;
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -1163,15 +1191,22 @@ TestResult runHashContainsTests(void) {
 			totalPasses += 1;
 		}
 
-		destroyHashTable(hashTable);  // Tears it doesn
+		destroyHashTable(hashTable);  // Tears it down
+		hashTable = NULL;
 	}
 
 	destroyState(s1);
+	s1 = NULL;
 	destroyState(s2);
+	s2 = NULL;
 	destroyState(s3);
+	s3 = NULL;
 	destroyState(s4);
+	s4 = NULL;
 	destroyState(s5);
+	s5 = NULL;
 	destroyState(s6);
+	s6 = NULL;
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -1236,11 +1271,14 @@ TestResult runHashDeleteTests(void) {
 			totalPasses += 1;
 		}
 
-		destroyHashTable(hashTable);  // Tears it doesn
+		destroyHashTable(hashTable);  // Tears it down
+		hashTable = NULL;
 	}
 
 	destroyState(s1);
+	s1 = NULL;
 	destroyState(s2);
+	s2 = NULL;
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
@@ -1309,10 +1347,13 @@ TestResult runHashSizeTests(void) {
 		}
 
 		destroyHashTable(hashTable);  // Tears it down
+		hashTable = NULL;
 	}
 
 	destroyState(s1);
+	s1 = NULL;
 	destroyState(s2);
+	s2 = NULL;
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }
