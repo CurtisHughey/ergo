@@ -14,7 +14,7 @@
 
 #define NUM_STATE_TESTS 10
 #define NUM_LINKEDLIST_TESTS 4
-#define NUM_HASHTABLE_TESTS 4
+#define NUM_HASHTABLE_TESTS 5
 
 #define RANDOMGAMEITERATIONS 10
 
@@ -76,6 +76,7 @@ TestResult runHashDeleteTests(void);
 
 TestResult runHashSizeTests(void);
 
+TestResult runHashGeneralTests(void);
 
 //////////
 // Utility functions

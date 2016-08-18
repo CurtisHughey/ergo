@@ -40,6 +40,7 @@ int runAllUnitTests(Config *config) {
 									&runHashContainsTests,
 									&runHashDeleteTests,
 									&runHashSizeTests,
+									&runHashGeneralTests,
 								};
 
 	result |= runTests("state", stateTests, NUM_STATE_TESTS);  // Using | in anticipation of more tests, 0 means success
@@ -456,8 +457,8 @@ TestResult runStateMakeUnmakeTests(void) {
 
 				destroyState(initialState);
 				initialState = NULL;
-				destroyState(copyState);
-				copyState = NULL;
+				destroyState(copy);
+				copy = NULL;
 			}
 		}
 	} else {
@@ -1354,6 +1355,80 @@ TestResult runHashSizeTests(void) {
 	s1 = NULL;
 	destroyState(s2);
 	s2 = NULL;
+
+	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
+}
+
+TestResult runHashGeneralTests(void) {
+	printf("\t\thashGeneral Tests: \n");
+
+	int totalPasses = 0;
+	int totalTests = 0;
+
+	char filePath[] = "./test/hash/hashGeneral/"; 
+
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(filePath);
+	if (d) {
+		while ((dir = readdir(d)) != NULL) {
+			if (dir->d_name[0] == 'i') {  
+				char *initialFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(initialFile, filePath, strlen(filePath));
+				strncpy(initialFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+
+				char *movesFile = calloc(strlen(dir->d_name)+strlen(filePath)+1, sizeof(char));
+				strncpy(movesFile, filePath, strlen(filePath));
+				strncpy(movesFile+strlen(filePath), dir->d_name, strlen(dir->d_name)+1);
+				movesFile[strlen(filePath)] = 'm';  // Makes it the move one
+
+				State* initialState = parseState(initialFile);
+				HashTable *hashTable = createHashTable(1);  // Arbitrary bucket number, doesn't really matter ish
+				addToHashTable(hashTable, initialState);  // By default the initial state is not added, so we need to do it ourselves
+
+				FILE *fp = fopen(movesFile, "r");
+				if (fp == NULL) {
+					ERROR_PRINT("Couldn't find file: %s", movesFile);
+					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
+				}
+
+				char line[10];  // Way extra space than we need
+				fscanf(fp, "%s", line);
+				int numMoves = atoi(line);  // The number of moves to be executed, the last of which should be illegal by superko
+				
+				int lastMove = MOVE_INVALID;
+				int moveCounter = 0;
+				while (fscanf(fp, "%s", line) != EOF) {
+					lastMove = parseMove(line);
+					moveCounter += 1;
+					if (moveCounter < numMoves) {  // Then should make the move
+						makeMove(initialState, lastMove, hashTable);
+					}
+				} 
+				fclose(fp);
+
+				if (isLegalMove(initialState, lastMove, hashTable)) {  // Makes sure the last move is illegal
+					printf("\t\tFailure for test: %s\n", dir->d_name);
+				} else {
+					totalPasses += 1;
+				}
+
+				totalTests += 1;
+
+				free(initialFile);
+				free(movesFile);
+
+				destroyHashTable(hashTable);
+				hashTable = NULL;
+				destroyState(initialState);
+				initialState = NULL;
+			}
+		}
+	} else {
+		ERROR_PRINT("Couldn't find directory for hashGeneral");;
+		return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
+	}
+	closedir(d);
 
 	return (TestResult){ .errorCode = 0, .totalPasses = totalPasses, .totalTests = totalTests };
 }

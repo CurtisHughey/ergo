@@ -80,7 +80,7 @@ HASHVALUETYPE zobristHash(State *state) {
 		}
 	}
 
-	if (state->koPoint >= 0) {
+	if (state->koPoint >= 0) {  // Necessary?
 		result ^= koVal;
 	}
 

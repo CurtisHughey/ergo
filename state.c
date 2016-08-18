@@ -140,6 +140,7 @@ int isLegalMove(State *state, int move, HashTable *hashTable) {
 	state->board[move] = STATE_EMPTY;
 
 	// Superko:
+	// Anything to clean up? ^^^
 	if (hashTable != NULL) {  // Then we're tracking superko (MOVE_PASS already taken care of)
 		UnmakeMoveInfo unmakeMoveInfo;  // Unfortunate that I have to go through all this
 		makeMoveAndSave(state, move, &unmakeMoveInfo, NULL);  // Pass in NULL to the hash table because we don't want to add this value

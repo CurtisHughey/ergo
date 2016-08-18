@@ -1,5 +1,0 @@
-komiTimes10 0
-rollouts 100
-threads 1
-superko 1
-raveV 5
