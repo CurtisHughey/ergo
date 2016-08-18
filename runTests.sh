@@ -57,6 +57,7 @@ echo "5x5 Serial Wins"
 echo "komiTimes10 0" >> $tempConfig
 echo "rollouts 500" >> $tempConfig
 echo "superko 1" >> $tempConfig 
+echo "threads 1" >> $tempConfig
 
 ./ergo -y -C $tempConfig &>> $testLog
 if [[ $? -eq 1 ]]
@@ -149,7 +150,7 @@ echo "Unit"
 
 echo "komiTimes10 75" >> $tempConfig  
 
-valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
+valgrind -v --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -u -C $tempConfig &>> $testLog  # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -169,7 +170,7 @@ echo "rollouts 100" >> $tempConfig  # Doesn't need to be fast
 echo "threads 1" >> $tempConfig
 echo "superko 1" >> $tempConfig
 
-valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+valgrind -v --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -190,7 +191,7 @@ echo "rollouts 2" >> $tempConfig  # Very low, otherwise Valgrind takes forever w
 echo "threads 2" >> $tempConfig
 echo "superko 1" >> $tempConfig
 
-valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+valgrind -v --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -211,7 +212,7 @@ echo "threads 1" >> $tempConfig
 echo "superko 1" >> $tempConfig
 echo "raveV 5" >> $tempConfig
 
-valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+valgrind -v --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"
@@ -232,7 +233,7 @@ echo "threads 2" >> $tempConfig
 echo "superko 1" >> $tempConfig
 echo "raveV 5" >> $tempConfig
 
-valgrind --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
+valgrind -v --num-callers=100 --trace-children=yes --error-exitcode=1 --leak-check=full --track-origins=yes --show-leak-kinds=all ./ergo -x -C $tempConfig &>> $testLog # This is probably overkill
 if ! [[ $? -eq 1 ]]
 then
 	echo "Passed :)"

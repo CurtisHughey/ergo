@@ -2,15 +2,12 @@
 
 // State struct is in stateInfo.h, along with a lot of macros (needed to resolve some circular dependencies)
 
-static double komi_g = 0;  // Global so we don't have to pass it freaking everywhere.  Sucks to do a global variable, though :/
-
-void setKomi(double komi) {
-	komi_g = komi;
-}
-
-State *createState() {
+State *createState(int komiTimes10) {
 	State *state = malloc(sizeof(State));  // Check for success
 	clearBoard(state);
+
+	double komi = komiTimes10 / 10.0;  // Changes it to double.  Should sanitize
+	state->komi = komi;  // By default, no komi, gets overridden by configParser.c or command line in ergo.c
 
 	return state;
 }
@@ -42,6 +39,7 @@ State *copyState(State *original) {
 	copy->whitePrisoners = original->whitePrisoners;
 	copy->blackPrisoners = original->blackPrisoners;
 	copy->blackPassed = original->blackPassed;
+	copy->komi = original->komi;
 	
 	return copy;
 }
@@ -473,7 +471,7 @@ int calcScore(State *state, int type) {
 }
 
 Score calcScores(State *state) {
-	double whiteScore = (double)calcScore(state, STATE_WHITE)+komi_g;  // komi_g is a global variable defined at the top of the file
+	double whiteScore = (double)calcScore(state, STATE_WHITE)+state->komi;
 	double blackScore = (double)calcScore(state, STATE_BLACK);
 
 	return (Score){ .whiteScore = whiteScore, .blackScore = blackScore};

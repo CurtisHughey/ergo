@@ -83,7 +83,9 @@ State *parseState(char *fileName) {
 		ERROR_PRINT("Missing black passed: %s", fileName);
 		return NULL;  // Incorrect formatting		
 	}
-	state->blackPassed = atoi(line);	
+	state->blackPassed = atoi(line);
+
+	state->komi = DEFAULT_KOMITIMES10 / 10.0;  // Hmm...  do I want this to be parseable?
 
 	fclose(fp);	
 

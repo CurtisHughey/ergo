@@ -6,9 +6,9 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	int customConfig = 0;
 	int rollouts = -1;
-	int komiTimes10 = INT_MIN;  // Unlikely we would set it to this :)
+	int setKomi = 0;  // Command line args sets this to 1 if overriding
+	int komiTimes10 = 0;
 	char *configFileName = NULL;
 	char *zobristDataFileName = NULL;
 	functions function = NONE;
@@ -17,13 +17,17 @@ int main(int argc, char **argv) {
 	while ((opt = getopt(argc, argv, "C:r:k:z:upcxytgh")) != -1) {  // Add more options later
 		switch (opt) {
 			case 'C':
-				customConfig = 1;
 				configFileName = optarg;
 				break;
 			case 'r':
 				rollouts = atoi(optarg);
+				if (rollouts < 1) {
+					ERROR_PRINT("Number of rollouts must be greater than 0, got: %d", rollouts);
+					return 1;
+				}
 				break;
 			case 'k':
+				setKomi = 1;
 				komiTimes10 = atoi(optarg);
 				if (komiTimes10 % 10 != 0 && komiTimes10 % 5 != 0) {
 					ERROR_PRINT("You specified a 10*komi of %d, must end in 5 or 0.  Exiting.", komiTimes10);
@@ -87,7 +91,7 @@ int main(int argc, char **argv) {
 	}
 
 	Config *config = NULL;
-	if (customConfig) {
+	if (configFileName) {
 		config = parseConfigFile(configFileName);
 	}
 	else {
@@ -98,18 +102,17 @@ int main(int argc, char **argv) {
 	if (rollouts > 0) { 
 		config->rollouts = rollouts;
 	}
-	if (komiTimes10 != INT_MIN) {
-		config->komiTimes10 = komiTimes10;
-	}
 
-	if (!config->superko) {
+	if (!config->superko) {  // Hmmm, I'm not sure where this should get computed
 		config->hashBuckets = 0;  // Overwrites this to prevent hash table
 	}
 
-	// Necessary configurations (setting komi and setting up zobrist hashing:
-	double komi = config->komiTimes10/10.0;
-	setKomi(komi);  // Sets global variable in state.c
+	if (setKomi) {
+		config->komiTimes10 = komiTimes10;
+	}
 
+
+	// Set up Zobrist hashing:
 	initHashVals(zobristDataFileName);	
 	
 	int result = 0;
@@ -136,8 +139,10 @@ int main(int argc, char **argv) {
 			result = runGtp(config)+2;  // +2 to make it non-negative.  0 for failure, 1 for loss, 2 for draw, 3 for win, should log
 			break;
 		case NONE:
-		default:
 			ERROR_PRINT("Function not specified\n");
+			break;
+		default:
+			ERROR_PRINT("Function %d not recognized\n", function);
 			break;
 	}
 

@@ -5,7 +5,7 @@
 Config *getDefaultConfig(void) {
 	Config *config = calloc(1, sizeof(Config));
 	
-	config->komiTimes10 = 75;  // Default to 75 (7.5) is a good guess
+	config->komiTimes10 = DEFAULT_KOMITIMES10;  // Defined in state.h
  	config->rollouts = 20000;  // Maybe also make this a function of the sizes of the board
 	config->threads = 1;  // Number of threads to do simulations, by default the program runs in serial
 	config->testGames = 25;  // The random vs cpu tests

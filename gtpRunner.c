@@ -25,7 +25,7 @@ int runGtp(Config *config) {
 	const char *whitespace = " \t";
 
 	//  Set up go board
-	State *state = createState();
+	State *state = createState(config->komiTimes10);
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	///////////////
@@ -143,7 +143,7 @@ int runGtp(Config *config) {
 				goto ERROR;
 			}			
 			float newKomi = atof(komiString);
-			setKomi(newKomi);
+			state->komi = (double)newKomi;
 			// No output
 		} else if (!strcmp(command, "play")) {
 			// Color

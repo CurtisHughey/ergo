@@ -1,5 +1,6 @@
 // This is a sort of hacky file that resolves some circular dependencies
 // Maybe struct State needs to get renamed, since it no longer belongs in state.h
+// This represents the complete information for a board: the state info and the hash info.  hash.c/h and state.c/h reference these both
 
 #ifndef _STATEINFO_H
 #define _STATEINFO_H
@@ -46,6 +47,7 @@ typedef struct {
 	int whitePrisoners;  // The number of white stones that have been captured (by black)
 	int blackPrisoners;  // Vice versa
 	int blackPassed;  // non-zero if the turn is white and black just passed
+	double komi;  // The komi, used to calculate the score.  Could just be a float.  Allowed to be a negative, but the decimal can only be 5 or 0.  Note that this is not parsed nor serialized in gameParser.c
 } State;
 //////
 

@@ -8,6 +8,8 @@
 #include "hash.h"
 #include "stateInfo.h"
 
+#define DEFAULT_KOMITIMES10 75  // A good guess, the standard for 19x19
+
 // An array of specified neighbors (left, right, up, down) to a point
 typedef struct {
 	int array[4];  // The 4 directions
@@ -18,7 +20,7 @@ typedef struct {
 typedef struct {
 	int *array;
 	int count;  // The current number
-	int size;   // THe number allocated
+	int size;   // The number allocated
 } Moves;
 
 // THe info needed to undo a move
@@ -35,11 +37,9 @@ typedef struct {
 	double blackScore;
 } Score;
 
-// Sets the komi
-void setKomi(double komi);
-
 // Allocates a new state struct, initially empty (calling clearBoard), black to move
-State *createState();
+// Requires the komiTimes10 (e.g. 75 instead of 7.5) for calcScores later
+State *createState(int komiTimes10);
 
 void clearBoard(State *state);
 

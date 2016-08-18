@@ -41,7 +41,7 @@ void showResults(State *state) {
 
 // Not really used much now.  config is unused
 void runHumanVsHuman(Config *config) {
-	State *state = createState();
+	State *state = createState(config->komiTimes10);
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
@@ -66,7 +66,7 @@ void runHumanVsHuman(Config *config) {
 void runHumanVsComputer(Config *config) {
 	srand(time(NULL));
 
-	State *state = createState();
+	State *state = createState(config->komiTimes10);
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
@@ -109,7 +109,7 @@ void runHumanVsComputer(Config *config) {
 void runComputerVsComputer(Config *config) {
 	srand(time(NULL)); 
 
-	State *state = createState();
+	State *state = createState(config->komiTimes10);
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	char *colors[2] = { "Black", "White" };
@@ -142,7 +142,7 @@ void runComputerVsComputer(Config *config) {
 
 // Rand must already be initialized
 int runComputerVsRandom(Config *config) {
-	State *state = createState();
+	State *state = createState(config->komiTimes10);
 	HashTable *hashTable = createHashTable(config->hashBuckets);
 
 	int compTurn = rand() % 2;  // 0 for black, 1 for white
@@ -171,11 +171,12 @@ int runComputerVsRandom(Config *config) {
 	}
 
 	int color = compTurn == 0 ? STATE_BLACK : STATE_WHITE;  // Converts
+	int result = getResult(state, color);
 
 	destroyHashTable(hashTable);
 	destroyState(state);
 
-	return getResult(state, color);
+	return result;
 }
 
 int testComputer(Config *config) {
@@ -225,7 +226,7 @@ int testComputer(Config *config) {
 
 // Finds a single move, measures how long
 void runTrial(Config *config) {	
-	State *state = createState();
+	State *state = createState(config->komiTimes10);
 	HashTable *hashTable = createHashTable(config->hashBuckets);  // Potentially a lot of startup cost.  Worth using a hashTable?
 
 	int move = uctSearch(state, config, hashTable); 
