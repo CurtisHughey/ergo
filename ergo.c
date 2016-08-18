@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
 		config->rollouts = rollouts;
 	}
 
-	if (!config->superko) {  // Hmmm, I'm not sure where this should get computed
+	if (!config->superko) {  // Hmmm, I'm not sure where this should get computed ^^^
 		config->hashBuckets = 0;  // Overwrites this to prevent hash table
 	}
 

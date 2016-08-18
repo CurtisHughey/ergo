@@ -13,7 +13,7 @@ UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	root->amafVisits = 0;
 	root->amafReward = 0;
 	
-	Moves *moves = getMoves(state, hashTable);  // If hashTable is NULL, getMoves will ignore
+	Moves *moves = getMoves(state, hashTable);  // If hashTable is NULL, getMoves will ignore.  Otherwise, superko is enforced
 	setChildren(root, moves, state);
 	
 	destroyMoves(moves);
@@ -354,6 +354,7 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 	RewardData *rewardData = createRewardData();
 	Moves *moves = rewardData->moves;  // Just to save some typing later
 
+	UctNode *originalNode = v;  // Saves to see if the RAVE moves are legal
 	if (!v->terminal) {
 		for (int i = 0; i < lengthOfGame; i++) {  // At some point, this is going to have to be dynamic
 			int blackPassed = state->blackPassed;
@@ -370,10 +371,21 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 			makeMove(state, randomMove, NULL);
 
 			if (raveV != 0) {  // Means we're doing RAVE
-				moves->array[moves->count++] = randomMove;  // Adds it
-				if (moves->count >= moves->size) {
-					moves->size *= 2;
-					moves->array = realloc(moves->array, moves->size*sizeof(int));
+				// Check to see if it's a legal child
+				int legalMove = 0;
+				for (int i = 0; i < originalNode->childrenCount; i++) {  // Binary search?  At any rate, probably as good, if not better, than hashing
+					if (originalNode->children[i]->action == randomMove) {
+						legalMove = 1;
+						break;
+					}
+				}
+
+				if (legalMove) {  // Then we can add it to the RAVE moves
+					moves->array[moves->count++] = randomMove;  // Adds it
+					if (moves->count >= moves->size) {
+						moves->size *= 2;
+						moves->array = realloc(moves->array, moves->size*sizeof(int));
+					}
 				}
 			}
 
