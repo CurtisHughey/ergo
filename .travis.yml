@@ -1,6 +1,7 @@
 language: c
 
 script:
+  - ./install.sh
   - ./runTests.sh
 
 branches:
