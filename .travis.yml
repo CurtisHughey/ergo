@@ -1,10 +1,6 @@
 language: c
-
+dist: precise
 sudo: required
-
-os:
-  - linux
-  - osx
 
 matrix:
   include:
