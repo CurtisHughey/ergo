@@ -6,8 +6,9 @@
 kgsGtpDir="kgsGtp"
 regTestsDir="regTests"
 
-mkdir output
-mkdir log
+mkdir "output"
+mkdir "log"
+mkdir "configs"
 mkdir "$kgsGtpDir/log" 
 mkdir "$regTests/log"
 

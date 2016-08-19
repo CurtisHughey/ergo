@@ -21,7 +21,7 @@ matrix:
 
 script:
   - sudo ./install.sh
-  - ./runTests.sh
+  - sudo ./runTests.sh
 
 branches:
   only:
