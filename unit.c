@@ -142,15 +142,21 @@ TestResult runStateGetNeighborsOfType(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int point = atoi(line);
-				fscanf(fp, "%s", line);
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int type = atoi(line);
 
 				int expectedNeighbors[4];
 				int expectedCount = 0;
-				while (fscanf(fp, "%s", line) != EOF && expectedCount < 4) {
+				while (!fprintf(line, MAX_MOVE_LEN, fp) && expectedCount < 4) {
 					expectedNeighbors[expectedCount++] = atoi(line); 
 				} 
 
@@ -245,10 +251,16 @@ TestResult runStateFillWithTests(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int point = atoi(line);
-				fscanf(fp, "%s", line);
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int type = atoi(line);
 				fclose(fp);
 
@@ -318,12 +330,21 @@ TestResult runStateGroupBordersTypeAndResetTests(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int point = atoi(line);
-				fscanf(fp, "%s", line);
+				if (fgets(line, MAX_MOVE_LEN, fp)) {  // Ok, technically not a move, whatever
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int type = atoi(line);				
-				fscanf(fp, "%s", line);
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int expected = atoi(line);	
 				fclose(fp);
 
@@ -561,8 +582,11 @@ TestResult runStateGetMovesTests(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int numMoves = atoi(line);
 				fclose(fp);
 
@@ -643,10 +667,16 @@ TestResult runStateIsLegalMoveTests(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int move = atoi(line);			
-				fscanf(fp, "%s", line);
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int expected = atoi(line);	
 				fclose(fp);
 
@@ -708,10 +738,16 @@ TestResult runStateCalcScoresTests(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				double blackScore = atof(line);		
-				fscanf(fp, "%s", line);
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				double whiteScore = atof(line);
 				fclose(fp);
 
@@ -1392,13 +1428,16 @@ TestResult runHashGeneralTests(void) {
 					return (TestResult){ .errorCode = 1, .totalPasses = 0, .totalTests = 0 };
 				}
 
-				char line[10];  // Way extra space than we need
-				fscanf(fp, "%s", line);
+				char line[MAX_MOVE_LEN];  // Way extra space than we need
+				if (fgets(line, MAX_MOVE_LEN, fp)) {
+					ERROR_PRINT("Failed to parse move");
+					exit(1);
+				}
 				int numMoves = atoi(line);  // The number of moves to be executed, the last of which should be illegal by superko
 				
 				int lastMove = MOVE_INVALID;
 				int moveCounter = 0;
-				while (fscanf(fp, "%s", line) != EOF) {
+				while (!fgets(line, MAX_MOVE_LEN, fp)) {
 					lastMove = parseMove(line);
 					moveCounter += 1;
 					if (moveCounter < numMoves) {  // Then should make the move
