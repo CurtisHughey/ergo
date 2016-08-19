@@ -2,6 +2,10 @@ language: c
 
 sudo: required
 
+os:
+  - linux
+  - osx
+
 matrix:
   include:
     - compiler: gcc
@@ -12,6 +16,8 @@ matrix:
           packages:
             - g++-4.9
       env: COMPILER=g++-4.9
+  allow_failures:
+    - os: osx
 
 script:
   - sudo ./install.sh

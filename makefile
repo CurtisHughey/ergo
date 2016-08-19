@@ -3,7 +3,7 @@
 CC = gcc-4.9
 LFLAGS = -std=gnu99
 CFLAGS = -pthread -Wall -Werror -Wno-array-bounds
-DIM = -D BOARD_DIM=19
+DIM = -DBOARD_DIM=19
 OPTLEVEL = -O3
 VALGRIND =
 SRC = $(wildcard *.c)

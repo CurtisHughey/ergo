@@ -213,7 +213,7 @@ int runGtp(Config *config) {
 
 			char *vertex = moveToGtpString(move);  // Can also resign ^^
 
-			sprintf(response, vertex);
+			sprintf(response, "%s", vertex);
 			
 			free(vertex);
 			vertex = NULL;
@@ -252,7 +252,7 @@ int runGtp(Config *config) {
 			int move = uctSearch(state, config, hashTable);
 			char *vertex = moveToGtpString(move);  // Could be resignation
 
-			sprintf(response, vertex);
+			sprintf(response, "%s", vertex);
 			
 			free(vertex);
 			vertex = NULL;			
