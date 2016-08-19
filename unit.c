@@ -156,7 +156,7 @@ TestResult runStateGetNeighborsOfType(void) {
 
 				int expectedNeighbors[4];
 				int expectedCount = 0;
-				while (!fprintf(line, MAX_MOVE_LEN, fp) && expectedCount < 4) {
+				while (!fgets(line, MAX_MOVE_LEN, fp) && expectedCount < 4) {
 					expectedNeighbors[expectedCount++] = atoi(line); 
 				} 
 
