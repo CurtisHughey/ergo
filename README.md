@@ -1,3 +1,5 @@
+https://travis-ci.org/CurtisHughey/ergo.svg?branch=master
+
 Author: Curtis Hughey
 
 ergo is a small MCTS implementation of Go.  The README just specifies how everything is run - for actual, interesting details, check the Wiki here: https://github.com/CurtisHughey/ergo/wiki.
