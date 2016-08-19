@@ -1,0 +1,8 @@
+language: c
+
+script:
+  - ./runTests.sh
+
+branches:
+  only:
+  - master

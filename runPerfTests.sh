@@ -35,6 +35,7 @@ echo "superko 1" >> $tempPerfConfig
 echo "hashBuckets 1000" >> $tempPerfConfig
 echo "threads 2" >> $tempPerfConfig
 echo "respect -1" >> $tempPerfConfig  # Never resigns, otherwise would mess up times
+#echo "raveV 10" >> $tempPerfConfig
 
 ./ergo -t -C $tempPerfConfig
 

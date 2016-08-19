@@ -252,14 +252,19 @@ echo "--------------------------------------------------------------------------
 ./build.sh &> /dev/null  # Restores it to the default
 
 echo "$numPassed/$numTests passed"
+returnVal=0
 if [[ $numPassed -eq $numTests ]]
 then
 	echo "All Passed :)"
+	returnVal=0
 else
 	echo "Failed :("
 	echo "Check $testLog for details"
+	returnVal=1
 fi
 echo "--------------------"
 
 echo "Finished at: " >> $testLog
 date >> $testLog
+
+return returnVal
