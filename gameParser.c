@@ -163,7 +163,10 @@ int parseMoveFromFile(char *fileName) {
 
 int parseMoveFromTerminal(void) {
 	char line[MAX_MOVE_LEN];
-	fgets(line, MAX_MOVE_LEN, stdin);
+	if(fgets(line, MAX_MOVE_LEN, stdin)) {
+		ERROR_PRINT("Failed to read move from command line");
+		exit(1);
+	}
 
 	return parseMove(line);
 }

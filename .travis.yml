@@ -14,7 +14,7 @@ matrix:
       env: COMPILER=g++-4.9
 
 script:
-  - ./install.sh
+  - sudo ./install.sh
   - ./runTests.sh
 
 branches:
