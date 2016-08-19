@@ -1,4 +1,4 @@
-https://travis-ci.org/CurtisHughey/ergo.svg?branch=master
+[![Build Status][https://travis-ci.org/CurtisHughey/ergo.svg?branch=master]
 
 Author: Curtis Hughey
 
