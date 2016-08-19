@@ -12,6 +12,9 @@ matrix:
           packages:
             - g++-4.9
       env: COMPILER=g++-4.9
+  os:
+    - linux
+    - osx
   allow_failures:
     - os: osx
 
