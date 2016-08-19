@@ -267,4 +267,9 @@ echo "--------------------"
 echo "Finished at: " >> $testLog
 date >> $testLog
 
-return returnVal
+if [ $returnVal -eq 0 ]
+then
+	exit 0
+else
+	exit 1
+fi
