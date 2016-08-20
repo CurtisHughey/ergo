@@ -15,3 +15,5 @@ mkdir "$regTests/results"
 
 chmod u+x build.sh  # Might not need
 ./build.sh  # Default
+
+exit 0

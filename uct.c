@@ -278,21 +278,19 @@ double calcReward(UctNode *parent, UctNode *child, double c, int raveV) {
 	// First calculates uctReward
 	double uctScore = 0;
 	if (child->visitCount > 0) {  // I.e. if visited.
-		uctScore = (double)child->reward/child->visitCount 
-					+ c*sqrt(log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
+		uctScore = ((double)child->reward)/child->visitCount 
+					+ c*sqrt(2*log((double)parent->visitCount)/child->visitCount); // Might need *2 ^^^
 	} else {
 		uctScore = INT_MIN;  // This is arguably bad (maybe we need to require that the vistcount is greater than 0)
 	}
 
 	if (raveV != 0) {  // Then need to calculate AMAF/RAVE reward
-		double alpha = ((double)(raveV - child->visitCount)) / raveV;  // I believe this is correct or should it be child->amafVists? ^^^
-		if (alpha < 0) {
-			alpha = 0;
-		}
+		double alpha = sqrt(child->visitCount/(child->visitCount+3.0*raveV));  // This is from https://webdocs.cs.ualberta.ca/~mmueller/ps/2013/2013-gochapter-preprint.pdf
 
-		double amafScore = child->amafReward/child->amafVisits;
+		double amafScore = ((double)child->amafReward)/child->amafVisits
+					+ sqrt(log((double)parent->amafVisits)/child->amafVisits);
 
-		totalReward = alpha*amafScore + (1-alpha)*uctScore;
+		totalReward = alpha*uctScore + (1-alpha)*amafScore;
 	} else {
 		totalReward = uctScore;  // No AMAF/RAVE
 	}
