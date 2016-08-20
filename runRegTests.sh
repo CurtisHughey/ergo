@@ -19,6 +19,11 @@ cd "$regTestsDir"
 
 java -jar gogui/lib/gogui-regress.jar ./runTranslator.sh cgtc/*.tst  # Can include verbose
 
+if [[ "$?" -ne 0 ]]  # Then error
+then
+	cat "cgtc/log/gtpLogging.txt"
+fi
+
 # Moves results
 for htmlFile in *.html
 do
