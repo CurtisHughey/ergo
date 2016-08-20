@@ -5,7 +5,7 @@ UctNode *createRootUctNode(State *state, HashTable *hashTable) {
 	UctNode *root = malloc(sizeof(UctNode));
 	
 	root->action = ROOT_MOVE;
-	root->reward = 0;  // I guess?
+	root->reward = 0;
 	root->visitCount = 0;
 	root->terminal = 0;  // Should never be terminal itself
 	root->parent = NULL;  // No parent
@@ -47,7 +47,7 @@ void expandUctNode(State *state, UctNode *parent, HashTable *hashTable) {
 		moves = getMoves(state, hashTable);  // Note that we're only adding children that are superko legal
 		unmakeMove(state, &unmakeMoveInfo, hashTable);
 	} else {
-		moves = getMoves(state, hashTable);
+		moves = getMoves(state, hashTable);  // If at root, no action
 	}
 
 	setChildren(parent, moves, state);	
@@ -98,14 +98,14 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	int respect = config->respect;
 	int raveV = config->raveV;
 
-	assert(threads >= 1);  // Making this check again
+	assert(threads >= 1);  // Making this check again, probably good
 	int numIterations = rollouts/threads;
 
-	DefaultPolicyWorkerInput **dpwis = NULL;
+	DefaultPolicyWorkerInput **dpwis = NULL;  // The input to worker threads
 	pthread_t *workers = NULL;
 	// Kicks off the worker threads for simulations
 	if (threads > 1) {  // Then need to allocate for workers and their input
-		dpwis = calloc(threads, sizeof(DefaultPolicyWorkerInput *));  // Could probably also do this on the stack
+		dpwis = calloc(threads, sizeof(DefaultPolicyWorkerInput *));
 		workers = calloc(threads, sizeof(pthread_t));
 
 		for (int i = 0; i < threads; i++) {  
@@ -121,7 +121,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 		}	
 	}
 
-	// The meat of the algorithm, for each rollout finds the best node to explore, simulates the game, and then propagates it back to the root
+	// Creates root node, and then finds the best terminal node to explore by treePolicy/treePolicyNoHashing
 	UctNode *root = createRootUctNode(state, hashTable);
 	int rootTurn = state->turn;
 	for (int i = 0; i <= numIterations; i++) {  // <= to make sure we get at least one iteration, in case rollouts<threads (unlikely)
@@ -134,6 +134,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 			v = treePolicyNoHashing(copy, root, raveV);
 		}
 
+		// This will simulate the rest of the game (multiple simulations if multiple threads), and then backup the result up to the root.
 		defaultPolicyAndBackup(rootTurn, copy, v, lengthOfGame, workers, dpwis, threads, raveV);
 
 		destroyState(copy);
@@ -170,6 +171,7 @@ int uctSearch(State *state, Config *config, HashTable *hashTable) {
 	return move;
 }
 
+// Reuires HashTable
 UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable, int raveV) {
 	assert(hashTable != NULL);  // Good check to have, I guess
 
@@ -202,6 +204,7 @@ UctNode *treePolicy(State *state, UctNode *v, HashTable *hashTable, int raveV) {
 	free(hashValues);
 	hashValues = NULL;
 
+	// Returns best terminal node
 	return v;
 }
 
@@ -218,6 +221,7 @@ UctNode *treePolicyNoHashing(State *state, UctNode *v, int raveV) {
 		}
 	}
 
+	// Returns best terminal node
 	return v;
 }
 
@@ -225,7 +229,7 @@ UctNode *treePolicyNoHashing(State *state, UctNode *v, int raveV) {
 UctNode *expand(State *state, UctNode *v, HashTable *hashTable) {
 	int numUnvisited = v->childrenCount - v->childrenVisited;
 	assert (numUnvisited > 0);  // A nice assert to have
-	int untriedIndex = rand() % numUnvisited;
+	int untriedIndex = rand() % numUnvisited;  // Uniformly randomly chosen unvisited node.
 
 	UctNode *child = NULL;
 	int searchIndex = 0;
@@ -259,12 +263,6 @@ UctNode *bestChild(UctNode *v, double c, int respect, int raveV, int atRoot) {
 			bestReward = reward;
 			bestChildIndex = i;
 		}
-
-		// if (c == 0) {  // Remove ^^^
-		// 	char *x = moveToString(v->children[i]->action, 1); 
-		// 	printf("%s, %lf, %d\n", x, reward, v->children[i]->visitCount);
-		// 	free(x);
-		// }
 	}
 
 	if (atRoot && bestReward*100 < (double)respect) {  // Then resign
@@ -328,8 +326,8 @@ void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOf
 
 		// Wait for threads to finish processing
 		for (int i = 0; i < threads; i++) {
-			while (!dpwis[i]->workerFinished) {  // Spins - is there a synchronize thing going on (is the compiler going to eliminate this? ^^^)
-				usleep(1);  // I think this helps, lol
+			while (!dpwis[i]->workerFinished) {  // Spins
+				usleep(1);  // I think this helps, lol ^^^
 				sched_yield();
 			}
 			dpwis[i]->workerFinished = 0;  // For next time
@@ -362,7 +360,7 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 			int randomMove = -3;  // Initializing to something bad
 			// Now keeps guessing until finds legal move.  Might be bad...
 			do {
-				randomMove = rand() % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel
+				randomMove = rand() % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel ^^^^ Holy bejeezus, I'm not doing this
 				if (randomMove == BOARD_SIZE) {  // This represented a pass
 					randomMove = MOVE_PASS;
 				}
@@ -435,6 +433,7 @@ void *defaultPolicyWorker(void *args) {
 
 			dpwi->rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV);
 
+			// "Unlocking"
 			dpwi->shouldProcess = 0;  // Must wait for the caller to set this
 			dpwi->workerFinished = 1;  // Worker finished, caller can now give another dpwi
 		} else {
@@ -445,7 +444,7 @@ void *defaultPolicyWorker(void *args) {
 	return NULL;  // Maybe could return stats?
 }
 
-// Propagates new UCT score back to root
+// Propagates new UCT score back to root.  Note that these will be called serially, not in the worker threads
 void backupNegamaxUCT(UctNode *v, double reward, int threads) {
 	while (v != NULL) {
 		v->visitCount += threads;
