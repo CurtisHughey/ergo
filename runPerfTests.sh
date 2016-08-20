@@ -46,9 +46,10 @@ then
 	gitCommitData=$(git shortlog -s)
 	set -- $gitCommitData
 	echo "$1,$average" >> $perfFile
+	python perf/processPerf.py perf/performance.txt  # Makes the new image
 fi
-
-python perf/processPerf.py perf/performance.txt  # Makes the image
 
 rm $rawPerfFile
 rm $tempPerfConfig
+
+exit 0

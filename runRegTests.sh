@@ -6,7 +6,7 @@ regTestsDir="regTests"
 
 if [[ "$?" -ne 0 ]]  # Checks for compilation failure
 then
-	echo "Compilation failed, can't connect to KGS server"
+	echo "Compilation failed, can't run regression tests"
 	exit 1
 fi
 
@@ -30,3 +30,5 @@ cat "summary.dat"  # Displays the one line
 mv "summary.dat" "results/summary.dat"
 
 cd ..
+
+exit 0
