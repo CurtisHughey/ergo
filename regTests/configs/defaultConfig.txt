@@ -1,4 +1,4 @@
-rollouts 20000  # Increase ^^^
+rollouts 15000  # Increase ^^^
 threads 1
 superko 0  # Ignored since we're loading positions, i guess
 hashBuckets 1000

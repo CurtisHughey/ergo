@@ -25,6 +25,8 @@ do
 	mv "$htmlFile" "results/$htmlFile"
 done
 
+cat "summary.dat"  # Displays the one line
+
 mv "summary.dat" "results/summary.dat"
 
 cd ..
