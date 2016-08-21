@@ -14,7 +14,7 @@ To install (basically just creating a couple of directories):
 While there is a makefile, it is encouraged to use build.sh to compile (basically, because it's easier to pass in command line options, and it will automatically clean).  To build:
   > ./build.sh
   
-If no arguments are provided, a 19x19 board by default will be compiled.  To compile with a different size board (in this case 5x5:
+This will compile the files in the src directory and move the ergo executable to the root directory.  If no arguments are provided, a 19x19 board by default will be compiled.  To compile with a different size board (in this case 5x5:
   > ./build.sh -d 5
   
 Boards can be 1x1 through 19x19, square only (no rectangular boards at this time).
@@ -66,6 +66,13 @@ Passing in a -s flag will save the average runtime to perf/performance.txt.  You
 
 ---
 
+To graph performance over different thread counts (basically, to allow you to optimize for different core counts):
+  > ./runGraphThreadPerf.sh
+
+The results will be store in perf/threadPerformance.png.  You should expect to see the runtime decrease until context switching has to happen.
+
+---
+
 To profile the program with callgrind, and see it on kcachegrind:
   > ./profile.sh
 
@@ -75,4 +82,3 @@ If you don't like the random numbers I generated on my machine for the Zobrist d
   > cd zobristData; ./randNumGenerator.sh
   
 ---
-  

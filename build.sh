@@ -47,6 +47,8 @@ do
 	shift # past argument or value
 done
 
+cd src  # Moves to the actual source directory to make
+
 echo "CLEANING"
 make clean
 echo ""
@@ -57,9 +59,13 @@ if [ $? -eq 0 ]
 then 
 	echo ""
 	echo "FINISHED"
+	cp ergo ../ergo  # Moves it back to the root directory
+	make clean  # Don't need those files anymore
+	cd ..  # And returns there as well
 	exit 0
 else
 	echo ""
 	echo "COMPILATION FAILED"
+	cd ..  # Still returns
 	exit 1
 fi
