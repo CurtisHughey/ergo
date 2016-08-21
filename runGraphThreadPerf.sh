@@ -9,6 +9,8 @@ do
 	average="$(./runPerfTest.sh $i | tail -1)"
 	echo "Average: $average"
 	echo "$i,${average}" >> "$threadPerfFile"
+
+	sleep 3  # Cools down
 done
 
 python perf/processThreadPerf.py "${threadPerfFile}"
