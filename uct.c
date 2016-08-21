@@ -305,7 +305,7 @@ void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOf
 	assert(threads >= 1);  // Otherwise, this is bad
 
 	if (threads == 1) {  // Then no need to do pthread stuff
-		RewardData *rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV);
+		RewardData *rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV, NULL);  // NULL for just using rand()
 		rewardBackup(v, rewardData);  // Backs up on all the moves in rewardData->moves (NULL if no AMAF)
 		destroyRewardData(rewardData);  // rewardData->moves = NULL if no RAVE
 		rewardData = NULL;
@@ -344,7 +344,7 @@ void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOf
 
 
 // Maybe rename to rollout ^^^
-RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, int raveV) {
+RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, int raveV, struct drand48_data *randBuf) {
 	int color = state->turn;
 
 	RewardData *rewardData = createRewardData();
@@ -358,7 +358,17 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 			int randomMove = -3;  // Initializing to something bad
 			// Now keeps guessing until finds legal move.  Might be bad...
 			do {
-				randomMove = rand() % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel ^^^^ Holy bejeezus, I'm not doing this
+				int randomNumber = -1;
+				if (randBuf) {
+					long int result = 0;
+					lrand48_r(randBuf, &result);
+					randomNumber = (int)result;
+					randomNumber = randomNumber < 0 ? -1*randomNumber : randomNumber;  // Need to make sure it's positive
+				} else {
+					randomNumber = rand();
+				}
+
+				randomMove = randomNumber % (BOARD_SIZE+1);  // This will need to have a seed once we do parallel ^^^^ Holy bejeezus, I'm not doing this
 				if (randomMove == BOARD_SIZE) {  // This represented a pass
 					randomMove = MOVE_PASS;
 				}
@@ -421,15 +431,26 @@ RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, i
 
 void *defaultPolicyWorker(void *args) {
 	DefaultPolicyWorkerInput *dpwi = (DefaultPolicyWorkerInput *)args;
+	
+	// First calcuates its random seed
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	double timeInMillis = (tv.tv_sec)*1000 + (tv.tv_usec)/100;
+	long int seed = (long int)timeInMillis + dpwi->tid;  // tid makes all the seeds distinct
+
+	// Now initializes random buffer
+	struct drand48_data randBuf;
+	srand48_r(seed, &randBuf);
+
 	while (!dpwi->shouldDie) {
 		if (dpwi->shouldProcess) {
 			int rootTurn = dpwi->rootTurn;
 			State *state = dpwi->state;
 			int lengthOfGame = dpwi->lengthOfGame;
 			UctNode *v = dpwi->v;
-			int raveV = dpwi->raveV;
+			int raveV = dpwi->raveV;  // This, for example, doesn't need to get read every time
 
-			dpwi->rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV);
+			dpwi->rewardData = simulate(rootTurn, state, lengthOfGame, v, raveV, &randBuf);
 
 			// "Unlocking"
 			dpwi->shouldProcess = 0;  // Must wait for the caller to set this

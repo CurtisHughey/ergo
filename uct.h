@@ -10,7 +10,8 @@
 #include <assert.h>
 #include <pthread.h>
 #include <unistd.h>  // Will eventually use this to time the threads for logging
-#include <sched.h>
+#include <sched.h>  // ?
+#include <sys/time.h>
 
 #include "dbg.h"
 #include "state.h"
@@ -101,7 +102,8 @@ void defaultPolicyAndBackup(int rootTurn, State *state, UctNode *v, int lengthOf
 
 // Simulates the rest of game (the original defaultPolicy in the paper.  Either called serially or in parallel)
 // If raveV != 0, then RewardData will contain the moves in the rollout for RAVE calculation
-RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, int raveV);
+// If drand48_data == NULL, then regular rand will be used.  Otherwise, lrand48_r will be used
+RewardData *simulate(int rootTurn, State *state, int lengthOfGame, UctNode *v, int raveV, struct drand48_data *randBuf);
 
 // Single worker for defaultPolicy.  args will be cast to DefaulPolicyWorkerInput
 // It is the responsibility of the caller to free args
