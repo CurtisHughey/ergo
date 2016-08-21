@@ -28,12 +28,14 @@ then
 	exit 1
 fi
 
-echo "rollouts 1000" >> $tempPerfConfig
+rollouts=2500
+
+echo "rollouts $rollouts" >> $tempPerfConfig
 echo "trials 20" >> $tempPerfConfig
 echo "warmupTrials 5" >> $tempPerfConfig
 echo "superko 1" >> $tempPerfConfig
 echo "hashBuckets 1000" >> $tempPerfConfig
-echo "threads 2" >> $tempPerfConfig
+echo "threads 7" >> $tempPerfConfig
 echo "respect -1" >> $tempPerfConfig  # Never resigns, otherwise would mess up times
 #echo "raveV 10" >> $tempPerfConfig
 

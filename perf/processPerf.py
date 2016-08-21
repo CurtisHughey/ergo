@@ -29,7 +29,7 @@ fig, ax = plt.subplots()
 
 plt.title(title)
 plt.xlabel("Commit Number")
-plt.ylabel("Average Performance (millis)")
+plt.ylabel("Average Time (millis)")
 
 ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
